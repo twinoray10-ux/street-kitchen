@@ -537,8 +537,8 @@ footer{background:#0D0400;padding:3rem 1.5rem;text-align:center;border-top:1px s
 </div>
 
 <script>
-/* ── MENU DATA ── */
-const MENU = {
+/* ── MENU DATA (loads from admin panel if saved) ── */
+const DEFAULT_MENU = {
   rolex:[
     {name:"Classic Rolex",desc:"Chapati, egg, cabbage, tomato, onion",price:2500,heat:1},
     {name:"Double Egg Rolex",desc:"Chapati, 2 eggs, veggies, light mayo",price:3000,heat:1},
@@ -563,6 +563,11 @@ const MENU = {
     {name:"Office Bundle x5",desc:"5 classic rolexes — SAVE 2,500",price:10000,heat:1},
   ]
 };
+let MENU;
+try {
+  const saved = localStorage.getItem('sk_menu');
+  MENU = saved ? JSON.parse(saved) : DEFAULT_MENU;
+} catch(e) { MENU = DEFAULT_MENU; }
 
 /* ── RENDER MENU ── */
 function heatDots(n){
