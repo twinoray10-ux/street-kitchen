@@ -26,7 +26,7 @@ body{font-family:'Syne',sans-serif;background:var(--dark);color:var(--cream);min
 .login-btn:hover{opacity:0.88}
 .login-error{color:#E8460A;font-size:12px;font-family:'Space Mono',monospace;margin-top:0.75rem;min-height:16px}
 
-/* APP SHELL */
+/* APP */
 #app{display:none;min-height:100vh}
 header{background:rgba(26,10,0,0.96);border-bottom:1px solid rgba(232,70,10,0.2);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .header-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--cream)}
@@ -35,15 +35,21 @@ header{background:rgba(26,10,0,0.96);border-bottom:1px solid rgba(232,70,10,0.2)
 .header-right a{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--gold);text-decoration:none;padding:6px 14px;border:1px solid rgba(245,166,35,0.3);border-radius:4px}
 .logout-btn{background:none;border:none;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);cursor:pointer;padding:6px 14px}
 .logout-btn:hover{color:var(--fire)}
-
 .main{max-width:960px;margin:0 auto;padding:2rem 1.5rem}
 
-/* STATS ROW */
+/* FIREBASE STATUS */
+.fb-status{display:flex;align-items:center;gap:8px;font-family:'Space Mono',monospace;font-size:11px;padding:10px 16px;border-radius:8px;margin-bottom:1.5rem;letter-spacing:1px}
+.fb-status.connected{background:rgba(45,106,31,0.12);border:1px solid rgba(45,106,31,0.3);color:#5CB85C}
+.fb-status.disconnected{background:rgba(232,70,10,0.08);border:1px solid rgba(232,70,10,0.25);color:var(--fire)}
+.fb-status.syncing{background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.25);color:var(--gold)}
+.fb-dot{width:8px;height:8px;border-radius:50%;background:currentColor}
+
+/* STATS */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:2.5rem}
 .stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem}
 .stat-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:6px}
 .stat-val{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--cream)}
-.stat-val span{font-size:13px;color:var(--gold);font-family:'Space Mono',monospace;letter-spacing:1px}
+.stat-val span{font-size:13px;color:var(--gold);font-family:'Space Mono',monospace}
 
 /* TABS */
 .tabs{display:flex;gap:4px;margin-bottom:2rem;background:rgba(255,255,255,0.04);border-radius:10px;padding:4px}
@@ -51,10 +57,9 @@ header{background:rgba(26,10,0,0.96);border-bottom:1px solid rgba(232,70,10,0.2)
 .tab.active{background:var(--fire);color:#fff}
 
 /* PANELS */
-.panel{display:none}
-.panel.active{display:block}
+.panel{display:none}.panel.active{display:block}
 
-/* ADD ITEM FORM */
+/* FORM */
 .form-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.75rem;margin-bottom:1.5rem}
 .form-card h2{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:var(--cream);margin-bottom:1.25rem}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
@@ -64,45 +69,42 @@ header{background:rgba(26,10,0,0.96);border-bottom:1px solid rgba(232,70,10,0.2)
 .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--fire)}
 .form-group select option{background:#1E0C04}
 .form-group textarea{resize:vertical;min-height:70px}
-.heat-picker{display:flex;gap:8px;margin-top:4px}
-.heat-opt{padding:7px 16px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s}
+.heat-picker{display:flex;gap:8px;margin-top:4px;flex-wrap:wrap}
+.heat-opt{padding:7px 14px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s}
 .heat-opt.sel{background:rgba(232,70,10,0.15);border-color:var(--fire);color:var(--fire)}
 .save-btn{background:var(--fire);color:#fff;border:none;padding:12px 32px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;cursor:pointer;transition:opacity 0.2s}
 .save-btn:hover{opacity:0.88}
 .save-btn:disabled{opacity:0.4;cursor:not-allowed}
 .form-msg{font-family:'Space Mono',monospace;font-size:11px;margin-left:1rem;min-height:16px}
-.form-msg.ok{color:#5CB85C}
-.form-msg.err{color:#E8460A}
+.form-msg.ok{color:#5CB85C}.form-msg.err{color:#E8460A}
 
 /* MENU LIST */
-.menu-list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.menu-list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:0.75rem}
 .menu-list-header h2{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:var(--cream)}
 .search-box{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:8px 14px;color:var(--cream);font-family:'Syne',sans-serif;font-size:13px;outline:none;width:180px}
 .search-box:focus{border-color:var(--fire)}
 .cat-filter{display:flex;gap:6px;margin-bottom:1.25rem;flex-wrap:wrap}
 .cf{padding:5px 14px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s}
 .cf.active{background:rgba(232,70,10,0.12);border-color:var(--fire);color:var(--fire)}
-.item-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem;transition:border-color 0.2s}
+.item-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;margin-bottom:0.75rem;transition:border-color 0.2s;flex-wrap:wrap}
 .item-row:hover{border-color:rgba(232,70,10,0.25)}
 .item-row.hidden-item{opacity:0.45}
-.item-info{flex:1;min-width:0}
-.item-info .iname{font-weight:700;font-size:15px;color:var(--cream);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item-info .idesc{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.item-info .imeta{display:flex;gap:10px;align-items:center;margin-top:6px}
+.item-info{flex:1;min-width:180px}
+.item-info .iname{font-weight:700;font-size:15px;color:var(--cream)}
+.item-info .idesc{font-size:12px;color:var(--muted);margin-top:2px}
+.item-info .imeta{display:flex;gap:10px;align-items:center;margin-top:6px;flex-wrap:wrap}
 .cat-badge{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;padding:2px 8px;border-radius:100px;background:rgba(255,255,255,0.06);color:var(--muted)}
-.heat-badge{font-size:11px}
 .item-price{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);white-space:nowrap}
-.item-actions{display:flex;gap:6px}
+.item-actions{display:flex;gap:6px;flex-wrap:wrap}
 .act-btn{background:rgba(255,255,255,0.05);border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;transition:all 0.2s;white-space:nowrap}
 .act-btn:hover{border-color:var(--fire);color:var(--fire)}
 .act-btn.del:hover{border-color:#E8460A;color:#E8460A;background:rgba(232,70,10,0.08)}
-.act-btn.toggle-vis{color:var(--muted)}
-.empty-state{text-align:center;padding:3rem 1rem;color:var(--muted);font-family:'Space Mono',monospace;font-size:12px}
+.empty-state{text-align:center;padding:3rem;color:var(--muted);font-family:'Space Mono',monospace;font-size:12px}
 
 /* EDIT MODAL */
-.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.88);display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.88);display:none;align-items:center;justify-content:center;padding:1rem;overflow-y:auto}
 .modal-overlay.open{display:flex}
-.modal{background:#1E0C04;border:1px solid rgba(232,70,10,0.3);border-radius:16px;width:100%;max-width:480px;padding:2rem;max-height:90vh;overflow-y:auto}
+.modal{background:#1E0C04;border:1px solid rgba(232,70,10,0.3);border-radius:16px;width:100%;max-width:480px;padding:2rem;margin:auto;max-height:90vh;overflow-y:auto}
 .modal h2{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--cream);margin-bottom:1.5rem}
 .modal-actions{display:flex;gap:1rem;margin-top:1.5rem}
 .cancel-btn{flex:1;background:transparent;border:1px solid var(--border);color:var(--muted);padding:11px;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;cursor:pointer}
@@ -110,27 +112,21 @@ header{background:rgba(26,10,0,0.96);border-bottom:1px solid rgba(232,70,10,0.2)
 /* SETTINGS */
 .settings-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.75rem;margin-bottom:1.25rem}
 .settings-card h3{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--cream);margin-bottom:1.25rem;border-bottom:1px solid var(--border);padding-bottom:0.75rem}
-.setting-row{display:flex;align-items:center;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid rgba(255,255,255,0.04);gap:1rem}
 .setting-row:last-child{border-bottom:none}
 .setting-label{font-size:14px;color:var(--cream)}
 .setting-sub{font-size:12px;color:var(--muted);margin-top:2px}
-.toggle{position:relative;width:44px;height:24px;cursor:pointer}
+.toggle{position:relative;width:44px;height:24px;cursor:pointer;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
 .toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,0.1);border-radius:100px;transition:0.2s}
 .toggle-slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:rgba(255,255,255,0.5);border-radius:50%;transition:0.2s}
 .toggle input:checked+.toggle-slider{background:var(--fire)}
 .toggle input:checked+.toggle-slider:before{transform:translateX(20px);background:#fff}
-.hours-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:0.5rem}
-
-/* EXPORT PANEL */
-.export-box{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:1.25rem;font-family:'Space Mono',monospace;font-size:12px;color:var(--muted);white-space:pre-wrap;word-break:break-all;max-height:280px;overflow-y:auto;line-height:1.7}
-.copy-btn{background:rgba(255,255,255,0.06);border:1px solid var(--border);color:var(--cream);padding:10px 20px;border-radius:8px;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;cursor:pointer;margin-top:0.75rem;transition:all 0.2s}
-.copy-btn:hover{border-color:var(--fire);color:var(--fire)}
 
 @media(max-width:600px){
   .form-row{grid-template-columns:1fr}
-  .item-actions{flex-direction:column}
-  .stats{grid-template-columns:1fr 1fr}
+  .tabs{flex-wrap:wrap}
+  .tab{font-size:9px;padding:7px 4px}
 }
 </style>
 </head>
@@ -159,6 +155,11 @@ header{background:rgba(26,10,0,0.96);border-bottom:1px solid rgba(232,70,10,0.2)
   </header>
 
   <div class="main">
+    <!-- Firebase Status -->
+    <div class="fb-status syncing" id="fb-status">
+      <div class="fb-dot"></div>
+      <span id="fb-status-text">Connecting to Firebase...</span>
+    </div>
 
     <!-- STATS -->
     <div class="stats" id="stats-row"></div>
@@ -168,10 +169,9 @@ header{background:rgba(26,10,0,0.96);border-bottom:1px solid rgba(232,70,10,0.2)
       <button class="tab active" onclick="switchTab('add',this)">+ ADD ITEM</button>
       <button class="tab" onclick="switchTab('manage',this)">MANAGE MENU</button>
       <button class="tab" onclick="switchTab('settings',this)">SETTINGS</button>
-      <button class="tab" onclick="switchTab('export',this)">EXPORT CODE</button>
     </div>
 
-    <!-- ADD ITEM PANEL -->
+    <!-- ADD ITEM -->
     <div class="panel active" id="panel-add">
       <div class="form-card">
         <h2>ADD NEW ITEM</h2>
@@ -203,90 +203,37 @@ header{background:rgba(26,10,0,0.96);border-bottom:1px solid rgba(232,70,10,0.2)
           <div class="form-group">
             <label>Spice Level</label>
             <div class="heat-picker">
-              <button class="heat-opt sel" data-heat="0" onclick="pickHeat(0)">Mild</button>
-              <button class="heat-opt" data-heat="1" onclick="pickHeat(1)">🌶</button>
-              <button class="heat-opt" data-heat="2" onclick="pickHeat(2)">🌶🌶</button>
-              <button class="heat-opt" data-heat="3" onclick="pickHeat(3)">🌶🌶🌶</button>
+              <button class="heat-opt sel" data-heat="0" onclick="pickHeat(0,this)">Mild</button>
+              <button class="heat-opt" data-heat="1" onclick="pickHeat(1,this)">🌶</button>
+              <button class="heat-opt" data-heat="2" onclick="pickHeat(2,this)">🌶🌶</button>
+              <button class="heat-opt" data-heat="3" onclick="pickHeat(3,this)">🌶🌶🌶</button>
             </div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;margin-top:0.5rem">
-          <button class="save-btn" onclick="addItem()">ADD TO MENU</button>
+        <div style="display:flex;align-items:center;margin-top:0.5rem;flex-wrap:wrap;gap:0.75rem">
+          <button class="save-btn" onclick="addItem()">ADD TO MENU 🔥</button>
           <span class="form-msg" id="add-msg"></span>
         </div>
       </div>
     </div>
 
-    <!-- MANAGE PANEL -->
+    <!-- MANAGE MENU -->
     <div class="panel" id="panel-manage">
       <div class="menu-list-header">
         <h2>ALL ITEMS</h2>
-        <input class="search-box" type="text" placeholder="Search..." oninput="renderList()"/>
+        <input class="search-box" type="text" id="search-input" placeholder="Search..." oninput="renderList()"/>
       </div>
       <div class="cat-filter">
-        <button class="cf active" data-cat="all" onclick="filterCat('all',this)">All</button>
-        <button class="cf" data-cat="rolex" onclick="filterCat('rolex',this)">Rolexes</button>
-        <button class="cf" data-cat="chicken" onclick="filterCat('chicken',this)">Chicken &amp; Fries</button>
-        <button class="cf" data-cat="combo" onclick="filterCat('combo',this)">Combos</button>
+        <button class="cf active" onclick="filterCat('all',this)">All</button>
+        <button class="cf" onclick="filterCat('rolex',this)">Rolexes</button>
+        <button class="cf" onclick="filterCat('chicken',this)">Chicken &amp; Fries</button>
+        <button class="cf" onclick="filterCat('combo',this)">Combos</button>
       </div>
       <div id="menu-list"></div>
     </div>
 
-    <!-- SETTINGS PANEL -->
+    <!-- SETTINGS -->
     <div class="panel" id="panel-settings">
-      <div class="settings-card">
-        <h3>BUSINESS INFO</h3>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Phone 1</label>
-            <input type="tel" id="s-phone1" value="0700550075"/>
-          </div>
-          <div class="form-group">
-            <label>Phone 2</label>
-            <input type="tel" id="s-phone2" value="0770840204"/>
-          </div>
-        </div>
-        <div class="form-row full">
-          <div class="form-group">
-            <label>Order Email</label>
-            <input type="email" id="s-email" value="twinoray10@gmail.com"/>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Open Time</label>
-            <input type="time" id="s-open" value="07:00"/>
-          </div>
-          <div class="form-group">
-            <label>Close Time</label>
-            <input type="time" id="s-close" value="20:00"/>
-          </div>
-        </div>
-      </div>
-      <div class="settings-card">
-        <h3>MENU VISIBILITY</h3>
-        <div class="setting-row">
-          <div>
-            <div class="setting-label">Accept orders online</div>
-            <div class="setting-sub">Turn off during holidays or when sold out</div>
-          </div>
-          <label class="toggle"><input type="checkbox" id="tog-orders" checked/><span class="toggle-slider"></span></label>
-        </div>
-        <div class="setting-row">
-          <div>
-            <div class="setting-label">Show delivery option</div>
-            <div class="setting-sub">Hide delivery when you can't deliver today</div>
-          </div>
-          <label class="toggle"><input type="checkbox" id="tog-delivery" checked/><span class="toggle-slider"></span></label>
-        </div>
-        <div class="setting-row">
-          <div>
-            <div class="setting-label">Show combo deals</div>
-            <div class="setting-sub">Hide combos when ingredients are limited</div>
-          </div>
-          <label class="toggle"><input type="checkbox" id="tog-combos" checked/><span class="toggle-slider"></span></label>
-        </div>
-      </div>
       <div class="settings-card">
         <h3>CHANGE ADMIN PASSWORD</h3>
         <div class="form-row">
@@ -302,33 +249,26 @@ header{background:rgba(26,10,0,0.96);border-bottom:1px solid rgba(232,70,10,0.2)
         <button class="save-btn" style="font-size:16px;padding:10px 24px" onclick="changePassword()">UPDATE PASSWORD</button>
         <span class="form-msg" id="pwd-msg"></span>
       </div>
-      <button class="save-btn" onclick="saveSettings()">SAVE ALL SETTINGS</button>
-      <span class="form-msg ok" id="settings-msg"></span>
-    </div>
-
-    <!-- EXPORT PANEL -->
-    <div class="panel" id="panel-export">
-      <div class="form-card">
-        <h2>EXPORT MENU CODE</h2>
-        <p style="font-size:14px;color:var(--muted);margin-bottom:1.25rem;line-height:1.6">
-          Your current menu as code. Copy this and paste it into your <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;font-size:12px">index.html</code> on GitHub to update your live site. Replace the <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;font-size:12px">const MENU = {...}</code> section.
-        </p>
-        <div class="export-box" id="export-box"></div>
-        <button class="copy-btn" onclick="copyExport()">COPY TO CLIPBOARD</button>
-        <span class="form-msg ok" id="copy-msg" style="margin-left:0.75rem"></span>
-      </div>
-      <div class="form-card" style="margin-top:0">
-        <h2>HOW TO UPDATE YOUR LIVE SITE</h2>
-        <ol style="font-size:14px;color:var(--muted);line-height:2.2;padding-left:1.25rem">
-          <li>Copy the code above</li>
-          <li>Go to <strong style="color:var(--cream)">github.com/twinoray10-ux/street-kitchen</strong></li>
-          <li>Click <strong style="color:var(--cream)">index.html</strong> → then the pencil ✏️ edit icon</li>
-          <li>Find <code style="background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:3px;font-size:12px">const MENU = {</code> and replace that whole block with your copied code</li>
-          <li>Click <strong style="color:var(--cream)">Commit changes</strong> — your site updates in ~1 minute</li>
-        </ol>
+      <div class="settings-card">
+        <h3>MENU VISIBILITY</h3>
+        <div class="setting-row">
+          <div><div class="setting-label">Accept orders online</div><div class="setting-sub">Turn off when closed or sold out</div></div>
+          <label class="toggle"><input type="checkbox" id="tog-orders" checked/><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Show delivery option</div><div class="setting-sub">Hide when you can't deliver today</div></div>
+          <label class="toggle"><input type="checkbox" id="tog-delivery" checked/><span class="toggle-slider"></span></label>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-label">Show combo deals</div><div class="setting-sub">Hide when ingredients are limited</div></div>
+          <label class="toggle"><input type="checkbox" id="tog-combos" checked/><span class="toggle-slider"></span></label>
+        </div>
+        <div style="margin-top:1.25rem">
+          <button class="save-btn" style="font-size:16px;padding:10px 24px" onclick="saveSettings()">SAVE SETTINGS</button>
+          <span class="form-msg ok" id="settings-msg"></span>
+        </div>
       </div>
     </div>
-
   </div>
 </div>
 
@@ -353,64 +293,77 @@ header{background:rgba(26,10,0,0.96);border-bottom:1px solid rgba(232,70,10,0.2)
       <div class="form-group"><label>Price (UGX)</label><input type="number" id="e-price"/></div>
       <div class="form-group"><label>Spice Level</label>
         <div class="heat-picker" id="edit-heat-picker">
-          <button class="heat-opt" data-heat="0" onclick="pickEditHeat(0)">Mild</button>
-          <button class="heat-opt" data-heat="1" onclick="pickEditHeat(1)">🌶</button>
-          <button class="heat-opt" data-heat="2" onclick="pickEditHeat(2)">🌶🌶</button>
-          <button class="heat-opt" data-heat="3" onclick="pickEditHeat(3)">🌶🌶🌶</button>
+          <button class="heat-opt" onclick="pickEditHeat(0,this)">Mild</button>
+          <button class="heat-opt" onclick="pickEditHeat(1,this)">🌶</button>
+          <button class="heat-opt" onclick="pickEditHeat(2,this)">🌶🌶</button>
+          <button class="heat-opt" onclick="pickEditHeat(3,this)">🌶🌶🌶</button>
         </div>
       </div>
     </div>
     <div class="modal-actions">
       <button class="cancel-btn" onclick="closeEdit()">Cancel</button>
-      <button class="save-btn" style="flex:2" onclick="saveEdit()">SAVE CHANGES</button>
+      <button class="save-btn" style="flex:2" onclick="saveEdit()">SAVE & PUBLISH 🔥</button>
     </div>
+    <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--gold);margin-top:1rem;text-align:center" id="edit-msg"></div>
   </div>
 </div>
 
-<script>
-/* ── AUTH ── */
-const DEFAULT_PWD = 'rAyRmToHnUdR1738';
-let editingIndex = null;
-let currentHeat = 0;
-let editHeat = 0;
-let activeCat = 'all';
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-function getPassword(){ var s=localStorage.getItem('sk_pwd'); return (s && s.length>=6) ? s : DEFAULT_PWD; }
+const firebaseConfig = {
+  apiKey: "AIzaSyBvn2QXF-vkhXcVjScb-rh1veUdGdoI7qg",
+  authDomain: "street-kitchen-9f41e.firebaseapp.com",
+  projectId: "street-kitchen-9f41e",
+  storageBucket: "street-kitchen-9f41e.firebasestorage.app",
+  messagingSenderId: "849439630164",
+  appId: "1:849439630164:web:1c6bdc115b4f283026dec1",
+  databaseURL: "https://street-kitchen-9f41e-default-rtdb.firebaseio.com"
+};
 
-function tryLogin(){
-  const val = document.getElementById('pwd-input').value.trim();
-  if(val === getPassword()){
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
-    initApp();
-  } else {
-    document.getElementById('login-error').textContent = 'Wrong password. Try again.';
-    document.getElementById('pwd-input').value = '';
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Expose db and set to window so main script can use them
+window._fbDb = db;
+window._fbRef = ref;
+window._fbSet = set;
+
+// Listen for menu changes from Firebase
+onValue(ref(db, 'menu'), (snapshot) => {
+  const data = snapshot.val();
+  const statusEl = document.getElementById('fb-status');
+  const statusText = document.getElementById('fb-status-text');
+
+  if (statusEl) {
+    statusEl.className = 'fb-status connected';
+    statusText.textContent = '🔥 Connected to Firebase — changes publish live instantly';
   }
-}
 
-function logout(){
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('pwd-input').value = '';
-}
+  if (data) {
+    window._currentMenu = data;
+  } else {
+    window._currentMenu = window._defaultMenu;
+    // Push default menu to Firebase if empty
+    set(ref(db, 'menu'), window._defaultMenu);
+  }
 
-function changePassword(){
-  const np = document.getElementById('s-newpwd').value;
-  const cp = document.getElementById('s-confirmpwd').value;
-  const msg = document.getElementById('pwd-msg');
-  if(!np){ msg.textContent='Enter a new password'; msg.className='form-msg err'; return; }
-  if(np !== cp){ msg.textContent='Passwords do not match'; msg.className='form-msg err'; return; }
-  if(np.length < 6){ msg.textContent='Password must be at least 6 characters'; msg.className='form-msg err'; return; }
-  localStorage.setItem('sk_pwd', np);
-  msg.textContent = '✓ Password updated!'; msg.className='form-msg ok';
-  document.getElementById('s-newpwd').value = '';
-  document.getElementById('s-confirmpwd').value = '';
-  setTimeout(()=>{ msg.textContent=''; },3000);
-}
+  if (typeof window._renderAll === 'function') window._renderAll();
+}, (error) => {
+  const statusEl = document.getElementById('fb-status');
+  const statusText = document.getElementById('fb-status-text');
+  if (statusEl) {
+    statusEl.className = 'fb-status disconnected';
+    statusText.textContent = '⚠ Firebase connection failed — check your internet';
+  }
+});
+</script>
 
-/* ── DATA ── */
-const DEFAULT_MENU = {
+<script>
+/* ── DEFAULT MENU ── */
+window._defaultMenu = {
   rolex:[
     {name:"Classic Rolex",desc:"Chapati, egg, cabbage, tomato, onion",price:2500,heat:1,visible:true},
     {name:"Double Egg Rolex",desc:"Chapati, 2 eggs, veggies, light mayo",price:3000,heat:1,visible:true},
@@ -435,41 +388,63 @@ const DEFAULT_MENU = {
     {name:"Office Bundle x5",desc:"5 classic rolexes — SAVE 2,500",price:10000,heat:1,visible:true},
   ]
 };
+window._currentMenu = JSON.parse(JSON.stringify(window._defaultMenu));
 
-function loadMenu(){
-  const saved = localStorage.getItem('sk_menu');
-  return saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_MENU));
+/* ── AUTH ── */
+const DEFAULT_PWD = 'rAyRmToHnUdR1738';
+let currentHeat = 0;
+let editHeat = 0;
+let editingKey = null; // {cat, index}
+let activeCat = 'all';
+
+function getPassword(){
+  const s = localStorage.getItem('sk_pwd');
+  return (s && s.length >= 6) ? s : DEFAULT_PWD;
 }
 
-function saveMenu(menu){ localStorage.setItem('sk_menu', JSON.stringify(menu)); }
-
-function getAllItems(menu){
-  const all = [];
-  ['rolex','chicken','combo'].forEach(cat=>{
-    menu[cat].forEach((item,i)=>all.push({...item,cat,catIndex:i}));
-  });
-  return all;
+function tryLogin(){
+  const val = document.getElementById('pwd-input').value.trim();
+  if(val === getPassword()){
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+  } else {
+    document.getElementById('login-error').textContent = 'Wrong password. Try again.';
+    document.getElementById('pwd-input').value = '';
+  }
 }
 
-/* ── APP INIT ── */
-function initApp(){
-  renderStats();
-  renderList();
-  renderExport();
+function logout(){
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('pwd-input').value = '';
 }
 
-/* ── STATS ── */
-function renderStats(){
-  const menu = loadMenu();
-  const all = getAllItems(menu);
-  const visible = all.filter(i=>i.visible!==false).length;
-  const avgPrice = Math.round(all.reduce((s,i)=>s+i.price,0)/all.length);
-  const cats = [...new Set(all.map(i=>i.cat))].length;
-  document.getElementById('stats-row').innerHTML = `
-    <div class="stat"><div class="stat-label">TOTAL ITEMS</div><div class="stat-val">${all.length}</div></div>
-    <div class="stat"><div class="stat-label">VISIBLE</div><div class="stat-val">${visible}</div></div>
-    <div class="stat"><div class="stat-label">CATEGORIES</div><div class="stat-val">${cats}</div></div>
-    <div class="stat"><div class="stat-label">AVG PRICE</div><div class="stat-val">${avgPrice.toLocaleString()}<span> UGX</span></div></div>`;
+function changePassword(){
+  const np = document.getElementById('s-newpwd').value.trim();
+  const cp = document.getElementById('s-confirmpwd').value.trim();
+  const msg = document.getElementById('pwd-msg');
+  if(!np){ msg.textContent='Enter a new password'; msg.className='form-msg err'; return; }
+  if(np !== cp){ msg.textContent='Passwords do not match'; msg.className='form-msg err'; return; }
+  if(np.length < 6){ msg.textContent='Must be at least 6 characters'; msg.className='form-msg err'; return; }
+  localStorage.setItem('sk_pwd', np);
+  msg.textContent='✓ Password updated!'; msg.className='form-msg ok';
+  document.getElementById('s-newpwd').value='';
+  document.getElementById('s-confirmpwd').value='';
+  setTimeout(()=>{ msg.textContent=''; }, 3000);
+}
+
+/* ── FIREBASE WRITE ── */
+async function publishMenu(menu){
+  if(window._fbSet && window._fbRef && window._fbDb){
+    try {
+      await window._fbSet(window._fbRef(window._fbDb, 'menu'), menu);
+      return true;
+    } catch(e){
+      console.error('Firebase write error:', e);
+      return false;
+    }
+  }
+  return false;
 }
 
 /* ── TABS ── */
@@ -479,50 +454,76 @@ function switchTab(id, btn){
   btn.classList.add('active');
   document.getElementById('panel-'+id).classList.add('active');
   if(id==='manage') renderList();
-  if(id==='export') renderExport();
 }
 
-/* ── HEAT PICKER ── */
-function pickHeat(n){
+/* ── HEAT ── */
+function pickHeat(n, btn){
   currentHeat = n;
-  document.querySelectorAll('#panel-add .heat-opt').forEach(b=>{
-    b.classList.toggle('sel', parseInt(b.dataset.heat)===n);
-  });
+  btn.closest('.heat-picker').querySelectorAll('.heat-opt').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
 }
-function pickEditHeat(n){
+function pickEditHeat(n, btn){
   editHeat = n;
-  document.querySelectorAll('#edit-heat-picker .heat-opt').forEach(b=>{
-    b.classList.toggle('sel', parseInt(b.dataset.heat)===n);
-  });
+  document.querySelectorAll('#edit-heat-picker .heat-opt').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
 }
 
 /* ── ADD ITEM ── */
-function addItem(){
+async function addItem(){
   const name  = document.getElementById('new-name').value.trim();
   const cat   = document.getElementById('new-cat').value;
   const desc  = document.getElementById('new-desc').value.trim();
   const price = parseInt(document.getElementById('new-price').value);
   const msg   = document.getElementById('add-msg');
+  const btn   = document.querySelector('#panel-add .save-btn');
 
   if(!name){ msg.textContent='⚠ Enter item name'; msg.className='form-msg err'; return; }
   if(!desc){ msg.textContent='⚠ Enter description'; msg.className='form-msg err'; return; }
-  if(!price || price<0){ msg.textContent='⚠ Enter valid price'; msg.className='form-msg err'; return; }
+  if(!price || price < 0){ msg.textContent='⚠ Enter valid price'; msg.className='form-msg err'; return; }
 
-  const menu = loadMenu();
+  btn.disabled = true;
+  btn.textContent = 'PUBLISHING...';
+  msg.textContent = 'Saving to Firebase...'; msg.className='form-msg';
+
+  const menu = JSON.parse(JSON.stringify(window._currentMenu));
+  if(!menu[cat]) menu[cat] = [];
   menu[cat].push({name, desc, price, heat:currentHeat, visible:true});
-  saveMenu(menu);
-  renderStats();
-  renderExport();
 
-  msg.textContent = `✓ "${name}" added!`; msg.className='form-msg ok';
-  document.getElementById('new-name').value='';
-  document.getElementById('new-desc').value='';
-  document.getElementById('new-price').value='';
-  currentHeat=0; pickHeat(0);
-  setTimeout(()=>{ msg.textContent=''; },3000);
+  const ok = await publishMenu(menu);
+  btn.disabled = false;
+  btn.textContent = 'ADD TO MENU 🔥';
+
+  if(ok){
+    msg.textContent = `✓ "${name}" is now live on your site!`; msg.className='form-msg ok';
+    document.getElementById('new-name').value='';
+    document.getElementById('new-desc').value='';
+    document.getElementById('new-price').value='';
+    currentHeat=0;
+    document.querySelector('#panel-add .heat-opt').click();
+  } else {
+    msg.textContent='⚠ Could not save — check your connection'; msg.className='form-msg err';
+  }
+  setTimeout(()=>{ msg.textContent=''; }, 4000);
 }
 
-/* ── MENU LIST ── */
+/* ── RENDER LIST ── */
+window._renderAll = function(){
+  renderStats();
+  renderList();
+};
+
+function renderStats(){
+  const menu = window._currentMenu;
+  const all = [...(menu.rolex||[]), ...(menu.chicken||[]), ...(menu.combo||[])];
+  const visible = all.filter(i=>i.visible!==false).length;
+  const avgPrice = all.length ? Math.round(all.reduce((s,i)=>s+i.price,0)/all.length) : 0;
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat"><div class="stat-label">TOTAL ITEMS</div><div class="stat-val">${all.length}</div></div>
+    <div class="stat"><div class="stat-label">VISIBLE</div><div class="stat-val">${visible}</div></div>
+    <div class="stat"><div class="stat-label">HIDDEN</div><div class="stat-val">${all.length-visible}</div></div>
+    <div class="stat"><div class="stat-label">AVG PRICE</div><div class="stat-val">${avgPrice.toLocaleString()}<span> UGX</span></div></div>`;
+}
+
 function filterCat(cat, btn){
   activeCat = cat;
   document.querySelectorAll('.cf').forEach(b=>b.classList.remove('active'));
@@ -531,110 +532,102 @@ function filterCat(cat, btn){
 }
 
 function renderList(){
-  const menu = loadMenu();
-  const search = document.querySelector('.search-box')?.value.toLowerCase()||'';
+  const menu = window._currentMenu;
+  const search = (document.getElementById('search-input')?.value||'').toLowerCase();
   const list = document.getElementById('menu-list');
   if(!list) return;
-
   const heatLabel = n => n===0?'Mild':n===1?'🌶':n===2?'🌶🌶':'🌶🌶🌶';
   const catLabel  = c => c==='rolex'?'Rolex':c==='chicken'?'Chicken & Fries':'Combo';
-
-  let html = '';
-  let count = 0;
-
+  let html=''; let count=0;
   ['rolex','chicken','combo'].forEach(cat=>{
     if(activeCat!=='all' && activeCat!==cat) return;
-    menu[cat].forEach((item,i)=>{
+    (menu[cat]||[]).forEach((item,i)=>{
       if(search && !item.name.toLowerCase().includes(search) && !item.desc.toLowerCase().includes(search)) return;
       count++;
       const hidden = item.visible===false;
-      html += `<div class="item-row${hidden?' hidden-item':''}">
+      html+=`<div class="item-row${hidden?' hidden-item':''}">
         <div class="item-info">
-          <div class="iname">${item.name}</div>
+          <div class="iname">${item.name}${hidden?' <span style="font-size:10px;color:var(--fire);font-family:Space Mono,monospace;margin-left:6px">HIDDEN</span>':''}</div>
           <div class="idesc">${item.desc}</div>
-          <div class="imeta">
-            <span class="cat-badge">${catLabel(cat)}</span>
-            <span class="heat-badge">${heatLabel(item.heat)}</span>
-            ${hidden?'<span style="font-family:Space Mono,monospace;font-size:9px;color:var(--fire);letter-spacing:1px">HIDDEN</span>':''}
-          </div>
+          <div class="imeta"><span class="cat-badge">${catLabel(cat)}</span><span>${heatLabel(item.heat)}</span></div>
         </div>
         <div class="item-price">${item.price.toLocaleString()} <span style="font-size:11px;color:var(--muted);font-family:Space Mono,monospace">UGX</span></div>
         <div class="item-actions">
           <button class="act-btn" onclick="openEdit('${cat}',${i})">EDIT</button>
-          <button class="act-btn toggle-vis" onclick="toggleVisible('${cat}',${i})">${hidden?'SHOW':'HIDE'}</button>
+          <button class="act-btn" onclick="toggleVisible('${cat}',${i})">${hidden?'SHOW':'HIDE'}</button>
           <button class="act-btn del" onclick="deleteItem('${cat}',${i})">DELETE</button>
         </div>
       </div>`;
     });
   });
-
   list.innerHTML = count===0 ? '<div class="empty-state">No items found</div>' : html;
 }
 
-/* ── TOGGLE VISIBILITY ── */
-function toggleVisible(cat,i){
-  const menu = loadMenu();
+/* ── TOGGLE VISIBLE ── */
+async function toggleVisible(cat, i){
+  const menu = JSON.parse(JSON.stringify(window._currentMenu));
   menu[cat][i].visible = menu[cat][i].visible===false ? true : false;
-  saveMenu(menu);
-  renderList();
-  renderStats();
-  renderExport();
+  await publishMenu(menu);
 }
 
 /* ── DELETE ── */
-function deleteItem(cat,i){
-  if(!confirm('Delete this item from the menu?')) return;
-  const menu = loadMenu();
-  menu[cat].splice(i,1);
-  saveMenu(menu);
-  renderList();
-  renderStats();
-  renderExport();
+async function deleteItem(cat, i){
+  if(!confirm(`Delete "${window._currentMenu[cat][i].name}"?\nThis removes it from your live site immediately.`)) return;
+  const menu = JSON.parse(JSON.stringify(window._currentMenu));
+  menu[cat].splice(i, 1);
+  await publishMenu(menu);
 }
 
 /* ── EDIT MODAL ── */
-function openEdit(cat,i){
-  const menu = loadMenu();
-  const item = menu[cat][i];
-  editingIndex = {cat,i};
+function openEdit(cat, i){
+  const item = window._currentMenu[cat][i];
+  editingKey = {cat, i};
   editHeat = item.heat||0;
   document.getElementById('e-name').value = item.name;
   document.getElementById('e-cat').value  = cat;
   document.getElementById('e-desc').value = item.desc;
   document.getElementById('e-price').value= item.price;
-  document.querySelectorAll('#edit-heat-picker .heat-opt').forEach(b=>{
-    b.classList.toggle('sel', parseInt(b.dataset.heat)===editHeat);
+  document.getElementById('edit-msg').textContent='';
+  document.querySelectorAll('#edit-heat-picker .heat-opt').forEach((b,idx)=>{
+    b.classList.toggle('sel', idx===editHeat);
   });
   document.getElementById('edit-modal').classList.add('open');
 }
 
 function closeEdit(){
   document.getElementById('edit-modal').classList.remove('open');
-  editingIndex=null;
+  editingKey=null;
 }
 
-function saveEdit(){
-  if(!editingIndex) return;
+async function saveEdit(){
+  if(!editingKey) return;
   const name  = document.getElementById('e-name').value.trim();
   const newCat= document.getElementById('e-cat').value;
   const desc  = document.getElementById('e-desc').value.trim();
   const price = parseInt(document.getElementById('e-price').value);
-  if(!name||!desc||!price) return;
+  const msgEl = document.getElementById('edit-msg');
+  if(!name||!desc||!price){ msgEl.textContent='⚠ Fill in all fields'; return; }
 
-  const menu = loadMenu();
-  const {cat,i} = editingIndex;
-  const item = {...menu[cat][i], name, desc, price, heat:editHeat};
+  msgEl.textContent='Publishing...'; msgEl.style.color='var(--gold)';
+  const menu = JSON.parse(JSON.stringify(window._currentMenu));
+  const {cat, i} = editingKey;
+  const updatedItem = {...menu[cat][i], name, desc, price, heat:editHeat};
+
   if(newCat !== cat){
-    menu[cat].splice(i,1);
-    menu[newCat].push(item);
+    menu[cat].splice(i, 1);
+    if(!menu[newCat]) menu[newCat]=[];
+    menu[newCat].push(updatedItem);
   } else {
-    menu[cat][i] = item;
+    menu[cat][i] = updatedItem;
   }
-  saveMenu(menu);
-  closeEdit();
-  renderList();
-  renderStats();
-  renderExport();
+
+  const ok = await publishMenu(menu);
+  if(ok){
+    msgEl.textContent='✓ Published live!'; msgEl.style.color='#5CB85C';
+    setTimeout(closeEdit, 1000);
+  } else {
+    msgEl.textContent='⚠ Save failed — check connection'; msgEl.style.color='var(--fire)';
+  }
 }
 
 document.getElementById('edit-modal').addEventListener('click',function(e){
@@ -643,44 +636,17 @@ document.getElementById('edit-modal').addEventListener('click',function(e){
 
 /* ── SETTINGS ── */
 function saveSettings(){
-  const s = {
-    phone1: document.getElementById('s-phone1').value,
-    phone2: document.getElementById('s-phone2').value,
-    email:  document.getElementById('s-email').value,
-    open:   document.getElementById('s-open').value,
-    close:  document.getElementById('s-close').value,
+  localStorage.setItem('sk_settings', JSON.stringify({
     orders: document.getElementById('tog-orders').checked,
     delivery: document.getElementById('tog-delivery').checked,
     combos: document.getElementById('tog-combos').checked,
-  };
-  localStorage.setItem('sk_settings', JSON.stringify(s));
+  }));
   const msg = document.getElementById('settings-msg');
   msg.textContent='✓ Settings saved!';
-  setTimeout(()=>{ msg.textContent=''; },3000);
+  setTimeout(()=>{ msg.textContent=''; }, 3000);
 }
 
-/* ── EXPORT ── */
-function renderExport(){
-  const menu = loadMenu();
-  const clean = {
-    rolex:   menu.rolex.filter(i=>i.visible!==false).map(({name,desc,price,heat})=>({name,desc,price,heat})),
-    chicken: menu.chicken.filter(i=>i.visible!==false).map(({name,desc,price,heat})=>({name,desc,price,heat})),
-    combo:   menu.combo.filter(i=>i.visible!==false).map(({name,desc,price,heat})=>({name,desc,price,heat})),
-  };
-  const code = 'const MENU = ' + JSON.stringify(clean, null, 2) + ';';
-  document.getElementById('export-box').textContent = code;
-}
-
-function copyExport(){
-  const text = document.getElementById('export-box').textContent;
-  navigator.clipboard.writeText(text).then(()=>{
-    const msg = document.getElementById('copy-msg');
-    msg.textContent='✓ Copied!';
-    setTimeout(()=>{ msg.textContent=''; },2500);
-  });
-}
-
-/* ── ENTER KEY ON LOGIN ── */
+/* ── ENTER KEY ── */
 document.getElementById('pwd-input').addEventListener('keydown',function(e){
   if(e.key==='Enter') tryLogin();
 });
