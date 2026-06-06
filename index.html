@@ -9,7 +9,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --fire:#E8460A;--gold:#F5A623;--cream:#FFF8F0;--dark:#1A0A00;--charcoal:#2D1A0E;
-  --smoke:#6B4C3B;--leaf:#2D6A1F;--white:#FFFFFF;
+  --smoke:#6B4C3B;--leaf:#2D6A1F;--white:#FFFFFF;--muted:rgba(255,248,240,0.45);
 }
 html{scroll-behavior:smooth}
 body{font-family:'Syne',sans-serif;background:var(--dark);color:var(--cream);min-height:100vh;overflow-x:hidden}
@@ -537,8 +537,8 @@ footer{background:#0D0400;padding:3rem 1.5rem;text-align:center;border-top:1px s
 </div>
 
 <script>
-/* ── MENU DATA (loads from admin panel if saved) ── */
-const DEFAULT_MENU = {
+/* ── MENU DATA ── */
+const MENU = {
   rolex:[
     {name:"Classic Rolex",desc:"Chapati, egg, cabbage, tomato, onion",price:2500,heat:1},
     {name:"Double Egg Rolex",desc:"Chapati, 2 eggs, veggies, light mayo",price:3000,heat:1},
@@ -563,11 +563,6 @@ const DEFAULT_MENU = {
     {name:"Office Bundle x5",desc:"5 classic rolexes — SAVE 2,500",price:10000,heat:1},
   ]
 };
-let MENU;
-try {
-  const saved = localStorage.getItem('sk_menu');
-  MENU = saved ? JSON.parse(saved) : DEFAULT_MENU;
-} catch(e) { MENU = DEFAULT_MENU; }
 
 /* ── RENDER MENU ── */
 function heatDots(n){
@@ -705,77 +700,91 @@ async function placeOrder(){
     return;
   }
 
-  const btn = document.getElementById('place-btn');
-  btn.disabled = true;
-  btn.textContent = 'SENDING...';
-  if(status){ status.textContent='Sending your order to the kitchen...'; status.style.color='rgba(255,248,240,0.5)'; }
-
   const total = Object.values(cart).reduce((t,i)=>t+i.price*i.qty,0);
   const itemLines = Object.values(cart).map(i=>`• ${i.name} x${i.qty} = ${(i.price*i.qty).toLocaleString()} UGX`).join('\n');
   const timeStr = new Date().toLocaleString('en-UG',{timeZone:'Africa/Kampala',weekday:'short',year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const orderRef = 'SK' + Date.now().toString().slice(-5);
 
-  const orderBody = `
-NEW STREET KITCHEN ORDER
-========================
-Customer : ${name}
-Phone    : ${phone}
-Type     : ${type==='delivery'?'DELIVERY':'PICKUP AT STALL'}${address?'\nAddress  : '+address:''}${notes?'\nNotes    : '+notes:''}
+  const waMsg = `🔥 NEW ORDER — Street Kitchen\n`
+    + `Ref: #${orderRef}\n`
+    + `━━━━━━━━━━━━━━━━━━━━\n`
+    + `👤 Name   : ${name}\n`
+    + `📞 Phone  : ${phone}\n`
+    + `🛵 Type   : ${type==='delivery'?'DELIVERY':'PICKUP AT STALL'}\n`
+    + (address ? `📍 Address: ${address}\n` : '')
+    + `⏰ Time   : ${timeStr}\n`
+    + `━━━━━━━━━━━━━━━━━━━━\n`
+    + `${itemLines}\n`
+    + `━━━━━━━━━━━━━━━━━━━━\n`
+    + `💰 TOTAL  : ${total.toLocaleString()} UGX\n`
+    + (notes ? `📝 Notes  : ${notes}\n` : '')
+    + `━━━━━━━━━━━━━━━━━━━━`;
 
-ORDER ITEMS:
-${itemLines}
+  const waEncoded = encodeURIComponent(waMsg);
 
-TOTAL    : ${total.toLocaleString()} UGX
-Time     : ${timeStr}
-========================
-Sent from Street Kitchen website`;
+  // Fire WhatsApp to BOTH numbers simultaneously
+  const wa1 = `https://wa.me/256700550075?text=${waEncoded}`;
+  const wa2 = `https://wa.me/256770840204?text=${waEncoded}`;
 
-  const waText = encodeURIComponent(`Hi Street Kitchen! I just placed an order:\n\nName: ${name}\nPhone: ${phone}\nType: ${type==='delivery'?'Delivery':'Pickup'}${address?'\nAddress: '+address:''}\n\n${itemLines}\n\nTOTAL: ${total.toLocaleString()} UGX${notes?'\n\nNotes: '+notes:''}`);
+  // Open first number immediately
+  window.open(wa1, '_blank');
+  // Open second number after short delay so browser doesn't block
+  setTimeout(() => window.open(wa2, '_blank'), 800);
 
-  // Try to send email via Anthropic API + Gmail MCP
-  try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({
-        model:"claude-sonnet-4-20250514",
-        max_tokens:1000,
-        system:`You are an order relay for Street Kitchen Kampala. When you receive an order, use Gmail to send an email to twinoray10@gmail.com with subject "🔥 NEW ORDER — Street Kitchen" and the full order details in the body. Send it immediately and confirm.`,
-        messages:[{role:"user",content:`Please send this order via email now:\n\n${orderBody}`}],
-        mcp_servers:[{type:"url",url:"https://gmailmcp.googleapis.com/mcp/v1",name:"gmail"}]
-      })
-    });
-    await res.json();
-  } catch(e){ /* silent fallback */ }
-
-  // Always show success + WhatsApp link
-  showSuccess(name, total, waText);
+  // Show screenshot summary
+  showSuccess(name, phone, type, address, notes, total, itemLines, timeStr, orderRef, wa1, wa2);
 }
 
-function showSuccess(name, total, waText){
+function showSuccess(name, phone, type, address, notes, total, itemLines, timeStr, orderRef, wa1, wa2){
   const mc = document.getElementById('modal-content');
   if(!mc) return;
+
+  const itemRows = Object.values(cart).map(i=>`
+    <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px">
+      <span style="color:var(--cream)">${i.name} <span style="color:var(--muted)">x${i.qty}</span></span>
+      <span style="color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:16px">${(i.price*i.qty).toLocaleString()} UGX</span>
+    </div>`).join('');
+
   mc.innerHTML = `
-    <div class="success-msg">
-      <div class="check">🔥</div>
-      <h3>ORDER RECEIVED!</h3>
-      <p>Thank you <strong style="color:var(--cream)">${name}</strong>!<br>
-      Your order for <strong style="color:var(--gold)">${total.toLocaleString()} UGX</strong> has been sent to our kitchen.</p>
-      <p style="margin-top:0.75rem;font-size:13px">We'll confirm via WhatsApp shortly.<br>Tap below to also message us directly:</p>
-      <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem">
-        <a href="https://wa.me/256700550075?text=${waText}" target="_blank"
-           style="display:block;background:#25D366;color:#fff;padding:12px 20px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;text-decoration:none;text-align:center">
-          💬 WHATSAPP 0700 550 075
-        </a>
-        <a href="https://wa.me/256770840204?text=${waText}" target="_blank"
-           style="display:block;background:#1da851;color:#fff;padding:12px 20px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;text-decoration:none;text-align:center">
-          💬 WHATSAPP 0770 840 204
-        </a>
+    <div style="text-align:center;margin-bottom:1.25rem">
+      <div style="font-size:44px;margin-bottom:0.5rem">✅</div>
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--gold)">ORDER SENT!</h3>
+      <p style="font-size:13px;color:rgba(255,248,240,0.55);margin-top:4px">WhatsApp opened to both numbers</p>
+    </div>
+
+    <!-- SCREENSHOT CARD -->
+    <div id="order-card" style="background:#0D0400;border:2px solid rgba(232,70,10,0.4);border-radius:14px;padding:1.25rem;margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--cream)">STREET <span style="color:var(--fire)">KITCHEN</span></div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--gold);background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.25);padding:4px 10px;border-radius:100px">#${orderRef}</div>
       </div>
-      <button onclick="closeModal();resetCart()"
-        style="width:100%;margin-top:1rem;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,248,240,0.6);padding:10px;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;cursor:pointer">
-        Close
-      </button>
-    </div>`;
+      <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:0.75rem;margin-bottom:0.75rem;font-size:12px;font-family:'Space Mono',monospace;color:rgba(255,248,240,0.45);display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        <div>👤 ${name}</div>
+        <div>📞 ${phone}</div>
+        <div>${type==='delivery'?'🛵 Delivery':'🏃 Pickup'}</div>
+        <div>⏰ ${timeStr.split(',').slice(-1)[0].trim()}</div>
+        ${address?`<div style="grid-column:1/-1">📍 ${address}</div>`:''}
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:0.75rem">
+        ${itemRows}
+        <div style="display:flex;justify-content:space-between;padding:10px 0 0;font-weight:700">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--cream)">TOTAL</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold)">${total.toLocaleString()} UGX</span>
+        </div>
+      </div>
+      ${notes?`<div style="margin-top:0.75rem;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:12px;color:rgba(255,248,240,0.5)">📝 ${notes}</div>`:''}
+      <div style="margin-top:1rem;text-align:center;font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,248,240,0.25);letter-spacing:1px">📸 SCREENSHOT THIS &amp; SEND TO US IF NEEDED</div>
+    </div>
+
+    <!-- RESEND BUTTONS -->
+    <div style="font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,248,240,0.35);text-align:center;letter-spacing:1px;margin-bottom:8px">DIDN'T OPEN? TAP TO RESEND</div>
+    <div style="display:flex;gap:8px;margin-bottom:1rem">
+      <a href="${wa1}" target="_blank" style="flex:1;display:block;background:#25D366;color:#fff;padding:11px 8px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;text-decoration:none;text-align:center">💬 0700 550 075</a>
+      <a href="${wa2}" target="_blank" style="flex:1;display:block;background:#1da851;color:#fff;padding:11px 8px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;text-decoration:none;text-align:center">💬 0770 840 204</a>
+    </div>
+
+    <button onclick="closeModal();resetCart()" style="width:100%;background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,248,240,0.5);padding:10px;border-radius:8px;font-family:'Syne',sans-serif;font-size:13px;cursor:pointer">Close</button>`;
+
   cart = {};
   updateCartBar();
 }
