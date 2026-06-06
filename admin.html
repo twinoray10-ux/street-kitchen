@@ -13,6 +13,473 @@
   --muted:rgba(255,248,240,0.45);--green:#2D6A1F;--greenlit:#4CAF50;
 }
 html,body{height:100%;font-family:'Syne',sans-serif;background:var(--dark);color:var(--cream)}
+#login-screen{position:fixed;inset:0;z-index:999;background:var(--dark);display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.login-box{width:100%;max-width:380px;background:var(--panel);border:1px solid rgba(232,70,10,0.25);border-radius:20px;padding:2.5rem;text-align:center}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;margin-bottom:4px}
+.login-logo span{color:var(--fire)}
+.login-sub{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:2rem;text-transform:uppercase}
+.login-box input{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--cream);font-family:'Syne',sans-serif;font-size:15px;outline:none;text-align:center;letter-spacing:4px;margin-bottom:1rem;transition:border-color 0.2s}
+.login-box input:focus{border-color:var(--fire)}
+.login-btn{width:100%;background:var(--fire);color:#fff;border:none;padding:13px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;transition:opacity 0.2s}
+.login-btn:hover{opacity:0.88}
+.login-err{color:var(--fire);font-size:12px;font-family:'Space Mono',monospace;margin-top:0.75rem;min-height:18px}
+#app{display:none;min-height:100vh}
+header{background:var(--panel);border-bottom:1px solid rgba(232,70,10,0.2);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+.h-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px}
+.h-logo span{color:var(--fire)}
+.h-badge{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;background:rgba(232,70,10,0.15);color:var(--fire);border:1px solid rgba(232,70,10,0.3);padding:4px 12px;border-radius:100px}
+.logout-btn{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 14px;border-radius:6px;cursor:pointer;transition:all 0.2s;text-transform:uppercase}
+.logout-btn:hover{border-color:var(--fire);color:var(--fire)}
+.main{max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
+.tabs{display:flex;gap:4px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:2rem;width:fit-content}
+.tab{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;padding:8px 22px;border-radius:9px;border:none;cursor:pointer;background:transparent;color:var(--muted);transition:all 0.2s}
+.tab.active{background:var(--fire);color:#fff}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,42px);letter-spacing:3px;color:var(--cream);margin-bottom:0.25rem}
+.section-sub{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;margin-bottom:1.5rem}
+.menu-list{display:flex;flex-direction:column;gap:10px;margin-bottom:2rem}
+.menu-row{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;transition:border-color 0.2s}
+.menu-row:hover{border-color:rgba(232,70,10,0.25)}
+.menu-row.editing{border-color:var(--fire);background:rgba(232,70,10,0.05)}
+.menu-row .row-name{font-weight:700;font-size:15px;color:var(--cream);flex:1;min-width:0}
+.menu-row .row-desc{font-size:12px;color:var(--muted);flex:2;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.menu-row .row-price{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);white-space:nowrap}
+.hdot{width:7px;height:7px;border-radius:50%;background:var(--fire)}
+.hdot.off{background:rgba(255,255,255,0.15)}
+.row-actions{display:flex;gap:6px;flex-shrink:0}
+.btn-edit{background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.25);color:var(--gold);padding:6px 14px;border-radius:6px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s}
+.btn-edit:hover{background:rgba(245,166,35,0.25)}
+.btn-del{background:rgba(232,70,10,0.1);border:1px solid rgba(232,70,10,0.2);color:var(--fire);padding:6px 10px;border-radius:6px;font-size:14px;cursor:pointer;transition:all 0.2s;line-height:1}
+.btn-del:hover{background:rgba(232,70,10,0.25)}
+.edit-form{background:rgba(232,70,10,0.04);border:1px solid rgba(232,70,10,0.2);border-radius:12px;padding:1.25rem;margin-top:-6px;margin-bottom:4px;display:none}
+.edit-form.open{display:block}
+.ef-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+@media(max-width:600px){.ef-grid{grid-template-columns:1fr}}
+.ef-grid label,.add-form label{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
+.ef-grid input,.ef-grid select,.add-form input,.add-form select,.add-form textarea{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--cream);font-family:'Syne',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s}
+.ef-grid input:focus,.ef-grid select:focus,.add-form input:focus,.add-form select:focus,.add-form textarea:focus{border-color:var(--fire)}
+.ef-grid select option,.add-form select option{background:#1E0C04}
+.ef-actions{display:flex;gap:8px;justify-content:flex-end}
+.btn-save{background:var(--fire);color:#fff;border:none;padding:9px 22px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;cursor:pointer;transition:opacity 0.2s}
+.btn-save:hover{opacity:0.85}
+.btn-cancel{background:transparent;border:1px solid var(--border);color:var(--muted);padding:9px 16px;border-radius:8px;font-family:'Syne',sans-serif;font-size:13px;cursor:pointer}
+.add-card{background:var(--panel);border:1px solid rgba(232,70,10,0.2);border-radius:16px;padding:1.5rem;margin-bottom:2rem}
+.add-card h3{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--cream);margin-bottom:1rem}
+.add-form .ag{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-bottom:10px}
+@media(max-width:600px){.add-form .ag{grid-template-columns:1fr}}
+.add-form textarea{resize:vertical;min-height:60px}
+.btn-add-item{background:var(--fire);color:#fff;border:none;padding:11px 28px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;transition:opacity 0.2s}
+.btn-add-item:hover{opacity:0.85}
+.toast{position:fixed;bottom:2rem;right:2rem;background:#1E3A1E;border:1px solid var(--greenlit);color:var(--greenlit);font-family:'Space Mono',monospace;font-size:12px;letter-spacing:1px;padding:12px 20px;border-radius:10px;z-index:9999;transform:translateY(20px);opacity:0;transition:all 0.3s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.err{background:#3A1E1E;border-color:var(--fire);color:var(--fire)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1.25rem}
+.stat-num{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--gold);letter-spacing:2px;line-height:1}
+.stat-label{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-top:4px}
+.cat-divider{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;color:var(--fire);padding:0.5rem 0;margin:0.75rem 0 0.5rem;border-bottom:1px solid rgba(232,70,10,0.12)}
+.publish-bar{position:sticky;bottom:0;left:0;right:0;background:rgba(26,10,0,0.97);border-top:2px solid var(--fire);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;transform:translateY(100%);transition:transform 0.3s;z-index:100}
+.publish-bar.show{transform:translateY(0)}
+.pub-msg{font-family:'Space Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:1px}
+.btn-publish{background:var(--fire);color:#fff;border:none;padding:12px 32px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;transition:opacity 0.2s}
+.btn-publish:hover{opacity:0.85}
+.btn-publish:disabled{opacity:0.5;cursor:not-allowed}
+.btn-discard{background:transparent;border:1px solid var(--border);color:var(--muted);padding:10px 18px;border-radius:8px;font-size:13px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">STREET <span>KITCHEN</span></div>
+    <div class="login-sub">Admin Dashboard</div>
+    <input type="password" id="pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="login-btn" onclick="doLogin()">LOGIN 🔥</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<div id="app">
+  <header>
+    <div class="h-logo">STREET <span>KITCHEN</span></div>
+    <div class="h-badge">ADMIN PANEL</div>
+    <button class="logout-btn" onclick="logout()">Logout</button>
+  </header>
+  <div class="main">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('menu',this)">🍽 Menu</button>
+      <button class="tab" onclick="switchTab('stats',this)">📊 Overview</button>
+      <button class="tab" onclick="switchTab('settings',this)">⚙️ Settings</button>
+    </div>
+
+    <div id="tab-menu">
+      <div class="section-title">MANAGE MENU</div>
+      <div class="section-sub">EDIT · ADD · REMOVE ITEMS — PUBLISH TO GO LIVE INSTANTLY</div>
+      <div class="add-card">
+        <h3>➕ ADD NEW ITEM</h3>
+        <div class="add-form">
+          <div class="ag">
+            <div><label>Item Name</label><input type="text" id="new-name" placeholder="e.g. Veggie Rolex"/></div>
+            <div><label>Price (UGX)</label><input type="number" id="new-price" placeholder="5000"/></div>
+            <div><label>Category</label>
+              <select id="new-cat">
+                <option value="rolex">🫓 Rolexes</option>
+                <option value="chicken">🍗 Chicken & Fries</option>
+                <option value="combo">💥 Combo Deals</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:10px"><label>Description</label><textarea id="new-desc" placeholder="e.g. Chapati, egg, spinach, piri piri"></textarea></div>
+          <div style="margin-bottom:12px"><label>Spice Level</label>
+            <select id="new-heat">
+              <option value="0">🧊 Mild</option>
+              <option value="1">🌶 Light</option>
+              <option value="2" selected>🌶🌶 Medium</option>
+              <option value="3">🌶🌶🌶 Hot</option>
+            </select>
+          </div>
+          <button class="btn-add-item" onclick="addItem()">ADD TO MENU 🔥</button>
+        </div>
+      </div>
+      <div id="menu-list-container"></div>
+    </div>
+
+    <div id="tab-stats" style="display:none">
+      <div class="section-title">OVERVIEW</div>
+      <div class="section-sub">CURRENT MENU AT A GLANCE</div>
+      <div class="stats-grid" id="stats-grid"></div>
+      <div style="background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:1.5rem">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;margin-bottom:1rem">ALL ITEMS</div>
+        <div id="stats-list"></div>
+      </div>
+    </div>
+
+    <div id="tab-settings" style="display:none">
+      <div class="section-title">SETTINGS</div>
+      <div class="section-sub">CHANGE YOUR ADMIN PASSWORD</div>
+      <div class="add-card" style="max-width:460px">
+        <h3>🔐 CHANGE PASSWORD</h3>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:0.5rem">
+          <div><label style="display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Current Password</label>
+            <input type="password" id="pw-old" placeholder="Current password" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--cream);font-family:'Syne',sans-serif;font-size:14px;outline:none"/></div>
+          <div><label style="display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">New Password</label>
+            <input type="password" id="pw-new" placeholder="New password" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--cream);font-family:'Syne',sans-serif;font-size:14px;outline:none"/></div>
+          <div><label style="display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px">Confirm New Password</label>
+            <input type="password" id="pw-confirm" placeholder="Repeat new password" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--cream);font-family:'Syne',sans-serif;font-size:14px;outline:none"/></div>
+          <button class="btn-add-item" onclick="changePassword()">UPDATE PASSWORD 🔐</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="publish-bar" id="publish-bar">
+    <div class="pub-msg">⚡ You have unsaved changes</div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-discard" onclick="discardChanges()">Discard</button>
+      <button class="btn-publish" id="publish-btn" onclick="publishMenu()">PUBLISH CHANGES ✓</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBvn2QXF-vkhXcVjScb-rh1veUdGdoI7qg",
+  authDomain: "street-kitchen-9f41e.firebaseapp.com",
+  projectId: "street-kitchen-9f41e",
+  storageBucket: "street-kitchen-9f41e.firebasestorage.app",
+  messagingSenderId: "849439630164",
+  appId: "1:849439630164:web:1c6bdc115b4f283026dec1",
+  databaseURL: "https://street-kitchen-9f41e-default-rtdb.firebaseio.com"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+window._fbDb = db;
+window._fbRef = ref;
+window._fbSet = set;
+
+// Load menu from Firebase on login
+window.loadMenuFromFirebase = function(){
+  onValue(ref(db, 'menu'), (snapshot) => {
+    const data = snapshot.val();
+    if(data){
+      window.menu = data;
+    }
+    if(typeof window.renderMenuList === 'function') window.renderMenuList();
+    if(typeof window.renderStats === 'function') window.renderStats();
+  }, { onlyOnce: true });
+};
+
+window.saveMenuToFirebase = async function(menuData){
+  await set(ref(db, 'menu'), menuData);
+};
+</script>
+
+<script>
+const DEFAULT_PW = 'rAyRmToHnUdR1738';
+let ADMIN_PW = localStorage.getItem('sk_admin_pw') || DEFAULT_PW;
+
+const DEFAULT_MENU = {
+  rolex:[
+    {name:"Classic Rolex",desc:"Chapati, egg, cabbage, tomato, onion",price:2500,heat:1},
+    {name:"Double Egg Rolex",desc:"Chapati, 2 eggs, veggies, light mayo",price:3000,heat:1},
+    {name:"Chicken Rolex",desc:"Shredded spiced chicken, coleslaw, chili sauce",price:5000,heat:2},
+    {name:"Avocado Spicy Rolex",desc:"Chapati, egg, avocado, piri piri sauce",price:4000,heat:3},
+    {name:"Beef Rolex",desc:"Chapati, egg, minced beef, veggies",price:4500,heat:2},
+    {name:"Mini Rolexes x3",desc:"Small chapatis — great party size",price:3000,heat:1},
+  ],
+  chicken:[
+    {name:"Fried Chicken 2 Pcs",desc:"Double-coated, overnight marinated, crispy",price:12000,heat:2},
+    {name:"Spicy Wings 5 Pcs",desc:"Piri piri glazed, extra crispy, flame-kissed",price:15000,heat:3},
+    {name:"Chicken Burger",desc:"Crispy fillet, house sauce, coleslaw",price:14000,heat:2},
+    {name:"Plain Fries",desc:"Double-fried, golden crispy, seasoned",price:7000,heat:1},
+    {name:"Sauced Fries",desc:"House signature sauce drizzle",price:9000,heat:2},
+    {name:"Fully Loaded Fries",desc:"Sauce, meat, cheese, spring onions",price:12000,heat:2},
+    {name:"Fresh Juice / Soda",desc:"Passion, mango, or soda",price:2000,heat:0},
+  ],
+  combo:[
+    {name:"Signature Combo",desc:"Chicken 2 pcs + loaded fries + soda — SAVE 4,000",price:20000,heat:2},
+    {name:"Rolex Breakfast Combo",desc:"Classic rolex + passion juice — SAVE 1,000",price:3500,heat:1},
+    {name:"Lunch Special",desc:"Chicken burger + sauced fries — SAVE 2,000",price:19000,heat:2},
+    {name:"Office Bundle x5",desc:"5 classic rolexes — SAVE 2,500",price:10000,heat:1},
+  ]
+};
+
+window.menu = JSON.parse(JSON.stringify(DEFAULT_MENU));
+let dirty = false;
+
+const CAT_LABELS = {rolex:'🫓 ROLEXES', chicken:'🍗 CHICKEN & FRIES', combo:'💥 COMBO DEALS'};
+
+function doLogin(){
+  ADMIN_PW = localStorage.getItem('sk_admin_pw') || DEFAULT_PW;
+  const pw = document.getElementById('pw-input').value;
+  if(pw === ADMIN_PW){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    // Load from Firebase (wait a moment for module to init)
+    setTimeout(()=>{
+      if(typeof window.loadMenuFromFirebase === 'function'){
+        window.loadMenuFromFirebase();
+      } else {
+        renderMenuList(); renderStats();
+      }
+    }, 500);
+  } else {
+    document.getElementById('login-err').textContent='Wrong password. Try again.';
+    document.getElementById('pw-input').value='';
+  }
+}
+
+function logout(){
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('pw-input').value='';
+  document.getElementById('login-err').textContent='';
+}
+
+window.renderMenuList = function(){
+  const container = document.getElementById('menu-list-container');
+  container.innerHTML = '';
+  ['rolex','chicken','combo'].forEach(cat => {
+    const div = document.createElement('div');
+    div.innerHTML = `<div class="cat-divider">${CAT_LABELS[cat]}</div>`;
+    const list = document.createElement('div');
+    list.className = 'menu-list';
+    (window.menu[cat]||[]).forEach((item, idx) => list.appendChild(makeRow(cat, idx, item)));
+    div.appendChild(list);
+    container.appendChild(div);
+  });
+};
+
+function makeRow(cat, idx, item){
+  const wrap = document.createElement('div');
+  const heatDots = [0,1,2].map(i=>`<span class="hdot${i>=item.heat?' off':''}"></span>`).join('');
+  wrap.innerHTML = `
+    <div class="menu-row" id="row-${cat}-${idx}">
+      <div class="row-name">${item.name}</div>
+      <div class="row-desc">${item.desc}</div>
+      <div style="display:flex;gap:3px;align-items:center">${heatDots}</div>
+      <div class="row-price">${Number(item.price).toLocaleString()} <span style="font-size:11px;color:var(--muted)">UGX</span></div>
+      <div class="row-actions">
+        <button class="btn-edit" onclick="toggleEdit('${cat}',${idx})">EDIT</button>
+        <button class="btn-del" onclick="deleteItem('${cat}',${idx})">✕</button>
+      </div>
+    </div>
+    <div class="edit-form" id="ef-${cat}-${idx}">
+      <div class="ef-grid">
+        <div><label>Name</label><input id="ef-name-${cat}-${idx}" value="${escHtml(item.name)}"/></div>
+        <div><label>Price (UGX)</label><input type="number" id="ef-price-${cat}-${idx}" value="${item.price}"/></div>
+        <div><label>Spice Level</label>
+          <select id="ef-heat-${cat}-${idx}">
+            <option value="0" ${item.heat==0?'selected':''}>🧊 Mild</option>
+            <option value="1" ${item.heat==1?'selected':''}>🌶 Light</option>
+            <option value="2" ${item.heat==2?'selected':''}>🌶🌶 Medium</option>
+            <option value="3" ${item.heat==3?'selected':''}>🌶🌶🌶 Hot</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-bottom:10px"><label>Description</label><input id="ef-desc-${cat}-${idx}" value="${escHtml(item.desc)}"/></div>
+      <div class="ef-actions">
+        <button class="btn-cancel" onclick="closeEdit('${cat}',${idx})">Cancel</button>
+        <button class="btn-save" onclick="saveEdit('${cat}',${idx})">SAVE ✓</button>
+      </div>
+    </div>`;
+  return wrap;
+}
+
+function escHtml(s){ return String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function toggleEdit(cat,idx){
+  const ef=document.getElementById(`ef-${cat}-${idx}`);
+  const row=document.getElementById(`row-${cat}-${idx}`);
+  const isOpen=ef.classList.contains('open');
+  document.querySelectorAll('.edit-form.open').forEach(f=>f.classList.remove('open'));
+  document.querySelectorAll('.menu-row.editing').forEach(r=>r.classList.remove('editing'));
+  if(!isOpen){ef.classList.add('open');row.classList.add('editing');}
+}
+function closeEdit(cat,idx){
+  document.getElementById(`ef-${cat}-${idx}`).classList.remove('open');
+  document.getElementById(`row-${cat}-${idx}`).classList.remove('editing');
+}
+function saveEdit(cat,idx){
+  const name=document.getElementById(`ef-name-${cat}-${idx}`).value.trim();
+  const price=parseInt(document.getElementById(`ef-price-${cat}-${idx}`).value);
+  const desc=document.getElementById(`ef-desc-${cat}-${idx}`).value.trim();
+  const heat=parseInt(document.getElementById(`ef-heat-${cat}-${idx}`).value);
+  if(!name||!price||isNaN(price)){showToast('Fill in name and price!',true);return;}
+  window.menu[cat][idx]={name,desc,price,heat};
+  markDirty(); renderMenuList();
+  showToast('Item updated — hit Publish to go live!');
+}
+function deleteItem(cat,idx){
+  if(!confirm(`Delete "${window.menu[cat][idx].name}"?`)) return;
+  window.menu[cat].splice(idx,1);
+  markDirty(); renderMenuList();
+  showToast('Item removed — hit Publish to go live!');
+}
+function addItem(){
+  const name=document.getElementById('new-name').value.trim();
+  const price=parseInt(document.getElementById('new-price').value);
+  const desc=document.getElementById('new-desc').value.trim();
+  const cat=document.getElementById('new-cat').value;
+  const heat=parseInt(document.getElementById('new-heat').value);
+  if(!name){showToast('Enter an item name!',true);return;}
+  if(!price||isNaN(price)){showToast('Enter a valid price!',true);return;}
+  window.menu[cat].push({name,desc,price,heat});
+  markDirty(); renderMenuList();
+  document.getElementById('new-name').value='';
+  document.getElementById('new-price').value='';
+  document.getElementById('new-desc').value='';
+  document.getElementById('new-heat').value='2';
+  showToast(`"${name}" added — hit Publish to go live!`);
+}
+
+function markDirty(){
+  dirty=true;
+  document.getElementById('publish-bar').classList.add('show');
+  renderStats();
+}
+
+async function publishMenu(){
+  const btn = document.getElementById('publish-btn');
+  btn.disabled=true; btn.textContent='PUBLISHING...';
+  try {
+    if(typeof window.saveMenuToFirebase === 'function'){
+      await window.saveMenuToFirebase(window.menu);
+      dirty=false;
+      document.getElementById('publish-bar').classList.remove('show');
+      showToast('✓ LIVE! Your site updated instantly 🔥');
+    } else {
+      showToast('Firebase not ready, try again in a moment.', true);
+    }
+  } catch(e){
+    showToast('Error saving. Check your connection.', true);
+  }
+  btn.disabled=false; btn.textContent='PUBLISH CHANGES ✓';
+}
+
+function discardChanges(){
+  if(!confirm('Discard all unsaved changes?')) return;
+  window.menu = JSON.parse(JSON.stringify(DEFAULT_MENU));
+  dirty=false;
+  document.getElementById('publish-bar').classList.remove('show');
+  renderMenuList(); renderStats();
+}
+
+window.renderStats = function(){
+  const m = window.menu;
+  const all = Object.values(m).flat();
+  const total=all.length;
+  const avg=Math.round(all.reduce((s,i)=>s+i.price,0)/total);
+  const max=all.sort((a,b)=>b.price-a.price)[0];
+  const min=all.sort((a,b)=>a.price-b.price)[0];
+  document.getElementById('stats-grid').innerHTML=`
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Total Items</div></div>
+    <div class="stat-card"><div class="stat-num">${avg.toLocaleString()}</div><div class="stat-label">Avg Price UGX</div></div>
+    <div class="stat-card"><div class="stat-num">${min.price.toLocaleString()}</div><div class="stat-label">Lowest Price</div></div>
+    <div class="stat-card"><div class="stat-num">${max.price.toLocaleString()}</div><div class="stat-label">Highest Price</div></div>`;
+  const sl=document.getElementById('stats-list');
+  sl.innerHTML='';
+  ['rolex','chicken','combo'].forEach(cat=>{
+    sl.innerHTML+=`<div class="cat-divider">${CAT_LABELS[cat]}</div>`;
+    (m[cat]||[]).forEach(item=>{
+      sl.innerHTML+=`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px">
+        <span>${item.name}</span>
+        <span style="font-family:'Bebas Neue',sans-serif;color:var(--gold);font-size:17px">${Number(item.price).toLocaleString()} UGX</span>
+      </div>`;
+    });
+  });
+};
+
+function switchTab(tab,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-menu').style.display=tab==='menu'?'':'none';
+  document.getElementById('tab-stats').style.display=tab==='stats'?'':'none';
+  document.getElementById('tab-settings').style.display=tab==='settings'?'':'none';
+}
+
+function changePassword(){
+  const oldPw=document.getElementById('pw-old').value;
+  const newPw=document.getElementById('pw-new').value;
+  const confirm=document.getElementById('pw-confirm').value;
+  ADMIN_PW=localStorage.getItem('sk_admin_pw')||DEFAULT_PW;
+  if(oldPw!==ADMIN_PW){showToast('Current password is wrong!',true);return;}
+  if(newPw.length<6){showToast('Password must be at least 6 characters!',true);return;}
+  if(newPw!==confirm){showToast('Passwords do not match!',true);return;}
+  localStorage.setItem('sk_admin_pw',newPw);
+  ADMIN_PW=newPw;
+  document.getElementById('pw-old').value='';
+  document.getElementById('pw-new').value='';
+  document.getElementById('pw-confirm').value='';
+  showToast('✓ Password updated!');
+}
+
+function showToast(msg,isErr=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast show'+(isErr?' err':'');
+  setTimeout(()=>t.className='toast',3500);
+}
+</script>
+</body>
+</html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Street Kitchen — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --fire:#E8460A;--gold:#F5A623;--cream:#FFF8F0;--dark:#1A0A00;
+  --charcoal:#2D1A0E;--panel:#1E0C04;--border:rgba(255,255,255,0.08);
+  --muted:rgba(255,248,240,0.45);--green:#2D6A1F;--greenlit:#4CAF50;
+}
+html,body{height:100%;font-family:'Syne',sans-serif;background:var(--dark);color:var(--cream)}
 
 /* ── LOGIN ── */
 #login-screen{position:fixed;inset:0;z-index:999;background:var(--dark);display:flex;align-items:center;justify-content:center;padding:1.5rem}
