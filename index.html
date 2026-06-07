@@ -3,549 +3,162 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Street Kitchen Kampala — Order Online</title>
+<title>Street Kitchen — Orders</title>
 <meta name="theme-color" content="#1A0A00">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Street Kitchen">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-title" content="SK Orders">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --fire:#E8460A;--gold:#F5A623;--cream:#FFF8F0;--dark:#1A0A00;--charcoal:#2D1A0E;
-  --smoke:#6B4C3B;--leaf:#2D6A1F;--white:#FFFFFF;
+  --fire:#E8460A;--gold:#F5A623;--cream:#FFF8F0;--dark:#1A0A00;
+  --panel:#1E0C04;--border:rgba(255,255,255,0.08);--muted:rgba(255,248,240,0.45);
+  --green:#4CAF50;--amber:#FF9800;--red:#F44336;
 }
-html{scroll-behavior:smooth}
-body{font-family:'Syne',sans-serif;background:var(--dark);color:var(--cream);min-height:100vh;overflow-x:hidden}
+html,body{height:100%;font-family:'Syne',sans-serif;background:var(--dark);color:var(--cream)}
 
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:300;background:rgba(26,10,0,0.92);backdrop-filter:blur(10px);border-bottom:1px solid rgba(232,70,10,0.2);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:60px}
-.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--cream)}
-.nav-logo span{color:var(--fire)}
-.nav-links{display:flex;gap:1.5rem;align-items:center}
-.nav-links a{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;color:rgba(255,248,240,0.55);text-decoration:none;text-transform:uppercase;transition:color 0.2s}
-.nav-links a:hover{color:var(--gold)}
-.nav-order-btn{background:var(--fire);color:#fff;border:none;padding:8px 20px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;border-radius:3px;cursor:pointer;text-decoration:none}
+/* LOGIN */
+#login-screen{position:fixed;inset:0;z-index:999;background:var(--dark);display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.login-box{width:100%;max-width:360px;background:var(--panel);border:1px solid rgba(232,70,10,0.25);border-radius:20px;padding:2.5rem;text-align:center}
+.login-logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;margin-bottom:4px}
+.login-logo span{color:var(--fire)}
+.login-sub{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:2rem}
+.login-box input{width:100%;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--cream);font-family:'Syne',sans-serif;font-size:15px;outline:none;text-align:center;letter-spacing:4px;margin-bottom:1rem;transition:border-color 0.2s}
+.login-box input:focus{border-color:var(--fire)}
+.login-btn{width:100%;background:var(--fire);color:#fff;border:none;padding:13px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer}
+.login-err{color:var(--fire);font-size:12px;font-family:'Space Mono',monospace;margin-top:0.75rem;min-height:18px}
 
-/* HERO */
-.hero{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;background:var(--dark);padding-top:60px}
-.hero-bg{position:absolute;inset:0;z-index:0}
-.hero-content{position:relative;z-index:2;text-align:center;padding:2rem}
-.logo-badge{display:inline-block;background:var(--fire);color:#fff;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;padding:6px 18px;border-radius:2px;margin-bottom:1.5rem;text-transform:uppercase}
-h1.brand{font-family:'Bebas Neue',sans-serif;font-size:clamp(72px,14vw,160px);line-height:0.85;color:var(--cream);letter-spacing:2px}
-h1.brand span{color:var(--fire)}
-.tagline{font-size:clamp(13px,2vw,17px);color:var(--gold);letter-spacing:4px;text-transform:uppercase;margin:1.5rem 0 2.5rem;font-weight:400}
-.hero-pills{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:3rem}
-.pill{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:var(--cream);padding:8px 20px;border-radius:100px;font-size:13px;font-family:'Space Mono',monospace}
-.pill.hot{background:rgba(232,70,10,0.15);border-color:var(--fire);color:var(--fire)}
-.cta-btn{background:var(--fire);color:#fff;border:none;padding:16px 44px;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;border-radius:3px;cursor:pointer;transition:transform 0.15s,background 0.15s;text-decoration:none;display:inline-block}
-.cta-btn:hover{background:#ff5a1f;transform:scale(1.04)}
+/* APP */
+#app{display:none;min-height:100vh;padding-bottom:2rem}
+header{background:var(--panel);border-bottom:1px solid rgba(232,70,10,0.2);padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+.h-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px}
+.h-logo span{color:var(--fire)}
+.h-right{display:flex;align-items:center;gap:10px}
+.notif-btn{background:rgba(232,70,10,0.15);border:1px solid rgba(232,70,10,0.3);color:var(--fire);padding:6px 14px;border-radius:6px;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer}
+.logout-btn{background:transparent;border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;font-family:'Space Mono',monospace;font-size:10px;cursor:pointer}
 
-/* FOOD STRIP */
-.food-strip{background:var(--charcoal);padding:3rem 1.5rem;overflow:hidden}
-.food-strip h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,6vw,60px);color:var(--gold);text-align:center;letter-spacing:4px;margin-bottom:2rem}
-.food-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;max-width:1100px;margin:0 auto}
-.food-card{position:relative;border-radius:12px;overflow:hidden;aspect-ratio:4/3;cursor:pointer;background:var(--dark)}
-.food-card svg{width:100%;height:100%;display:block}
-.food-card .label{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,0.88));padding:1rem 0.8rem 0.8rem;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--cream)}
-.food-card .label span{display:block;font-family:'Space Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:1px;font-weight:400}
+.main{max-width:700px;margin:0 auto;padding:1.5rem 1rem}
 
-/* MENU */
-.menu-section{padding:4rem 1.5rem;max-width:1100px;margin:0 auto}
-.section-header{display:flex;align-items:baseline;gap:1rem;margin-bottom:2rem;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:1rem}
-.section-header h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,52px);letter-spacing:3px;color:var(--cream)}
-.section-header .cat-tag{font-family:'Space Mono',monospace;font-size:11px;color:var(--fire);letter-spacing:2px;text-transform:uppercase}
-.menu-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
-.menu-item{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:1.25rem;display:flex;flex-direction:column;gap:0.5rem;transition:border-color 0.2s,background 0.2s;cursor:pointer}
-.menu-item:hover{background:rgba(232,70,10,0.08);border-color:rgba(232,70,10,0.35)}
-.menu-item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:0.5rem}
-.item-name{font-size:16px;font-weight:700;color:var(--cream);line-height:1.3}
-.item-price{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);white-space:nowrap}
-.item-desc{font-size:13px;color:rgba(255,248,240,0.55);line-height:1.5}
-.item-meta{display:flex;gap:8px;align-items:center;margin-top:auto;padding-top:0.75rem}
-.heat{display:flex;gap:2px}
-.heat-dot{width:7px;height:7px;border-radius:50%;background:var(--fire)}
-.heat-dot.off{background:rgba(255,255,255,0.15)}
-.add-btn{margin-left:auto;background:var(--fire);color:#fff;border:none;width:30px;height:30px;border-radius:50%;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform 0.15s,background 0.2s;line-height:1}
-.add-btn:hover{transform:scale(1.15)}
+/* STATS BAR */
+.stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1rem;text-align:center}
+.stat-n{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold);line-height:1}
+.stat-l{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:3px;text-transform:uppercase}
 
-/* DELIVERY ZONES */
-.zones-section{background:var(--charcoal);padding:4rem 1.5rem}
-.zones-inner{max-width:1100px;margin:0 auto}
-.zones-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-top:2rem}
-.zone-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1.25rem}
-.zone-card.free{border-color:rgba(45,106,31,0.5);background:rgba(45,106,31,0.06)}
-.zone-card.paid{border-color:rgba(245,166,35,0.3);background:rgba(245,166,35,0.04)}
-.zone-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--cream);margin-bottom:4px}
-.zone-tag{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;padding:3px 10px;border-radius:100px;display:inline-block;margin-bottom:8px}
-.zone-tag.free-tag{background:rgba(45,106,31,0.2);color:#5CB85C}
-.zone-tag.paid-tag{background:rgba(245,166,35,0.15);color:var(--gold)}
-.zone-desc{font-size:13px;color:rgba(255,248,240,0.5)}
-.zone-fee{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--gold);margin-top:8px}
+/* FILTER TABS */
+.filter-tabs{display:flex;gap:6px;margin-bottom:1.25rem;overflow-x:auto;padding-bottom:4px}
+.ftab{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;padding:7px 14px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all 0.2s}
+.ftab.active{background:var(--fire);border-color:var(--fire);color:#fff}
 
-/* LOYALTY */
-.loyalty-section{padding:4rem 1.5rem;background:var(--dark);text-align:center}
-.loyalty-inner{max-width:700px;margin:0 auto}
-.loyalty-section h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,6vw,64px);letter-spacing:4px;color:var(--cream);margin-bottom:0.5rem}
-.loyalty-section .sub{font-family:'Space Mono',monospace;font-size:12px;color:var(--gold);letter-spacing:3px;margin-bottom:2rem}
-.stamp-card{background:rgba(255,255,255,0.04);border:1px solid rgba(232,70,10,0.25);border-radius:16px;padding:2rem;margin-bottom:2rem}
-.stamps{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:1.5rem 0}
-.stamp{width:52px;height:52px;border-radius:50%;border:2px dashed rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:22px;color:rgba(255,255,255,0.15);font-weight:bold;transition:all 0.3s}
-.stamp.filled{border-color:var(--fire);background:rgba(232,70,10,0.15);color:var(--fire);font-size:20px}
-.stamp.reward{border-color:var(--gold);background:rgba(245,166,35,0.15);color:var(--gold)}
-.stamp-info{font-size:14px;color:rgba(255,248,240,0.55);line-height:1.6}
-.loyalty-perks{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-top:1.5rem;text-align:left}
-.perk{background:rgba(255,255,255,0.04);border-radius:10px;padding:1rem;border:1px solid rgba(255,255,255,0.07)}
-.perk-icon{font-size:24px;margin-bottom:0.5rem}
-.perk-title{font-weight:700;font-size:14px;color:var(--cream);margin-bottom:4px}
-.perk-desc{font-size:12px;color:rgba(255,248,240,0.5)}
+/* ORDER CARDS */
+.orders-list{display:flex;flex-direction:column;gap:12px}
+.order-card{background:var(--panel);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:border-color 0.2s}
+.order-card.new{border-color:var(--fire);animation:pulse 2s ease-in-out 3}
+.order-card.preparing{border-color:var(--amber)}
+.order-card.done{border-color:rgba(76,175,80,0.4);opacity:0.7}
 
-/* CONTACT */
-.contact-section{background:var(--charcoal);padding:4rem 1.5rem;text-align:center}
-.contact-inner{max-width:600px;margin:0 auto}
-.contact-section h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,52px);letter-spacing:4px;color:var(--cream);margin-bottom:2rem}
-.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem}
-.contact-card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:1.25rem;text-decoration:none}
-.contact-card:hover{border-color:rgba(232,70,10,0.4);background:rgba(232,70,10,0.06)}
-.contact-card .cc-icon{font-size:28px;margin-bottom:0.5rem}
-.contact-card .cc-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:rgba(255,248,240,0.45);text-transform:uppercase;margin-bottom:4px}
-.contact-card .cc-val{font-size:15px;font-weight:700;color:var(--cream)}
-.wa-btn{display:inline-block;background:#25D366;color:#fff;padding:14px 36px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;text-decoration:none;transition:transform 0.15s}
-.wa-btn:hover{transform:scale(1.04)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,70,10,0)}50%{box-shadow:0 0 0 6px rgba(232,70,10,0.2)}}
 
-/* CART */
-.cart-bar{position:fixed;bottom:0;left:0;right:0;z-index:200;background:rgba(26,10,0,0.97);border-top:2px solid var(--fire);padding:1rem 1.5rem;display:flex;align-items:center;gap:1rem;transform:translateY(100%);transition:transform 0.3s}
-.cart-bar.visible{transform:translateY(0)}
-.cart-info .cart-count{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--cream);letter-spacing:2px}
-.cart-info .cart-total{font-family:'Space Mono',monospace;font-size:13px;color:var(--gold)}
-.checkout-btn{background:var(--fire);color:#fff;border:none;padding:12px 28px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;border-radius:4px;cursor:pointer;white-space:nowrap;margin-left:auto}
+.card-header{padding:0.9rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:0.5rem}
+.card-ref{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--cream)}
+.card-time{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)}
+.card-type{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;padding:3px 10px;border-radius:100px}
+.card-type.delivery{background:rgba(232,70,10,0.15);color:var(--fire);border:1px solid rgba(232,70,10,0.3)}
+.card-type.pickup{background:rgba(245,166,35,0.12);color:var(--gold);border:1px solid rgba(245,166,35,0.25)}
 
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.88);display:none;align-items:flex-start;justify-content:center;padding:1rem;overflow-y:auto}
-.modal-overlay.open{display:flex}
-.modal{background:#1E0C04;border:1px solid rgba(232,70,10,0.3);border-radius:16px;width:100%;max-width:520px;padding:2rem;margin:auto}
-.modal h2{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:3px;color:var(--cream);margin-bottom:0.25rem}
-.modal .sub{font-family:'Space Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:2px;margin-bottom:1.5rem}
-.order-summary{background:rgba(255,255,255,0.04);border-radius:8px;padding:1rem;margin-bottom:1.5rem}
-.order-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:14px;gap:0.5rem}
-.order-row:last-child{border-bottom:none;font-weight:700;color:var(--gold);margin-top:4px}
-.form-group{margin-bottom:1rem}
-.form-group label{display:block;font-size:11px;color:rgba(255,248,240,0.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;font-family:'Space Mono',monospace}
-.form-group input,.form-group textarea,.form-group select{width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 14px;color:var(--cream);font-family:'Syne',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s}
-.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--fire)}
-.form-group select option{background:#1E0C04;color:var(--cream)}
-.form-group textarea{resize:vertical;min-height:80px}
-.modal-actions{display:flex;gap:1rem;margin-top:1.5rem}
-.cancel-btn{flex:1;background:transparent;border:1px solid rgba(255,255,255,0.15);color:var(--cream);padding:12px;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;cursor:pointer}
-.place-btn{flex:2;background:var(--fire);color:#fff;border:none;padding:12px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;cursor:pointer;transition:opacity 0.2s}
-.place-btn:disabled{opacity:0.5;cursor:not-allowed}
-.qty-ctrl{display:flex;align-items:center;gap:6px}
-.qty-btn{background:rgba(255,255,255,0.08);border:none;color:var(--cream);width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center}
-.qty-btn:hover{background:rgba(232,70,10,0.3)}
-.remove-btn{background:none;border:none;color:rgba(255,255,255,0.25);cursor:pointer;font-size:14px;padding:0 2px;transition:color 0.2s}
-.remove-btn:hover{color:var(--fire)}
-.success-msg{text-align:center;padding:1.5rem 0}
-.success-msg .check{font-size:56px;margin-bottom:1rem}
-.success-msg h3{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold);letter-spacing:3px;margin-bottom:0.75rem}
-.success-msg p{font-size:14px;color:rgba(255,248,240,0.6);line-height:1.7}
-.send-status{margin-top:1rem;font-size:12px;color:rgba(255,248,240,0.5);text-align:center;font-family:'Space Mono',monospace;min-height:18px}
+.card-customer{padding:0 1.1rem 0.75rem;display:flex;gap:1rem;font-size:13px}
+.card-customer span{color:var(--muted);font-family:'Space Mono',monospace;font-size:11px}
+.card-customer b{color:var(--cream)}
 
-/* FOOTER */
-footer{background:#0D0400;padding:3rem 1.5rem;text-align:center;border-top:1px solid rgba(255,255,255,0.06)}
-.footer-logo{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:5px;color:var(--cream);margin-bottom:0.5rem}
-.footer-logo span{color:var(--fire)}
-.footer-sub{font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,248,240,0.3);letter-spacing:3px;margin-bottom:1.5rem}
-.footer-links{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem}
-.footer-links a{font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,248,240,0.4);text-decoration:none;letter-spacing:1px}
-.footer-links a:hover{color:var(--gold)}
+.card-items{padding:0 1.1rem;border-top:1px solid var(--border);padding-top:0.75rem;padding-bottom:0.75rem}
+.card-item{display:flex;justify-content:space-between;font-size:13px;padding:4px 0}
+.card-item-name{color:var(--cream)}
+.card-item-price{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold)}
+.card-total{display:flex;justify-content:space-between;padding:8px 0 0;border-top:1px solid var(--border);margin-top:4px}
+.card-total-label{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:var(--muted)}
+.card-total-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold)}
 
-@media(max-width:600px){
-  .contact-grid{grid-template-columns:1fr}
-  .nav-links{display:none}
-}
+.card-notes{padding:0 1.1rem 0.75rem;font-size:12px;color:var(--muted);font-style:italic}
+
+.card-actions{padding:0.75rem 1.1rem;border-top:1px solid var(--border);display:flex;gap:8px}
+.btn-preparing{background:rgba(255,152,0,0.15);border:1px solid rgba(255,152,0,0.4);color:#FF9800;padding:8px 16px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;cursor:pointer;flex:1;transition:all 0.2s}
+.btn-preparing:hover{background:rgba(255,152,0,0.3)}
+.btn-done{background:rgba(76,175,80,0.15);border:1px solid rgba(76,175,80,0.4);color:#4CAF50;padding:8px 16px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;cursor:pointer;flex:1;transition:all 0.2s}
+.btn-done:hover{background:rgba(76,175,80,0.3)}
+.btn-call{background:rgba(245,166,35,0.12);border:1px solid rgba(245,166,35,0.25);color:var(--gold);padding:8px 14px;border-radius:8px;font-size:16px;cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center}
+
+/* STATUS BADGE */
+.status-badge{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;padding:3px 9px;border-radius:100px;text-transform:uppercase}
+.status-new{background:rgba(232,70,10,0.2);color:var(--fire);border:1px solid rgba(232,70,10,0.4)}
+.status-preparing{background:rgba(255,152,0,0.2);color:#FF9800;border:1px solid rgba(255,152,0,0.4)}
+.status-done{background:rgba(76,175,80,0.15);color:#4CAF50;border:1px solid rgba(76,175,80,0.3)}
+
+/* EMPTY */
+.empty{text-align:center;padding:4rem 1rem;color:var(--muted)}
+.empty-icon{font-size:48px;margin-bottom:1rem}
+.empty-text{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;color:var(--muted)}
+
+/* NEW ORDER ALERT */
+.new-order-alert{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#E8460A;color:#fff;padding:12px 24px;border-radius:100px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;z-index:999;opacity:0;transition:all 0.4s;white-space:nowrap;box-shadow:0 4px 20px rgba(232,70,10,0.5)}
+.new-order-alert.show{opacity:1}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;right:1rem;left:1rem;background:#1E3A1E;border:1px solid var(--green);color:var(--green);font-family:'Space Mono',monospace;font-size:12px;padding:12px 16px;border-radius:10px;z-index:9999;transform:translateY(20px);opacity:0;transition:all 0.3s;text-align:center}
+.toast.show{transform:translateY(0);opacity:1}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
-<nav>
-  <div class="nav-logo">STREET <span>KITCHEN</span></div>
-  <div class="nav-links">
-    <a href="#menu">Menu</a>
-    <a href="#delivery">Delivery</a>
-    <a href="#loyalty">Loyalty</a>
-    <a href="#contact">Contact</a>
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">STREET <span>KITCHEN</span></div>
+    <div class="login-sub">OWNER DASHBOARD</div>
+    <input type="password" id="pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="login-btn" onclick="doLogin()">LOGIN 🔥</button>
+    <div class="login-err" id="login-err"></div>
   </div>
-  <a class="nav-order-btn" href="#menu">ORDER NOW</a>
-</nav>
-
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-bg">
-    <svg style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:100%;opacity:0.18" viewBox="0 0 1440 500" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-      <defs>
-        <radialGradient id="g1" cx="50%" cy="100%" r="50%"><stop offset="0%" stop-color="#E8460A" stop-opacity="0.7"/><stop offset="100%" stop-color="#E8460A" stop-opacity="0"/></radialGradient>
-        <radialGradient id="g2" cx="30%" cy="100%" r="40%"><stop offset="0%" stop-color="#F5A623" stop-opacity="0.45"/><stop offset="100%" stop-color="#F5A623" stop-opacity="0"/></radialGradient>
-        <radialGradient id="g3" cx="70%" cy="100%" r="40%"><stop offset="0%" stop-color="#FF2D00" stop-opacity="0.4"/><stop offset="100%" stop-color="#FF2D00" stop-opacity="0"/></radialGradient>
-      </defs>
-      <ellipse cx="720" cy="500" rx="800" ry="300" fill="url(#g1)"/>
-      <ellipse cx="420" cy="500" rx="500" ry="250" fill="url(#g2)"/>
-      <ellipse cx="1020" cy="500" rx="500" ry="250" fill="url(#g3)"/>
-      <g opacity="0.35">
-        <path d="M600,500 Q620,380 650,300 Q680,220 660,140 Q700,200 710,280 Q720,360 700,500Z" fill="#E8460A"/>
-        <path d="M700,500 Q730,400 760,320 Q790,240 770,150 Q810,220 820,310 Q830,400 800,500Z" fill="#F5A623"/>
-        <path d="M800,500 Q820,420 840,350 Q860,280 845,200 Q880,260 885,340 Q890,420 870,500Z" fill="#E8460A"/>
-        <path d="M450,500 Q465,440 475,380 Q485,320 472,260 Q498,310 503,370 Q508,430 495,500Z" fill="#F5A623"/>
-        <path d="M950,500 Q960,450 965,400 Q970,350 960,300 Q980,340 984,385 Q988,430 978,500Z" fill="#FF5500"/>
-      </g>
-    </svg>
-    <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:0.1" viewBox="0 0 1440 900" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="120" cy="200" r="3" fill="#F5A623"/><circle cx="320" cy="450" r="2" fill="#E8460A"/>
-      <circle cx="1100" cy="300" r="3" fill="#F5A623"/><circle cx="900" cy="600" r="2" fill="#E8460A"/>
-      <circle cx="200" cy="700" r="2" fill="#F5A623"/><circle cx="1300" cy="200" r="3" fill="#FF5500"/>
-      <ellipse cx="160" cy="350" rx="4" ry="10" fill="#E8460A" transform="rotate(-20,160,350)"/>
-      <ellipse cx="1280" cy="500" rx="4" ry="10" fill="#E8460A" transform="rotate(15,1280,500)"/>
-    </svg>
-  </div>
-  <div class="hero-content">
-    <div class="logo-badge">🔥 Kampala · Est. 2025</div>
-    <h1 class="brand">STREET<br><span>KITCHEN</span></h1>
-    <p class="tagline">Rolex · Fried Chicken · Loaded Fries</p>
-    <div class="hero-pills">
-      <div class="pill">📍 Kampala</div>
-      <div class="pill hot">🌶 Piri Piri Hot</div>
-      <div class="pill">⚡ Daily 7AM–8PM</div>
-      <div class="pill">💰 From 2,500 UGX</div>
-    </div>
-    <a class="cta-btn" href="#menu">ORDER NOW 🔥</a>
-  </div>
-</section>
-
-<!-- FOOD VISUAL STRIP -->
-<section class="food-strip">
-  <h2>🔥 FRESH &amp; FIRED UP</h2>
-  <div class="food-cards">
-
-    <!-- Crispy Chicken -->
-    <div class="food-card">
-      <svg viewBox="0 0 280 210" xmlns="http://www.w3.org/2000/svg">
-        <rect width="280" height="210" fill="#1A0800"/>
-        <path d="M100,50 Q95,35 100,20 Q105,35 100,50" stroke="rgba(255,255,255,0.15)" stroke-width="2" fill="none"/>
-        <path d="M140,45 Q135,28 140,12 Q145,28 140,45" stroke="rgba(255,255,255,0.12)" stroke-width="2" fill="none"/>
-        <path d="M180,50 Q175,33 180,18 Q185,33 180,50" stroke="rgba(255,255,255,0.15)" stroke-width="2" fill="none"/>
-        <ellipse cx="140" cy="165" rx="100" ry="18" fill="rgba(232,70,10,0.25)"/>
-        <ellipse cx="100" cy="130" rx="45" ry="38" fill="#8B3A00"/>
-        <ellipse cx="100" cy="125" rx="43" ry="36" fill="#A84500"/>
-        <ellipse cx="85" cy="112" rx="12" ry="8" fill="#C05200" opacity="0.9"/>
-        <ellipse cx="112" cy="108" rx="10" ry="7" fill="#BF4E00" opacity="0.8"/>
-        <ellipse cx="95" cy="138" rx="14" ry="8" fill="#C05200" opacity="0.7"/>
-        <ellipse cx="118" cy="132" rx="11" ry="9" fill="#BF4E00" opacity="0.8"/>
-        <ellipse cx="82" cy="108" rx="6" ry="4" fill="#E8860A" opacity="0.6"/>
-        <ellipse cx="110" cy="122" rx="5" ry="4" fill="#F5A623" opacity="0.5"/>
-        <rect x="96" y="155" width="8" height="30" rx="4" fill="#F5E6D0"/>
-        <ellipse cx="178" cy="128" rx="40" ry="36" fill="#8B3A00"/>
-        <ellipse cx="178" cy="123" rx="38" ry="34" fill="#A84500"/>
-        <ellipse cx="165" cy="112" rx="11" ry="7" fill="#C05200"/>
-        <ellipse cx="190" cy="115" rx="9" ry="6" fill="#BF4E00"/>
-        <ellipse cx="172" cy="135" rx="13" ry="8" fill="#C05200"/>
-        <ellipse cx="162" cy="108" rx="5" ry="4" fill="#F5A623" opacity="0.5"/>
-        <rect x="174" y="153" width="8" height="28" rx="4" fill="#F5E6D0"/>
-        <path d="M80,160 Q100,155 120,162 Q140,169 160,158 Q180,147 200,160" stroke="#E8460A" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <circle cx="130" cy="90" r="4" fill="#2D6A1F"/><circle cx="148" cy="85" r="3" fill="#2D6A1F"/>
-      </svg>
-      <div class="label">Crispy Fried Chicken<span>from 12,000 UGX</span></div>
-    </div>
-
-    <!-- Loaded Fries -->
-    <div class="food-card">
-      <svg viewBox="0 0 280 210" xmlns="http://www.w3.org/2000/svg">
-        <rect width="280" height="210" fill="#120800"/>
-        <rect x="55" y="90" width="170" height="100" rx="6" fill="#1E3A5F"/>
-        <rect x="55" y="90" width="170" height="12" fill="#16305A"/>
-        <line x1="55" y1="102" x2="225" y2="102" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-        <rect x="75" y="55" width="10" height="55" rx="5" fill="#E8A020" transform="rotate(-5,75,55)"/>
-        <rect x="90" y="48" width="10" height="62" rx="5" fill="#F5B830" transform="rotate(2,90,48)"/>
-        <rect x="105" y="44" width="10" height="66" rx="5" fill="#E8A020" transform="rotate(-3,105,44)"/>
-        <rect x="120" y="42" width="10" height="68" rx="5" fill="#F5B830" transform="rotate(1,120,42)"/>
-        <rect x="135" y="45" width="10" height="65" rx="5" fill="#E8A020" transform="rotate(4,135,45)"/>
-        <rect x="150" y="50" width="10" height="60" rx="5" fill="#F5B830" transform="rotate(-2,150,50)"/>
-        <rect x="165" y="56" width="10" height="55" rx="5" fill="#E8A020" transform="rotate(3,165,56)"/>
-        <rect x="180" y="52" width="10" height="59" rx="5" fill="#F5B830" transform="rotate(-4,180,52)"/>
-        <path d="M70,100 Q100,92 140,98 Q170,103 210,95" stroke="#E8460A" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.9"/>
-        <path d="M80,108 Q120,102 155,107 Q185,111 215,104" stroke="rgba(245,166,35,0.7)" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <path d="M90,115 Q130,108 160,115 Q180,120 170,128 Q140,122 110,126 Q85,130 90,115Z" fill="#F5C542" opacity="0.85"/>
-        <ellipse cx="105" cy="118" rx="8" ry="5" fill="#8B3A00"/>
-        <ellipse cx="140" cy="112" rx="6" ry="4" fill="#7A3200"/>
-        <ellipse cx="165" cy="120" rx="7" ry="4" fill="#8B3A00"/>
-        <line x1="120" y1="95" x2="115" y2="78" stroke="#3A8A28" stroke-width="2"/>
-        <line x1="135" y1="92" x2="138" y2="74" stroke="#2D6A1F" stroke-width="2"/>
-        <line x1="155" y1="96" x2="158" y2="79" stroke="#3A8A28" stroke-width="2"/>
-        <path d="M120,60 Q116,48 120,36" stroke="rgba(255,255,255,0.13)" stroke-width="2" fill="none"/>
-      </svg>
-      <div class="label">Fully Loaded Fries<span>from 7,000 UGX</span></div>
-    </div>
-
-    <!-- Rolex -->
-    <div class="food-card">
-      <svg viewBox="0 0 280 210" xmlns="http://www.w3.org/2000/svg">
-        <rect width="280" height="210" fill="#180A00"/>
-        <ellipse cx="140" cy="180" rx="110" ry="20" fill="rgba(245,166,35,0.15)"/>
-        <ellipse cx="140" cy="140" rx="105" ry="50" fill="#D4972A"/>
-        <ellipse cx="140" cy="135" rx="103" ry="48" fill="#E8A830"/>
-        <ellipse cx="140" cy="135" rx="85" ry="36" fill="none" stroke="#C8921A" stroke-width="1.5" opacity="0.5"/>
-        <ellipse cx="100" cy="128" rx="12" ry="7" fill="#B07820" opacity="0.6"/>
-        <ellipse cx="165" cy="132" rx="10" ry="6" fill="#A87018" opacity="0.5"/>
-        <ellipse cx="135" cy="148" rx="14" ry="6" fill="#B07820" opacity="0.6"/>
-        <ellipse cx="140" cy="118" rx="28" ry="14" fill="#F5C842"/>
-        <ellipse cx="140" cy="116" rx="14" ry="7" fill="#FFD85E"/>
-        <path d="M115,122 Q130,118 145,124 Q158,120 170,125" stroke="#4A9A30" stroke-width="3" fill="none" stroke-linecap="round"/>
-        <ellipse cx="120" cy="120" rx="8" ry="5" fill="#E8460A" opacity="0.8"/>
-        <ellipse cx="155" cy="122" rx="7" ry="4" fill="#D83A00" opacity="0.8"/>
-        <path d="M35,140 Q50,95 100,78 Q140,65 180,78 Q230,95 245,140" stroke="#C8921A" stroke-width="2" fill="#D4972A" opacity="0.9"/>
-        <circle cx="138" cy="108" r="3" fill="#E8460A"/>
-        <circle cx="152" cy="112" r="2.5" fill="#FF5500"/>
-        <path d="M110,70 Q106,56 110,42" stroke="rgba(255,255,255,0.15)" stroke-width="2" fill="none"/>
-        <path d="M140,62 Q136,46 140,30" stroke="rgba(255,255,255,0.12)" stroke-width="2" fill="none"/>
-        <path d="M170,70 Q166,55 170,40" stroke="rgba(255,255,255,0.15)" stroke-width="2" fill="none"/>
-      </svg>
-      <div class="label">Signature Rolex<span>from 2,500 UGX</span></div>
-    </div>
-
-    <!-- Spicy Wings -->
-    <div class="food-card">
-      <svg viewBox="0 0 280 210" xmlns="http://www.w3.org/2000/svg">
-        <rect width="280" height="210" fill="#150600"/>
-        <ellipse cx="140" cy="168" rx="100" ry="22" fill="#220E00"/>
-        <path d="M85,160 Q70,120 90,80 Q110,55 130,70 Q145,82 135,110 Q125,138 105,160Z" fill="#A83800"/>
-        <ellipse cx="105" cy="95" rx="12" ry="9" fill="#C04500" opacity="0.8"/>
-        <ellipse cx="118" cy="120" rx="10" ry="8" fill="#B84000" opacity="0.8"/>
-        <ellipse cx="96" cy="120" rx="9" ry="7" fill="#C04500" opacity="0.7"/>
-        <path d="M88,158 Q80,130 92,95 Q100,72 118,74" stroke="#E8460A" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.7"/>
-        <path d="M195,158 Q210,120 191,80 Q172,56 154,70 Q140,82 150,108 Q160,134 178,158Z" fill="#A83800"/>
-        <ellipse cx="175" cy="93" rx="12" ry="9" fill="#C04500" opacity="0.8"/>
-        <ellipse cx="162" cy="118" rx="10" ry="8" fill="#B84000" opacity="0.8"/>
-        <path d="M192,156 Q200,128 188,93 Q180,70 162,72" stroke="#E8460A" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.7"/>
-        <path d="M90,168 Q120,162 140,166 Q165,170 185,163 Q170,175 140,177 Q110,178 90,168Z" fill="#C03200" opacity="0.6"/>
-        <circle cx="130" cy="160" r="2" fill="#F5E6A0"/><circle cx="148" cy="163" r="1.5" fill="#F5E6A0"/><circle cx="160" cy="158" r="2" fill="#F5E6A0"/>
-        <path d="M135,55 Q132,42 136,30 Q140,25 143,30 Q147,40 143,55" fill="#E8460A"/>
-        <circle cx="139" cy="28" r="3" fill="#2D6A1F"/>
-        <rect x="220" y="155" width="45" height="22" rx="4" fill="#E8460A"/>
-        <text x="242" y="170" text-anchor="middle" font-family="'Bebas Neue',sans-serif" font-size="13" fill="white" letter-spacing="2">HOT</text>
-      </svg>
-      <div class="label">Piri Piri Wings<span>from 15,000 UGX</span></div>
-    </div>
-
-  </div>
-</section>
-
-<!-- MENU SECTION -->
-<section id="menu" style="background:#140800;padding:4rem 1.5rem">
-  <div style="max-width:1100px;margin:0 auto">
-    <div class="section-header">
-      <h2>ROLEXES</h2>
-      <div class="cat-tag">🫓 Chapati wraps</div>
-    </div>
-    <div class="menu-grid" id="rolex-grid"></div>
-
-    <div class="section-header" style="margin-top:3rem">
-      <h2>CHICKEN &amp; FRIES</h2>
-      <div class="cat-tag">🍗 Crispy & Spicy</div>
-    </div>
-    <div class="menu-grid" id="chicken-grid"></div>
-
-    <div class="section-header" style="margin-top:3rem">
-      <h2>COMBO DEALS</h2>
-      <div class="cat-tag">💥 Best value</div>
-    </div>
-    <div class="menu-grid" id="combo-grid"></div>
-  </div>
-</section>
-
-<!-- DELIVERY ZONES -->
-<section id="delivery" class="zones-section">
-  <div class="zones-inner">
-    <div class="section-header">
-      <h2>DELIVERY ZONES</h2>
-      <div class="cat-tag">🛵 Kampala area</div>
-    </div>
-    <div class="zones-grid">
-      <div class="zone-card free">
-        <div class="zone-name">Nearby Area</div>
-        <div class="zone-tag free-tag">FREE DELIVERY</div>
-        <div class="zone-desc">Within walking distance of our stall. Order 10,000 UGX minimum.</div>
-        <div class="zone-fee">0 UGX</div>
-      </div>
-      <div class="zone-card paid">
-        <div class="zone-name">Ntinda / Naguru</div>
-        <div class="zone-tag paid-tag">DELIVERY AVAILABLE</div>
-        <div class="zone-desc">Fast boda delivery. Minimum order 15,000 UGX.</div>
-        <div class="zone-fee">2,000 UGX</div>
-      </div>
-      <div class="zone-card paid">
-        <div class="zone-name">Bukoto / Kisaasi</div>
-        <div class="zone-tag paid-tag">DELIVERY AVAILABLE</div>
-        <div class="zone-desc">Minimum order 15,000 UGX. 20–35 min delivery.</div>
-        <div class="zone-fee">3,000 UGX</div>
-      </div>
-      <div class="zone-card paid">
-        <div class="zone-name">Wandegeya / Mulago</div>
-        <div class="zone-tag paid-tag">DELIVERY AVAILABLE</div>
-        <div class="zone-desc">Minimum order 20,000 UGX. 30–45 min delivery.</div>
-        <div class="zone-fee">3,000 UGX</div>
-      </div>
-      <div class="zone-card paid">
-        <div class="zone-name">Office Bundles</div>
-        <div class="zone-tag paid-tag">BULK ORDERS</div>
-        <div class="zone-desc">5+ orders to one office — priority delivery, special pricing.</div>
-        <div class="zone-fee">Call us 📞</div>
-      </div>
-      <div class="zone-card" style="border-color:rgba(255,255,255,0.08);background:rgba(255,255,255,0.02)">
-        <div class="zone-name">Not sure?</div>
-        <div class="zone-tag" style="background:rgba(232,70,10,0.12);color:var(--fire)">WHATSAPP US</div>
-        <div class="zone-desc">Message us your location and we'll confirm if we can reach you today.</div>
-        <div class="zone-fee" style="font-size:15px;margin-top:10px"><a href="https://wa.me/256700550075" style="color:var(--gold);text-decoration:none">0700 550 075 →</a></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- LOYALTY SECTION -->
-<section id="loyalty" class="loyalty-section">
-  <div class="loyalty-inner">
-    <h2>LOYALTY CARD</h2>
-    <div class="sub">BUY 5 MEALS · GET 1 FREE</div>
-    <div class="stamp-card">
-      <div style="font-size:14px;color:rgba(255,248,240,0.5);margin-bottom:0.5rem;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px">YOUR PROGRESS</div>
-      <div class="stamps" id="stamp-display"></div>
-      <div class="stamp-info">Every meal you order earns one stamp. After 5 stamps, your 6th meal is <strong style="color:var(--gold)">completely free</strong>. Tell us your name when ordering and we track it for you!</div>
-      <div style="margin-top:1rem;font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,248,240,0.35);letter-spacing:1px">* One loyalty card per customer · Applies to any single item up to 15,000 UGX</div>
-    </div>
-    <div class="loyalty-perks">
-      <div class="perk">
-        <div class="perk-icon">🎂</div>
-        <div class="perk-title">Birthday Deal</div>
-        <div class="perk-desc">Message us on your birthday. Free soda with any meal, no minimum order.</div>
-      </div>
-      <div class="perk">
-        <div class="perk-icon">👥</div>
-        <div class="perk-title">Refer a Friend</div>
-        <div class="perk-desc">Bring a new customer — you both get a discount on that order. Ask us for details.</div>
-      </div>
-      <div class="perk">
-        <div class="perk-icon">🏢</div>
-        <div class="perk-title">Office Regular</div>
-        <div class="perk-desc">Order for your office 3x a week? We'll set up a tab and give you a weekly deal.</div>
-      </div>
-      <div class="perk">
-        <div class="perk-icon">📱</div>
-        <div class="perk-title">WhatsApp Status</div>
-        <div class="perk-desc">Follow our status for daily specials and surprise flash deals before they sell out.</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- CONTACT -->
-<section id="contact" class="contact-section">
-  <div class="contact-inner">
-    <h2>GET IN TOUCH</h2>
-    <div class="contact-grid">
-      <a class="contact-card" href="tel:+256700550075" style="text-decoration:none;color:inherit;display:block">
-        <div class="cc-icon">📞</div>
-        <div class="cc-label">Call / WhatsApp</div>
-        <div class="cc-val">0700 550 075</div>
-      </a>
-      <a class="contact-card" href="tel:+256770840204" style="text-decoration:none;color:inherit;display:block">
-        <div class="cc-icon">📞</div>
-        <div class="cc-label">Call / WhatsApp</div>
-        <div class="cc-val">0770 840 204</div>
-      </a>
-      <a class="contact-card" href="mailto:twinoray10@gmail.com" style="text-decoration:none;color:inherit;display:block">
-        <div class="cc-icon">✉️</div>
-        <div class="cc-label">Email</div>
-        <div class="cc-val">twinoray10@gmail.com</div>
-      </a>
-      <div class="contact-card">
-        <div class="cc-icon">🕐</div>
-        <div class="cc-label">Open Hours</div>
-        <div class="cc-val">7AM – 8PM Daily</div>
-      </div>
-    </div>
-    <a class="wa-btn" href="https://wa.me/256700550075?text=Hi!%20I%20want%20to%20order%20from%20Street%20Kitchen%20%F0%9F%94%A5" target="_blank">
-      💬 WHATSAPP ORDER
-    </a>
-  </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-logo">STREET <span>KITCHEN</span></div>
-  <div class="footer-sub">KAMPALA · EST. 2025 · OPEN EVERY DAY 7AM–8PM</div>
-  <div class="footer-links">
-    <a href="#menu">Menu</a>
-    <a href="#delivery">Delivery</a>
-    <a href="#loyalty">Loyalty</a>
-    <a href="#contact">Contact</a>
-    <a href="https://wa.me/256700550075" target="_blank">WhatsApp</a>
-  </div>
-  <div style="font-size:12px;color:rgba(255,248,240,0.2);font-family:'Space Mono',monospace">Orders go straight to our kitchen · Made with 🔥 in Kampala</div>
-</footer>
-
-<!-- CART BAR -->
-<div class="cart-bar" id="cart-bar">
-  <div style="font-size:26px">🛒</div>
-  <div class="cart-info">
-    <div class="cart-count" id="cart-count">0 items</div>
-    <div class="cart-total" id="cart-total">0 UGX</div>
-  </div>
-  <button class="checkout-btn" onclick="openModal()">CHECKOUT →</button>
 </div>
 
-<!-- ORDER MODAL -->
-<div class="modal-overlay" id="modal-overlay">
-  <div class="modal">
-    <div id="modal-content">
-      <h2>YOUR ORDER</h2>
-      <div class="sub">REVIEW &amp; CONFIRM</div>
-      <div class="order-summary" id="order-summary"></div>
-      <div class="form-group">
-        <label>Your Name</label>
-        <input type="text" id="cust-name" placeholder="e.g. Sarah Nakamya"/>
-      </div>
-      <div class="form-group">
-        <label>Phone / WhatsApp</label>
-        <input type="tel" id="cust-phone" placeholder="e.g. 0772 123 456"/>
-      </div>
-      <div class="form-group">
-        <label>Delivery or Pickup?</label>
-        <select id="order-type">
-          <option value="pickup">Pickup at stall</option>
-          <option value="delivery">Delivery (Kampala area)</option>
-        </select>
-      </div>
-      <div class="form-group" id="address-group" style="display:none">
-        <label>Delivery Address / Area</label>
-        <input type="text" id="cust-address" placeholder="e.g. Ntinda, near Shell station"/>
-      </div>
-      <div class="form-group">
-        <label>Special Instructions (optional)</label>
-        <textarea id="cust-notes" placeholder="e.g. Extra piri piri, no onions, gate code..."></textarea>
-      </div>
-      <div class="modal-actions">
-        <button class="cancel-btn" onclick="closeModal()">Cancel</button>
-        <button class="place-btn" id="place-btn" onclick="placeOrder()">PLACE ORDER 🔥</button>
-      </div>
-      <div class="send-status" id="send-status"></div>
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="h-logo">SK <span>ORDERS</span></div>
+    <div class="h-right">
+      <button class="notif-btn" onclick="enableNotifications()" id="notif-btn">🔔 Enable Alerts</button>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="stats-bar">
+      <div class="stat"><div class="stat-n" id="stat-new">0</div><div class="stat-l">New</div></div>
+      <div class="stat"><div class="stat-n" id="stat-prep">0</div><div class="stat-l">Preparing</div></div>
+      <div class="stat"><div class="stat-n" id="stat-done">0</div><div class="stat-l">Done Today</div></div>
+    </div>
+
+    <div class="filter-tabs">
+      <button class="ftab active" onclick="setFilter('all',this)">ALL</button>
+      <button class="ftab" onclick="setFilter('new',this)">🔥 NEW</button>
+      <button class="ftab" onclick="setFilter('preparing',this)">🍳 PREPARING</button>
+      <button class="ftab" onclick="setFilter('done',this)">✅ DONE</button>
+      <button class="ftab" onclick="clearDoneOrders()" style="border-color:rgba(244,67,54,0.3);color:#F44336;margin-left:auto">🗑 Clear Done</button>
+    </div>
+
+    <div class="orders-list" id="orders-list">
+      <div class="empty"><div class="empty-icon">🍽️</div><div class="empty-text">NO ORDERS YET</div></div>
     </div>
   </div>
 </div>
+
+<div class="new-order-alert" id="new-alert">🔥 NEW ORDER INCOMING!</div>
+<div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBvn2QXF-vkhXcVjScb-rh1veUdGdoI7qg",
@@ -560,414 +173,196 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 window._db = db;
-window._push = push;
+window._update = update;
+window._remove = remove;
 window._ref = ref;
 
-const DEFAULT_MENU = {
-  rolex:[
-    {name:"Classic Rolex",desc:"Chapati, egg, cabbage, tomato, onion",price:2500,heat:1},
-    {name:"Double Egg Rolex",desc:"Chapati, 2 eggs, veggies, light mayo",price:3000,heat:1},
-    {name:"Chicken Rolex",desc:"Shredded spiced chicken, coleslaw, chili sauce",price:5000,heat:2},
-    {name:"Avocado Spicy Rolex",desc:"Chapati, egg, avocado, piri piri sauce",price:4000,heat:3},
-    {name:"Beef Rolex",desc:"Chapati, egg, minced beef, veggies",price:4500,heat:2},
-    {name:"Mini Rolexes x3",desc:"Small chapatis — great party size",price:3000,heat:1},
-  ],
-  chicken:[
-    {name:"Fried Chicken 2 Pcs",desc:"Double-coated, overnight marinated, crispy",price:12000,heat:2},
-    {name:"Spicy Wings 5 Pcs",desc:"Piri piri glazed, extra crispy, flame-kissed",price:15000,heat:3},
-    {name:"Chicken Burger",desc:"Crispy fillet, house sauce, coleslaw",price:14000,heat:2},
-    {name:"Plain Fries",desc:"Double-fried, golden crispy, seasoned",price:7000,heat:1},
-    {name:"Sauced Fries",desc:"House signature sauce drizzle",price:9000,heat:2},
-    {name:"Fully Loaded Fries",desc:"Sauce, meat, cheese, spring onions",price:12000,heat:2},
-    {name:"Fresh Juice / Soda",desc:"Passion, mango, or soda",price:2000,heat:0},
-  ],
-  combo:[
-    {name:"Signature Combo",desc:"Chicken 2 pcs + loaded fries + soda — SAVE 4,000",price:20000,heat:2},
-    {name:"Rolex Breakfast Combo",desc:"Classic rolex + passion juice — SAVE 1,000",price:3500,heat:1},
-    {name:"Lunch Special",desc:"Chicken burger + sauced fries — SAVE 2,000",price:19000,heat:2},
-    {name:"Office Bundle x5",desc:"5 classic rolexes — SAVE 2,500",price:10000,heat:1},
-  ]
+window.listenOrders = function(){
+  onValue(ref(db, 'orders'), (snapshot) => {
+    const data = snapshot.val();
+    const orders = data ? Object.entries(data).map(([id,o])=>({id,...o})) : [];
+    // Sort newest first
+    orders.sort((a,b) => b.timestamp - a.timestamp);
+    window._allOrders = orders;
+    window.renderOrders(orders);
+    updateStats(orders);
+
+    // Alert on new orders (after first load)
+    if(window._loaded){
+      const newOnes = orders.filter(o => o.status === 'new' && o.timestamp > (window._lastCheck||0));
+      if(newOnes.length > 0){
+        showNewOrderAlert();
+        playSound();
+      }
+    }
+    window._lastCheck = Date.now();
+    window._loaded = true;
+  });
 };
-
-window.MENU = DEFAULT_MENU;
-
-// Listen for live menu updates from Firebase
-onValue(ref(db, 'menu'), (snapshot) => {
-  const data = snapshot.val();
-  if (data) {
-    window.MENU = data;
-  } else {
-    window.MENU = DEFAULT_MENU;
-  }
-  if (typeof window.renderAllMenus === 'function') window.renderAllMenus();
-});
 </script>
+
 <script>
-/* ── MENU DATA (loaded from Firebase) ── */
-const DEFAULT_MENU = {
-  rolex:[
-    {name:"Classic Rolex",desc:"Chapati, egg, cabbage, tomato, onion",price:2500,heat:1},
-    {name:"Double Egg Rolex",desc:"Chapati, 2 eggs, veggies, light mayo",price:3000,heat:1},
-    {name:"Chicken Rolex",desc:"Shredded spiced chicken, coleslaw, chili sauce",price:5000,heat:2},
-    {name:"Avocado Spicy Rolex",desc:"Chapati, egg, avocado, piri piri sauce",price:4000,heat:3},
-    {name:"Beef Rolex",desc:"Chapati, egg, minced beef, veggies",price:4500,heat:2},
-    {name:"Mini Rolexes x3",desc:"Small chapatis — great party size",price:3000,heat:1},
-  ],
-  chicken:[
-    {name:"Fried Chicken 2 Pcs",desc:"Double-coated, overnight marinated, crispy",price:12000,heat:2},
-    {name:"Spicy Wings 5 Pcs",desc:"Piri piri glazed, extra crispy, flame-kissed",price:15000,heat:3},
-    {name:"Chicken Burger",desc:"Crispy fillet, house sauce, coleslaw",price:14000,heat:2},
-    {name:"Plain Fries",desc:"Double-fried, golden crispy, seasoned",price:7000,heat:1},
-    {name:"Sauced Fries",desc:"House signature sauce drizzle",price:9000,heat:2},
-    {name:"Fully Loaded Fries",desc:"Sauce, meat, cheese, spring onions",price:12000,heat:2},
-    {name:"Fresh Juice / Soda",desc:"Passion, mango, or soda",price:2000,heat:0},
-  ],
-  combo:[
-    {name:"Signature Combo",desc:"Chicken 2 pcs + loaded fries + soda — SAVE 4,000",price:20000,heat:2},
-    {name:"Rolex Breakfast Combo",desc:"Classic rolex + passion juice — SAVE 1,000",price:3500,heat:1},
-    {name:"Lunch Special",desc:"Chicken burger + sauced fries — SAVE 2,000",price:19000,heat:2},
-    {name:"Office Bundle x5",desc:"5 classic rolexes — SAVE 2,500",price:10000,heat:1},
-  ]
-};
-if(!window.MENU) window.MENU = DEFAULT_MENU;
+const DEFAULT_PW = 'rAyRmToHnUdR1738';
+let currentFilter = 'all';
+window._allOrders = [];
+window._loaded = false;
 
-window.renderAllMenus = function(){
-  const MENU = window.MENU;
-  const catMap = {rolex:'rolex-grid', chicken:'chicken-grid', combo:'combo-grid'};
-  Object.entries(catMap).forEach(([cat, gridId]) => {
-    const grid = document.getElementById(gridId);
-    if(!grid || !MENU[cat]) return;
-    grid.innerHTML = '';
-    MENU[cat].forEach((item, i) => {
-      const key = gridId+'-'+i;
-      const d = document.createElement('div');
-      d.className = 'menu-item';
-      d.innerHTML = `
-        <div class="menu-item-top">
-          <div class="item-name">${item.name}</div>
-          <div class="item-price">${Number(item.price).toLocaleString()}<span style="font-size:12px;font-family:'Space Mono',monospace;color:rgba(255,248,240,0.4)"> UGX</span></div>
-        </div>
-        <div class="item-desc">${item.desc}</div>
-        <div class="item-meta">
-          ${heatDots(item.heat)}
-          <button class="add-btn" data-key="${key}" data-name="${item.name.replace(/"/g,'&quot;')}" data-price="${item.price}" title="Add to cart">+</button>
-        </div>`;
-      grid.appendChild(d);
-    });
-  });
-};
-
-window.renderAllMenus();
-
-/* ── RENDER MENU ── */
-function heatDots(n){
-  if(n===0) return '<span style="font-size:11px;color:rgba(255,255,255,0.25);font-family:Space Mono,monospace">mild</span>';
-  let h='<div class="heat">';
-  for(let i=1;i<=3;i++) h+=`<span class="heat-dot${i>n?' off':''}"></span>`;
-  return h+'</div>';
-}
-
-window.renderAllMenus();
-
-document.addEventListener('click', function(e){
-  if(e.target.classList.contains('add-btn')){
-    const btn = e.target;
-    addToCart(btn.dataset.key, btn.dataset.name, parseInt(btn.dataset.price), btn);
-  }
-});
-
-/* ── CART ── */
-let cart = {};
-
-function addToCart(key, name, price, btn){
-  if(cart[key]) cart[key].qty++;
-  else cart[key] = {name, price, qty:1};
-  updateCartBar();
-  if(btn){
-    btn.textContent='✓';
-    btn.style.background='#2D6A1F';
-    setTimeout(()=>{btn.textContent='+';btn.style.background='';},700);
+function doLogin(){
+  const pw = localStorage.getItem('sk_admin_pw') || DEFAULT_PW;
+  if(document.getElementById('pw-input').value === pw){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    setTimeout(()=>{
+      if(typeof window.listenOrders === 'function') window.listenOrders();
+    }, 400);
+  } else {
+    document.getElementById('login-err').textContent='Wrong password.';
+    document.getElementById('pw-input').value='';
   }
 }
 
-function updateCartBar(){
-  const total = Object.values(cart).reduce((s,i)=>s+i.price*i.qty,0);
-  const count = Object.values(cart).reduce((s,i)=>s+i.qty,0);
-  document.getElementById('cart-count').textContent = count+' item'+(count!==1?'s':'');
-  document.getElementById('cart-total').textContent = total.toLocaleString()+' UGX';
-  document.getElementById('cart-bar').classList.toggle('visible', count>0);
+function logout(){
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+  document.getElementById('pw-input').value='';
 }
 
-/* ── MODAL ── */
-function openModal(){
-  buildOrderSummary();
-  document.getElementById('modal-overlay').classList.add('open');
-  document.getElementById('modal-content').innerHTML = document.getElementById('modal-content').innerHTML; // reset
-  buildOrderSummary();
-  document.getElementById('modal-overlay').classList.add('open');
-}
-
-function closeModal(){
-  document.getElementById('modal-overlay').classList.remove('open');
-}
-
-function buildOrderSummary(){
-  const s = document.getElementById('order-summary');
-  if(!s) return;
-  const total = Object.values(cart).reduce((t,i)=>t+i.price*i.qty,0);
-  let html = '';
-  Object.entries(cart).forEach(([k,i])=>{
-    html += `<div class="order-row">
-      <span style="flex:1">${i.name}</span>
-      <div class="qty-ctrl">
-        <button class="qty-btn" onclick="changeQty('${k}',-1)">−</button>
-        <span style="min-width:16px;text-align:center">${i.qty}</span>
-        <button class="qty-btn" onclick="changeQty('${k}',1)">+</button>
-      </div>
-      <span style="min-width:90px;text-align:right">${(i.price*i.qty).toLocaleString()} UGX</span>
-      <button class="remove-btn" onclick="removeItem('${k}')">✕</button>
-    </div>`;
-  });
-  html += `<div class="order-row" style="border-top:1px solid rgba(255,255,255,0.1);margin-top:4px;padding-top:8px">
-    <span>TOTAL</span><span style="color:var(--gold)">${total.toLocaleString()} UGX</span>
-  </div>`;
-  s.innerHTML = html;
-}
-
-function changeQty(key, delta){
-  if(!cart[key]) return;
-  cart[key].qty += delta;
-  if(cart[key].qty <= 0) delete cart[key];
-  updateCartBar();
-  if(Object.keys(cart).length === 0){ closeModal(); return; }
-  buildOrderSummary();
-}
-
-function removeItem(key){
-  delete cart[key];
-  updateCartBar();
-  if(Object.keys(cart).length === 0){ closeModal(); return; }
-  buildOrderSummary();
-}
-
-document.getElementById('order-type')?.addEventListener('change',function(){
-  const ag = document.getElementById('address-group');
-  if(ag) ag.style.display = this.value==='delivery'?'':'none';
-});
-
-document.getElementById('modal-overlay').addEventListener('click',function(e){
-  if(e.target===this) closeModal();
-});
-
-/* ── PLACE ORDER ── */
-async function placeOrder(){
-  const name    = document.getElementById('cust-name')?.value.trim();
-  const phone   = document.getElementById('cust-phone')?.value.trim();
-  const type    = document.getElementById('order-type')?.value;
-  const address = document.getElementById('cust-address')?.value.trim();
-  const notes   = document.getElementById('cust-notes')?.value.trim();
-  const status  = document.getElementById('send-status');
-
-  if(!name || !phone){
-    if(status){ status.textContent='⚠ Please enter your name and phone number.'; status.style.color='#E8460A'; }
+window.renderOrders = function(orders){
+  const filtered = currentFilter === 'all' ? orders : orders.filter(o => o.status === currentFilter);
+  const list = document.getElementById('orders-list');
+  if(!filtered.length){
+    list.innerHTML = `<div class="empty"><div class="empty-icon">🍽️</div><div class="empty-text">NO ${currentFilter.toUpperCase()} ORDERS</div></div>`;
     return;
   }
+  list.innerHTML = filtered.map(o => orderCard(o)).join('');
+};
 
-  const btn = document.getElementById('place-btn');
-  btn.disabled = true; btn.textContent = 'SENDING...';
-
-  const total = Object.values(cart).reduce((t,i)=>t+i.price*i.qty,0);
-  const items = Object.values(cart).map(i=>({name:i.name,qty:i.qty,price:i.price,subtotal:i.price*i.qty}));
-  const orderRef = 'SK' + Date.now().toString().slice(-5);
-  const timeStr = new Date().toLocaleString('en-UG',{timeZone:'Africa/Kampala',weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
-
-  const orderData = {
-    ref: orderRef,
-    name, phone, type,
-    address: address||'',
-    notes: notes||'',
-    items, total,
-    time: timeStr,
-    timestamp: Date.now(),
-    status: 'new'
-  };
-
-  // Save to Firebase — this triggers owner dashboard instantly
-  try {
-    if(window._db && window._push && window._ref){
-      await window._push(window._ref(window._db, 'orders'), orderData);
-    }
-  } catch(e){ console.log('Firebase order save failed', e); }
-
-  showSuccess(orderData);
-}
-
-function showSuccess(order){
-  const mc = document.getElementById('modal-content');
-  if(!mc) return;
-  const itemRows = order.items.map(i=>`
-    <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px">
-      <span style="color:var(--cream)">${i.name} <span style="color:rgba(255,248,240,0.4)">x${i.qty}</span></span>
-      <span style="color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:16px">${i.subtotal.toLocaleString()} UGX</span>
+function orderCard(o){
+  const statusClass = o.status || 'new';
+  const statusLabel = statusClass === 'new' ? '🔥 NEW' : statusClass === 'preparing' ? '🍳 PREPARING' : '✅ DONE';
+  const itemsHtml = (o.items||[]).map(i=>`
+    <div class="card-item">
+      <span class="card-item-name">${i.name} <span style="color:var(--muted)">x${i.qty}</span></span>
+      <span class="card-item-price">${(i.subtotal||i.price*i.qty).toLocaleString()} UGX</span>
     </div>`).join('');
 
-  mc.innerHTML = `
-    <div style="text-align:center;margin-bottom:1.25rem">
-      <div style="font-size:44px;margin-bottom:0.5rem">✅</div>
-      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--gold)">ORDER PLACED!</h3>
-      <p style="font-size:13px;color:rgba(255,248,240,0.55);margin-top:4px">The kitchen has been notified</p>
-    </div>
-    <div style="background:#0D0400;border:2px solid rgba(232,70,10,0.4);border-radius:14px;padding:1.25rem;margin-bottom:1rem">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px">STREET <span style="color:var(--fire)">KITCHEN</span></div>
-        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--gold);background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.25);padding:4px 10px;border-radius:100px">#${order.ref}</div>
+  const actionBtns = statusClass === 'new'
+    ? `<button class="btn-preparing" onclick="updateStatus('${o.id}','preparing')">🍳 PREPARING</button>
+       <button class="btn-done" onclick="updateStatus('${o.id}','done')">✅ DONE</button>
+       <a class="btn-call" href="tel:${o.phone}" title="Call customer">📞</a>`
+    : statusClass === 'preparing'
+    ? `<button class="btn-done" onclick="updateStatus('${o.id}','done')" style="flex:2">✅ MARK AS DONE</button>
+       <a class="btn-call" href="tel:${o.phone}" title="Call customer">📞</a>`
+    : `<button class="btn-preparing" onclick="updateStatus('${o.id}','new')" style="opacity:0.6;flex:1">↩ REOPEN</button>`;
+
+  return `<div class="order-card ${statusClass}" id="card-${o.id}">
+    <div class="card-header">
+      <div>
+        <span class="card-ref">#${o.ref||'—'}</span>
+        <span class="card-time" style="margin-left:8px">${o.time||''}</span>
       </div>
-      <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:0.75rem;margin-bottom:0.75rem;font-size:12px;font-family:'Space Mono',monospace;color:rgba(255,248,240,0.45);display:grid;grid-template-columns:1fr 1fr;gap:4px">
-        <div>👤 ${order.name}</div><div>📞 ${order.phone}</div>
-        <div>${order.type==='delivery'?'🛵 Delivery':'🏃 Pickup'}</div>
-        <div>⏰ ${order.time}</div>
-        ${order.address?`<div style="grid-column:1/-1">📍 ${order.address}</div>`:''}
-      </div>
-      <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:0.75rem">
-        ${itemRows}
-        <div style="display:flex;justify-content:space-between;padding:10px 0 0;font-weight:700">
-          <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px">TOTAL</span>
-          <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold)">${order.total.toLocaleString()} UGX</span>
-        </div>
-      </div>
-      ${order.notes?`<div style="margin-top:0.75rem;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:12px;color:rgba(255,248,240,0.5)">📝 ${order.notes}</div>`:''}
-      <div style="margin-top:1rem;padding:1rem;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:10px;text-align:center">
-        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:6px">TRACK YOUR ORDER LIVE</div>
-        <a href="track.html?ref=${order.ref}" target="_blank" style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--gold);text-decoration:none">🔍 TRACK #${order.ref}</a>
-        <div style="font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,248,240,0.3);margin-top:4px">Updates automatically as we prepare your order</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span class="card-type ${o.type||'pickup'}">${o.type==='delivery'?'🛵 DELIVERY':'🏃 PICKUP'}</span>
+        <span class="status-badge status-${statusClass}">${statusLabel}</span>
       </div>
     </div>
-    <button onclick="closeModal();resetCart()" style="width:100%;background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,248,240,0.5);padding:10px;border-radius:8px;font-family:'Syne',sans-serif;font-size:13px;cursor:pointer">Close</button>`;
-  cart = {}; updateCartBar();
+    <div class="card-customer">
+      <div><span>Customer</span><br><b>${o.name||'—'}</b></div>
+      <div><span>Phone</span><br><b>${o.phone||'—'}</b></div>
+      ${o.address?`<div><span>Address</span><br><b>${o.address}</b></div>`:''}
+    </div>
+    <div class="card-items">
+      ${itemsHtml}
+      <div class="card-total">
+        <span class="card-total-label">TOTAL</span>
+        <span class="card-total-val">${(o.total||0).toLocaleString()} UGX</span>
+      </div>
+    </div>
+    ${o.notes?`<div class="card-notes">📝 ${o.notes}</div>`:''}
+    <div class="card-actions">${actionBtns}</div>
+  </div>`;
 }
 
-function showSuccess(name, total, waText){
-  const mc = document.getElementById('modal-content');
-  if(!mc) return;
-  mc.innerHTML = `
-    <div class="success-msg">
-      <div class="check">🔥</div>
-      <h3>ORDER RECEIVED!</h3>
-      <p>Thank you <strong style="color:var(--cream)">${name}</strong>!<br>
-      Your order for <strong style="color:var(--gold)">${total.toLocaleString()} UGX</strong> has been sent to our kitchen.</p>
-      <p style="margin-top:0.75rem;font-size:13px">We'll confirm via WhatsApp shortly.<br>Tap below to also message us directly:</p>
-      <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem">
-        <a href="https://wa.me/256700550075?text=${waText}" target="_blank"
-           style="display:block;background:#25D366;color:#fff;padding:12px 20px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;text-decoration:none;text-align:center">
-          💬 WHATSAPP 0700 550 075
-        </a>
-        <a href="https://wa.me/256770840204?text=${waText}" target="_blank"
-           style="display:block;background:#1da851;color:#fff;padding:12px 20px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;text-decoration:none;text-align:center">
-          💬 WHATSAPP 0770 840 204
-        </a>
-      </div>
-      <button onclick="closeModal();resetCart()"
-        style="width:100%;margin-top:1rem;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,248,240,0.6);padding:10px;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;cursor:pointer">
-        Close
-      </button>
-    </div>`;
-  cart = {};
-  updateCartBar();
+async function updateStatus(id, status){
+  try {
+    if(window._db && window._update && window._ref){
+      await window._update(window._ref(window._db, `orders/${id}`), {status});
+      showToast(status==='done'?'✅ Order marked done!':status==='preparing'?'🍳 Now preparing!':'↩ Order reopened');
+    }
+  } catch(e){ showToast('Could not update. Check connection.'); }
 }
 
-function resetCart(){ cart={}; updateCartBar(); }
+function updateStats(orders){
+  const today = new Date().toDateString();
+  document.getElementById('stat-new').textContent = orders.filter(o=>o.status==='new').length;
+  document.getElementById('stat-prep').textContent = orders.filter(o=>o.status==='preparing').length;
+  document.getElementById('stat-done').textContent = orders.filter(o=>o.status==='done' && new Date(o.timestamp).toDateString()===today).length;
+}
 
-/* ── LOYALTY STAMPS DISPLAY ── */
-(function(){
-  const container = document.getElementById('stamp-display');
-  if(!container) return;
-  for(let i=1;i<=6;i++){
-    const s = document.createElement('div');
-    s.className = 'stamp' + (i<=3?' filled':i===6?' reward':'');
-    s.textContent = i<=3?'🔥':i===6?'🎁':'';
-    if(i>3 && i<6) s.textContent='';
-    container.appendChild(s);
-  }
-})();
+function setFilter(f, btn){
+  currentFilter = f;
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  window.renderOrders(window._allOrders);
+}
 
-/* ── SMOOTH NAV LINKS ── */
-document.querySelectorAll('a[href^="#"]').forEach(a=>{
-  a.addEventListener('click',function(e){
-    const target = document.querySelector(this.getAttribute('href'));
-    if(target){ e.preventDefault(); target.scrollIntoView({behavior:'smooth'}); }
-  });
-});
+function showNewOrderAlert(){
+  const a = document.getElementById('new-alert');
+  a.classList.add('show');
+  setTimeout(()=>a.classList.remove('show'), 4000);
+}
 
-/* ── REOPEN MODAL PROPERLY ── */
-function openModal(){
-  const overlay = document.getElementById('modal-overlay');
-  const mc = document.getElementById('modal-content');
-  // restore form if success was shown
-  if(!document.getElementById('cust-name')){
-    mc.innerHTML = `
-      <h2>YOUR ORDER</h2>
-      <div class="sub">REVIEW &amp; CONFIRM</div>
-      <div class="order-summary" id="order-summary"></div>
-      <div class="form-group"><label>Your Name</label><input type="text" id="cust-name" placeholder="e.g. Sarah Nakamya"/></div>
-      <div class="form-group"><label>Phone / WhatsApp</label><input type="tel" id="cust-phone" placeholder="e.g. 0772 123 456"/></div>
-      <div class="form-group"><label>Delivery or Pickup?</label>
-        <select id="order-type">
-          <option value="pickup">Pickup at stall</option>
-          <option value="delivery">Delivery (Kampala area)</option>
-        </select>
-      </div>
-      <div class="form-group" id="address-group" style="display:none"><label>Delivery Address / Area</label><input type="text" id="cust-address" placeholder="e.g. Ntinda, near Shell station"/></div>
-      <div class="form-group"><label>Special Instructions (optional)</label><textarea id="cust-notes" placeholder="e.g. Extra piri piri, no onions..."></textarea></div>
-      <div class="modal-actions">
-        <button class="cancel-btn" onclick="closeModal()">Cancel</button>
-        <button class="place-btn" id="place-btn" onclick="placeOrder()">PLACE ORDER 🔥</button>
-      </div>
-      <div class="send-status" id="send-status"></div>`;
-    document.getElementById('order-type').addEventListener('change',function(){
-      const ag=document.getElementById('address-group');
-      if(ag) ag.style.display=this.value==='delivery'?'':'none';
+function playSound(){
+  try {
+    const ctx = new AudioContext();
+    [0,0.15,0.3].forEach(t=>{
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0.3, ctx.currentTime+t);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+t+0.2);
+      osc.start(ctx.currentTime+t);
+      osc.stop(ctx.currentTime+t+0.2);
     });
+  } catch(e){}
+}
+
+async function enableNotifications(){
+  if(!('Notification' in window)){ showToast('Notifications not supported on this browser'); return; }
+  const permission = await Notification.requestPermission();
+  if(permission === 'granted'){
+    document.getElementById('notif-btn').textContent = '🔔 Alerts ON';
+    document.getElementById('notif-btn').style.background = 'rgba(76,175,80,0.15)';
+    document.getElementById('notif-btn').style.borderColor = 'rgba(76,175,80,0.4)';
+    document.getElementById('notif-btn').style.color = '#4CAF50';
+    showToast('✅ Notifications enabled!');
+    new Notification('Street Kitchen 🔥', {body:'You will now get alerts for new orders!'});
+  } else {
+    showToast('Notifications blocked. Enable in browser settings.');
   }
-  buildOrderSummary();
-  overlay.classList.add('open');
 }
 
-/* ── PWA INSTALL PROMPT ── */
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  // Show install banner after 3 seconds
-  setTimeout(showInstallBanner, 3000);
-});
-
-function showInstallBanner(){
-  if(!deferredPrompt) return;
-  const banner = document.createElement('div');
-  banner.id = 'install-banner';
-  banner.style.cssText = `position:fixed;bottom:80px;left:1rem;right:1rem;background:#1E0C04;border:1px solid rgba(232,70,10,0.4);border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,0.5)`;
-  banner.innerHTML = `
-    <div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#FFF8F0">📲 ADD TO HOME SCREEN</div>
-      <div style="font-size:12px;color:rgba(255,248,240,0.5);font-family:'Space Mono',monospace">Order faster like a real app</div>
-    </div>
-    <div style="display:flex;gap:8px">
-      <button onclick="document.getElementById('install-banner').remove()" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,248,240,0.5);padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer">Later</button>
-      <button onclick="installApp()" style="background:#E8460A;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;cursor:pointer">INSTALL</button>
-    </div>`;
-  document.body.appendChild(banner);
+async function clearDoneOrders(){
+  const doneOrders = window._allOrders.filter(o => o.status === 'done');
+  if(!doneOrders.length){ showToast('No done orders to clear.'); return; }
+  if(!confirm(`Delete ${doneOrders.length} completed order(s)? This cannot be undone.`)) return;
+  try {
+    await Promise.all(doneOrders.map(o =>
+      window._remove(window._ref(window._db, `orders/${o.id}`))
+    ));
+    showToast(`✅ ${doneOrders.length} done order(s) cleared!`);
+  } catch(e){ showToast('Error clearing orders. Try again.'); }
 }
 
-async function installApp(){
-  if(!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  const b = document.getElementById('install-banner');
-  if(b) b.remove();
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
 }
 
-/* ── SERVICE WORKER ── */
+// Service worker
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
