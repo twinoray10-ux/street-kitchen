@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Track Your Order — Street Kitchen</title>
+<meta name="theme-color" content="#1A0A00">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --fire:#E8460A;--gold:#F5A623;--cream:#FFF8F0;--dark:#1A0A00;
+  --panel:#1E0C04;--border:rgba(255,255,255,0.08);--muted:rgba(255,248,240,0.45);
+  --green:#4CAF50;--amber:#FF9800;
+}
+html,body{min-height:100vh;font-family:'Syne',sans-serif;background:var(--dark);color:var(--cream);display:flex;flex-direction:column}
+
+nav{background:rgba(26,10,0,0.95);border-bottom:1px solid rgba(232,70,10,0.2);padding:0 1.25rem;height:56px;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px}
+.nav-logo span{color:var(--fire)}
+.nav-back{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:6px}
+.nav-back:hover{color:var(--gold)}
+
+main{flex:1;max-width:480px;width:100%;margin:0 auto;padding:2rem 1.25rem}
+
+/* SEARCH */
+.search-box{background:var(--panel);border:1px solid rgba(232,70,10,0.2);border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;text-align:center}
+.search-box h2{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;margin-bottom:0.5rem}
+.search-box p{font-size:13px;color:var(--muted);margin-bottom:1.25rem;font-family:'Space Mono',monospace}
+.search-row{display:flex;gap:8px}
+.search-row input{flex:1;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:11px 14px;color:var(--cream);font-family:'Space Mono',monospace;font-size:14px;letter-spacing:2px;outline:none;text-transform:uppercase;transition:border-color 0.2s}
+.search-row input:focus{border-color:var(--fire)}
+.search-row input::placeholder{text-transform:none;letter-spacing:1px}
+.search-btn{background:var(--fire);color:#fff;border:none;padding:11px 20px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;transition:opacity 0.2s;white-space:nowrap}
+.search-btn:hover{opacity:0.85}
+
+/* RESULT */
+#result{display:none}
+
+.order-header{background:var(--panel);border:1px solid rgba(232,70,10,0.25);border-radius:16px;padding:1.25rem;margin-bottom:1.25rem}
+.order-ref-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem}
+.order-ref{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--cream)}
+.order-time{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted)}
+.order-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:13px;border-top:1px solid var(--border);padding-top:0.75rem}
+.order-meta-item span{display:block;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:2px}
+.order-meta-item b{color:var(--cream)}
+
+/* TRACKER */
+.tracker{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:1.25rem}
+.tracker-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted);margin-bottom:1.5rem}
+
+.steps{position:relative;display:flex;flex-direction:column;gap:0}
+.step{display:flex;gap:1rem;align-items:flex-start;position:relative;padding-bottom:1.5rem}
+.step:last-child{padding-bottom:0}
+
+/* connector line */
+.step:not(:last-child)::after{content:'';position:absolute;left:19px;top:40px;bottom:0;width:2px;background:var(--border);z-index:0}
+.step.done:not(:last-child)::after{background:var(--fire)}
+.step.active:not(:last-child)::after{background:linear-gradient(var(--fire),var(--border))}
+
+.step-icon{width:40px;height:40px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;position:relative;z-index:1;background:var(--dark);transition:all 0.4s}
+.step.done .step-icon{border-color:var(--fire);background:rgba(232,70,10,0.15)}
+.step.active .step-icon{border-color:var(--gold);background:rgba(245,166,35,0.15);box-shadow:0 0 0 4px rgba(245,166,35,0.1);animation:glow 1.5s ease-in-out infinite}
+@keyframes glow{0%,100%{box-shadow:0 0 0 4px rgba(245,166,35,0.1)}50%{box-shadow:0 0 0 8px rgba(245,166,35,0.2)}}
+
+.step-info{padding-top:6px}
+.step-label{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--muted);transition:color 0.4s}
+.step.done .step-label{color:var(--cream)}
+.step.active .step-label{color:var(--gold)}
+.step-desc{font-size:12px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px;line-height:1.4}
+.step.active .step-desc{color:rgba(255,248,240,0.6)}
+
+/* BIG STATUS */
+.big-status{text-align:center;padding:1.5rem;background:var(--panel);border-radius:16px;margin-bottom:1.25rem;border:1px solid var(--border)}
+.big-status-icon{font-size:56px;margin-bottom:0.5rem;display:block}
+.big-status-text{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,6vw,40px);letter-spacing:3px}
+.big-status-sub{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);margin-top:6px;letter-spacing:1px}
+.status-new .big-status-text{color:var(--fire)}
+.status-preparing .big-status-text{color:var(--gold)}
+.status-done .big-status-text{color:var(--green)}
+
+/* ITEMS */
+.order-items{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin-bottom:1.25rem}
+.order-items-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--muted);margin-bottom:0.75rem}
+.item-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.item-row:last-of-type{border-bottom:none}
+.item-row-name{color:var(--cream)}
+.item-row-price{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold)}
+.total-row{display:flex;justify-content:space-between;border-top:1px solid rgba(232,70,10,0.2);padding-top:10px;margin-top:6px}
+.total-label{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:var(--muted)}
+.total-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold)}
+
+/* NOT FOUND */
+.not-found{text-align:center;padding:2rem;background:var(--panel);border-radius:16px;border:1px solid var(--border)}
+.not-found-icon{font-size:40px;margin-bottom:0.75rem}
+.not-found-text{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--muted)}
+.not-found-sub{font-size:12px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:6px}
+
+/* LIVE BADGE */
+.live-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(76,175,80,0.1);border:1px solid rgba(76,175,80,0.3);color:#4CAF50;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;padding:3px 10px;border-radius:100px;margin-bottom:1rem}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#4CAF50;animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+footer{text-align:center;padding:1.5rem;font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,248,240,0.2);letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">STREET <span>KITCHEN</span></div>
+  <a href="index.html" class="nav-back">← Back to menu</a>
+</nav>
+
+<main>
+  <!-- SEARCH -->
+  <div class="search-box">
+    <h2>🔍 TRACK YOUR ORDER</h2>
+    <p>Enter your order reference number</p>
+    <div class="search-row">
+      <input type="text" id="ref-input" placeholder="e.g. SK84729" maxlength="10" onkeydown="if(event.key==='Enter')trackOrder()"/>
+      <button class="search-btn" onclick="trackOrder()">TRACK</button>
+    </div>
+    <div id="search-err" style="color:var(--fire);font-size:12px;font-family:'Space Mono',monospace;margin-top:0.75rem;min-height:16px"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result"></div>
+</main>
+
+<footer>STREET KITCHEN KAMPALA &nbsp;·&nbsp; LIVE ORDER TRACKING</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBvn2QXF-vkhXcVjScb-rh1veUdGdoI7qg",
+  authDomain: "street-kitchen-9f41e.firebaseapp.com",
+  projectId: "street-kitchen-9f41e",
+  storageBucket: "street-kitchen-9f41e.firebasestorage.app",
+  messagingSenderId: "849439630164",
+  appId: "1:849439630164:web:1c6bdc115b4f283026dec1",
+  databaseURL: "https://street-kitchen-9f41e-default-rtdb.firebaseio.com"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+let currentListener = null;
+
+window.trackOrder = function(){
+  const raw = document.getElementById('ref-input').value.trim().toUpperCase();
+  const refNum = raw.startsWith('SK') ? raw : 'SK' + raw;
+  const err = document.getElementById('search-err');
+
+  if(raw.length < 5){ err.textContent = 'Please enter your full order reference number.'; return; }
+  err.textContent = '';
+  document.getElementById('result').innerHTML = `<div style="text-align:center;padding:2rem;color:var(--muted);font-family:'Space Mono',monospace;font-size:12px">Searching...</div>`;
+
+  // Stop previous listener
+  if(currentListener) currentListener();
+
+  // Query Firebase by ref number
+  const ordersRef = query(ref(db,'orders'), orderByChild('ref'), equalTo(refNum));
+  currentListener = onValue(ordersRef, (snapshot) => {
+    const data = snapshot.val();
+    if(!data){
+      document.getElementById('result').innerHTML = `
+        <div class="not-found">
+          <div class="not-found-icon">🤔</div>
+          <div class="not-found-text">ORDER NOT FOUND</div>
+          <div class="not-found-sub">Check your reference number and try again.<br>It looks like: SK84729</div>
+        </div>`;
+      return;
+    }
+    const order = Object.values(data)[0];
+    renderTracking(order);
+  });
+};
+
+function renderTracking(o){
+  const status = o.status || 'new';
+  const statusMap = {
+    new:      { icon:'🔥', text:'ORDER RECEIVED',   sub:'We got your order! Preparing to start...',   color:'var(--fire)' },
+    preparing:{ icon:'🍳', text:'BEING PREPARED',   sub:'Your food is being made fresh right now!',   color:'var(--gold)' },
+    done:     { icon:'✅', text: o.type==='delivery'?'OUT FOR DELIVERY':'READY FOR PICKUP', sub: o.type==='delivery'?'Your order is on its way to you!':'Come pick up your order — it\'s ready!', color:'var(--green)' }
+  };
+  const s = statusMap[status] || statusMap.new;
+
+  const steps = [
+    { key:'new',       icon:'🔥', label:'ORDER RECEIVED',    desc:'Your order has been confirmed' },
+    { key:'preparing', icon:'🍳', label:'BEING PREPARED',    desc:'Fresh food being made for you' },
+    { key:'done',      icon: o.type==='delivery'?'🛵':'🏃',  label: o.type==='delivery'?'OUT FOR DELIVERY':'READY FOR PICKUP', desc: o.type==='delivery'?'On the way to you!':'Come collect your order' }
+  ];
+
+  const statusOrder = ['new','preparing','done'];
+  const currentIdx = statusOrder.indexOf(status);
+
+  const stepsHtml = steps.map((step, i) => {
+    const isDone = i < currentIdx;
+    const isActive = i === currentIdx;
+    const cls = isDone ? 'done' : isActive ? 'active' : '';
+    return `<div class="step ${cls}">
+      <div class="step-icon">${isDone ? '✓' : step.icon}</div>
+      <div class="step-info">
+        <div class="step-label">${step.label}</div>
+        <div class="step-desc">${step.desc}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const itemsHtml = (o.items||[]).map(i=>`
+    <div class="item-row">
+      <span class="item-row-name">${i.name} <span style="color:var(--muted)">x${i.qty}</span></span>
+      <span class="item-row-price">${(i.subtotal||i.price*i.qty).toLocaleString()} UGX</span>
+    </div>`).join('');
+
+  document.getElementById('result').innerHTML = `
+    <div class="live-badge"><span class="live-dot"></span> LIVE TRACKING</div>
+
+    <!-- BIG STATUS -->
+    <div class="big-status status-${status}">
+      <span class="big-status-icon">${s.icon}</span>
+      <div class="big-status-text" style="color:${s.color}">${s.text}</div>
+      <div class="big-status-sub">${s.sub}</div>
+    </div>
+
+    <!-- STEP TRACKER -->
+    <div class="tracker">
+      <div class="tracker-title">ORDER PROGRESS</div>
+      <div class="steps">${stepsHtml}</div>
+    </div>
+
+    <!-- ORDER DETAILS -->
+    <div class="order-header">
+      <div class="order-ref-row">
+        <span class="order-ref">#${o.ref}</span>
+        <span class="order-time">${o.time||''}</span>
+      </div>
+      <div class="order-meta">
+        <div class="order-meta-item"><span>Customer</span><b>${o.name}</b></div>
+        <div class="order-meta-item"><span>Type</span><b>${o.type==='delivery'?'🛵 Delivery':'🏃 Pickup'}</b></div>
+        ${o.address?`<div class="order-meta-item" style="grid-column:1/-1"><span>Address</span><b>${o.address}</b></div>`:''}
+      </div>
+    </div>
+
+    <!-- ITEMS -->
+    <div class="order-items">
+      <div class="order-items-title">YOUR ITEMS</div>
+      ${itemsHtml}
+      <div class="total-row">
+        <span class="total-label">TOTAL</span>
+        <span class="total-val">${(o.total||0).toLocaleString()} UGX</span>
+      </div>
+    </div>
+
+    ${o.notes?`<div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:1rem;font-size:13px;color:var(--muted)">📝 <b style="color:var(--cream)">Note:</b> ${o.notes}</div>`:''}
+    <div style="text-align:center;margin-top:1.25rem;font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,248,240,0.2);letter-spacing:1px">PAGE UPDATES AUTOMATICALLY · NO NEED TO REFRESH</div>`;
+}
+
+// Auto-track from URL param ?ref=SK12345
+const urlRef = new URLSearchParams(window.location.search).get('ref');
+if(urlRef){
+  document.getElementById('ref-input').value = urlRef;
+  setTimeout(window.trackOrder, 500);
+}
+</script>
+</body>
+</html>
