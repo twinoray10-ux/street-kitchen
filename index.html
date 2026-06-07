@@ -774,7 +774,7 @@ async function placeOrder(){
   }
 
   const btn = document.getElementById('place-btn');
-  btn.disabled = true; btn.textContent = 'SENDING...';
+  btn.disabled = true; btn.textContent = 'PLACING ORDER...';
 
   const total = Object.values(cart).reduce((t,i)=>t+i.price*i.qty,0);
   const items = Object.values(cart).map(i=>({name:i.name,qty:i.qty,price:i.price,subtotal:i.price*i.qty}));
@@ -792,88 +792,19 @@ async function placeOrder(){
     status: 'new'
   };
 
-  // Save to Firebase — this triggers owner dashboard instantly
+  // Save to Firebase
   try {
     if(window._db && window._push && window._ref){
       await window._push(window._ref(window._db, 'orders'), orderData);
     }
   } catch(e){ console.log('Firebase order save failed', e); }
 
-  showSuccess(orderData);
-}
-
-function showSuccess(order){
-  const mc = document.getElementById('modal-content');
-  if(!mc) return;
-  const itemRows = order.items.map(i=>`
-    <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px">
-      <span style="color:var(--cream)">${i.name} <span style="color:rgba(255,248,240,0.4)">x${i.qty}</span></span>
-      <span style="color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:16px">${i.subtotal.toLocaleString()} UGX</span>
-    </div>`).join('');
-
-  mc.innerHTML = `
-    <div style="text-align:center;margin-bottom:1.25rem">
-      <div style="font-size:44px;margin-bottom:0.5rem">✅</div>
-      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--gold)">ORDER PLACED!</h3>
-      <p style="font-size:13px;color:rgba(255,248,240,0.55);margin-top:4px">The kitchen has been notified</p>
-    </div>
-    <div style="background:#0D0400;border:2px solid rgba(232,70,10,0.4);border-radius:14px;padding:1.25rem;margin-bottom:1rem">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px">STREET <span style="color:var(--fire)">KITCHEN</span></div>
-        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--gold);background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.25);padding:4px 10px;border-radius:100px">#${order.ref}</div>
-      </div>
-      <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:0.75rem;margin-bottom:0.75rem;font-size:12px;font-family:'Space Mono',monospace;color:rgba(255,248,240,0.45);display:grid;grid-template-columns:1fr 1fr;gap:4px">
-        <div>👤 ${order.name}</div><div>📞 ${order.phone}</div>
-        <div>${order.type==='delivery'?'🛵 Delivery':'🏃 Pickup'}</div>
-        <div>⏰ ${order.time}</div>
-        ${order.address?`<div style="grid-column:1/-1">📍 ${order.address}</div>`:''}
-      </div>
-      <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:0.75rem">
-        ${itemRows}
-        <div style="display:flex;justify-content:space-between;padding:10px 0 0;font-weight:700">
-          <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px">TOTAL</span>
-          <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold)">${order.total.toLocaleString()} UGX</span>
-        </div>
-      </div>
-      ${order.notes?`<div style="margin-top:0.75rem;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:12px;color:rgba(255,248,240,0.5)">📝 ${order.notes}</div>`:''}
-      <div style="margin-top:1rem;padding:1rem;background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);border-radius:10px;text-align:center">
-        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:6px">TRACK YOUR ORDER LIVE</div>
-        <a href="track.html?ref=${order.ref}" target="_blank" style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--gold);text-decoration:none">🔍 TRACK #${order.ref}</a>
-        <div style="font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,248,240,0.3);margin-top:4px">Updates automatically as we prepare your order</div>
-      </div>
-    </div>
-    <button onclick="closeModal();resetCart()" style="width:100%;background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,248,240,0.5);padding:10px;border-radius:8px;font-family:'Syne',sans-serif;font-size:13px;cursor:pointer">Close</button>`;
+  // Clear cart then redirect straight to live tracking page
   cart = {}; updateCartBar();
+  window.location.href = 'track.html?ref=' + orderRef;
 }
 
-function showSuccess(name, total, waText){
-  const mc = document.getElementById('modal-content');
-  if(!mc) return;
-  mc.innerHTML = `
-    <div class="success-msg">
-      <div class="check">🔥</div>
-      <h3>ORDER RECEIVED!</h3>
-      <p>Thank you <strong style="color:var(--cream)">${name}</strong>!<br>
-      Your order for <strong style="color:var(--gold)">${total.toLocaleString()} UGX</strong> has been sent to our kitchen.</p>
-      <p style="margin-top:0.75rem;font-size:13px">We'll confirm via WhatsApp shortly.<br>Tap below to also message us directly:</p>
-      <div style="display:flex;flex-direction:column;gap:0.75rem;margin-top:1.5rem">
-        <a href="https://wa.me/256700550075?text=${waText}" target="_blank"
-           style="display:block;background:#25D366;color:#fff;padding:12px 20px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;text-decoration:none;text-align:center">
-          💬 WHATSAPP 0700 550 075
-        </a>
-        <a href="https://wa.me/256770840204?text=${waText}" target="_blank"
-           style="display:block;background:#1da851;color:#fff;padding:12px 20px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;text-decoration:none;text-align:center">
-          💬 WHATSAPP 0770 840 204
-        </a>
-      </div>
-      <button onclick="closeModal();resetCart()"
-        style="width:100%;margin-top:1rem;background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,248,240,0.6);padding:10px;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;cursor:pointer">
-        Close
-      </button>
-    </div>`;
-  cart = {};
-  updateCartBar();
-}
+
 
 function resetCart(){ cart={}; updateCartBar(); }
 
