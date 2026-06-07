@@ -2,8 +2,15 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Street Kitchen Kampala — Order Online</title>
+<meta name="theme-color" content="#1A0A00">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Street Kitchen">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -538,7 +545,7 @@ footer{background:#0D0400;padding:3rem 1.5rem;text-align:center;border-top:1px s
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBvn2QXF-vkhXcVjScb-rh1veUdGdoI7qg",
@@ -552,6 +559,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+window._db = db;
+window._push = push;
+window._ref = ref;
 
 const DEFAULT_MENU = {
   rolex:[
@@ -764,49 +774,72 @@ async function placeOrder(){
   }
 
   const btn = document.getElementById('place-btn');
-  btn.disabled = true;
-  btn.textContent = 'SENDING...';
-  if(status){ status.textContent='Sending your order to the kitchen...'; status.style.color='rgba(255,248,240,0.5)'; }
+  btn.disabled = true; btn.textContent = 'SENDING...';
 
   const total = Object.values(cart).reduce((t,i)=>t+i.price*i.qty,0);
-  const itemLines = Object.values(cart).map(i=>`• ${i.name} x${i.qty} = ${(i.price*i.qty).toLocaleString()} UGX`).join('\n');
-  const timeStr = new Date().toLocaleString('en-UG',{timeZone:'Africa/Kampala',weekday:'short',year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+  const items = Object.values(cart).map(i=>({name:i.name,qty:i.qty,price:i.price,subtotal:i.price*i.qty}));
+  const orderRef = 'SK' + Date.now().toString().slice(-5);
+  const timeStr = new Date().toLocaleString('en-UG',{timeZone:'Africa/Kampala',weekday:'short',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
 
-  const orderBody = `
-NEW STREET KITCHEN ORDER
-========================
-Customer : ${name}
-Phone    : ${phone}
-Type     : ${type==='delivery'?'DELIVERY':'PICKUP AT STALL'}${address?'\nAddress  : '+address:''}${notes?'\nNotes    : '+notes:''}
+  const orderData = {
+    ref: orderRef,
+    name, phone, type,
+    address: address||'',
+    notes: notes||'',
+    items, total,
+    time: timeStr,
+    timestamp: Date.now(),
+    status: 'new'
+  };
 
-ORDER ITEMS:
-${itemLines}
-
-TOTAL    : ${total.toLocaleString()} UGX
-Time     : ${timeStr}
-========================
-Sent from Street Kitchen website`;
-
-  const waText = encodeURIComponent(`Hi Street Kitchen! I just placed an order:\n\nName: ${name}\nPhone: ${phone}\nType: ${type==='delivery'?'Delivery':'Pickup'}${address?'\nAddress: '+address:''}\n\n${itemLines}\n\nTOTAL: ${total.toLocaleString()} UGX${notes?'\n\nNotes: '+notes:''}`);
-
-  // Try to send email via Anthropic API + Gmail MCP
+  // Save to Firebase — this triggers owner dashboard instantly
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({
-        model:"claude-sonnet-4-20250514",
-        max_tokens:1000,
-        system:`You are an order relay for Street Kitchen Kampala. When you receive an order, use Gmail to send an email to twinoray10@gmail.com with subject "🔥 NEW ORDER — Street Kitchen" and the full order details in the body. Send it immediately and confirm.`,
-        messages:[{role:"user",content:`Please send this order via email now:\n\n${orderBody}`}],
-        mcp_servers:[{type:"url",url:"https://gmailmcp.googleapis.com/mcp/v1",name:"gmail"}]
-      })
-    });
-    await res.json();
-  } catch(e){ /* silent fallback */ }
+    if(window._db && window._push && window._ref){
+      await window._push(window._ref(window._db, 'orders'), orderData);
+    }
+  } catch(e){ console.log('Firebase order save failed', e); }
 
-  // Always show success + WhatsApp link
-  showSuccess(name, total, waText);
+  showSuccess(orderData);
+}
+
+function showSuccess(order){
+  const mc = document.getElementById('modal-content');
+  if(!mc) return;
+  const itemRows = order.items.map(i=>`
+    <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.06);font-size:13px">
+      <span style="color:var(--cream)">${i.name} <span style="color:rgba(255,248,240,0.4)">x${i.qty}</span></span>
+      <span style="color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:16px">${i.subtotal.toLocaleString()} UGX</span>
+    </div>`).join('');
+
+  mc.innerHTML = `
+    <div style="text-align:center;margin-bottom:1.25rem">
+      <div style="font-size:44px;margin-bottom:0.5rem">✅</div>
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;color:var(--gold)">ORDER PLACED!</h3>
+      <p style="font-size:13px;color:rgba(255,248,240,0.55);margin-top:4px">The kitchen has been notified</p>
+    </div>
+    <div style="background:#0D0400;border:2px solid rgba(232,70,10,0.4);border-radius:14px;padding:1.25rem;margin-bottom:1rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.75rem">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px">STREET <span style="color:var(--fire)">KITCHEN</span></div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--gold);background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.25);padding:4px 10px;border-radius:100px">#${order.ref}</div>
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:0.75rem;margin-bottom:0.75rem;font-size:12px;font-family:'Space Mono',monospace;color:rgba(255,248,240,0.45);display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        <div>👤 ${order.name}</div><div>📞 ${order.phone}</div>
+        <div>${order.type==='delivery'?'🛵 Delivery':'🏃 Pickup'}</div>
+        <div>⏰ ${order.time}</div>
+        ${order.address?`<div style="grid-column:1/-1">📍 ${order.address}</div>`:''}
+      </div>
+      <div style="border-top:1px solid rgba(255,255,255,0.07);padding-top:0.75rem">
+        ${itemRows}
+        <div style="display:flex;justify-content:space-between;padding:10px 0 0;font-weight:700">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px">TOTAL</span>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold)">${order.total.toLocaleString()} UGX</span>
+        </div>
+      </div>
+      ${order.notes?`<div style="margin-top:0.75rem;padding:8px 10px;background:rgba(255,255,255,0.04);border-radius:8px;font-size:12px;color:rgba(255,248,240,0.5)">📝 ${order.notes}</div>`:''}
+      <div style="margin-top:1rem;text-align:center;font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,248,240,0.25);letter-spacing:1px">📸 SCREENSHOT THIS AS YOUR RECEIPT</div>
+    </div>
+    <button onclick="closeModal();resetCart()" style="width:100%;background:transparent;border:1px solid rgba(255,255,255,0.12);color:rgba(255,248,240,0.5);padding:10px;border-radius:8px;font-family:'Syne',sans-serif;font-size:13px;cursor:pointer">Close</button>`;
+  cart = {}; updateCartBar();
 }
 
 function showSuccess(name, total, waText){
@@ -893,6 +926,46 @@ function openModal(){
   }
   buildOrderSummary();
   overlay.classList.add('open');
+}
+
+/* ── PWA INSTALL PROMPT ── */
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show install banner after 3 seconds
+  setTimeout(showInstallBanner, 3000);
+});
+
+function showInstallBanner(){
+  if(!deferredPrompt) return;
+  const banner = document.createElement('div');
+  banner.id = 'install-banner';
+  banner.style.cssText = `position:fixed;bottom:80px;left:1rem;right:1rem;background:#1E0C04;border:1px solid rgba(232,70,10,0.4);border-radius:14px;padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;z-index:999;box-shadow:0 8px 32px rgba(0,0,0,0.5)`;
+  banner.innerHTML = `
+    <div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:#FFF8F0">📲 ADD TO HOME SCREEN</div>
+      <div style="font-size:12px;color:rgba(255,248,240,0.5);font-family:'Space Mono',monospace">Order faster like a real app</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="document.getElementById('install-banner').remove()" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:rgba(255,248,240,0.5);padding:8px 12px;border-radius:8px;font-size:12px;cursor:pointer">Later</button>
+      <button onclick="installApp()" style="background:#E8460A;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:1px;cursor:pointer">INSTALL</button>
+    </div>`;
+  document.body.appendChild(banner);
+}
+
+async function installApp(){
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  const b = document.getElementById('install-banner');
+  if(b) b.remove();
+}
+
+/* ── SERVICE WORKER ── */
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 </script>
 </body>
