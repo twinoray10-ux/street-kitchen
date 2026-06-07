@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Street Kitchen — Business Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&family=Clash+Display:wght@400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --fire:#E8460A;--gold:#F5A623;--cream:#FFF8F0;--dark:#0D0500;
+  --panel:#140900;--panel2:#1A0C02;--border:rgba(255,255,255,0.07);
+  --muted:rgba(255,248,240,0.4);--green:#22C55E;--red:#EF4444;--blue:#3B82F6;
+  --amber:#F59E0B;
+}
+html,body{min-height:100vh;font-family:'Syne',sans-serif;background:var(--dark);color:var(--cream);overflow-x:hidden}
+
+/* ── GRID NOISE BACKGROUND ── */
+body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(ellipse 80% 50% at 20% 10%,rgba(232,70,10,0.06),transparent),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(245,166,35,0.04),transparent);pointer-events:none;z-index:0}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;z-index:999;background:var(--dark);display:flex;align-items:center;justify-content:center;padding:1.5rem}
+.login-box{width:100%;max-width:400px;background:var(--panel);border:1px solid rgba(232,70,10,0.2);border-radius:24px;padding:3rem;text-align:center;position:relative;overflow:hidden}
+.login-box::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:radial-gradient(ellipse at center,rgba(232,70,10,0.05),transparent 60%);pointer-events:none}
+.login-glyph{font-size:48px;margin-bottom:1rem}
+.login-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:5px;margin-bottom:4px}
+.login-title span{color:var(--fire)}
+.login-sub{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--muted);margin-bottom:2rem;text-transform:uppercase}
+.login-box input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:12px;padding:14px 18px;color:var(--cream);font-family:'DM Mono',monospace;font-size:16px;outline:none;text-align:center;letter-spacing:4px;margin-bottom:1rem;transition:border-color 0.2s}
+.login-box input:focus{border-color:var(--fire)}
+.login-btn{width:100%;background:var(--fire);color:#fff;border:none;padding:14px;border-radius:12px;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;cursor:pointer;transition:all 0.2s;position:relative}
+.login-btn:hover{background:#ff5a1f;transform:translateY(-1px)}
+.login-err{color:var(--fire);font-size:11px;font-family:'DM Mono',monospace;margin-top:0.75rem;min-height:18px}
+
+/* ── LAYOUT ── */
+#app{display:none;position:relative;z-index:1}
+.shell{display:flex;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{width:220px;background:var(--panel);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:50;transition:transform 0.3s}
+.sb-logo{padding:1.5rem 1.25rem;border-bottom:1px solid var(--border)}
+.sb-logo-text{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:4px}
+.sb-logo-text span{color:var(--fire)}
+.sb-logo-sub{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);margin-top:2px}
+.sb-nav{padding:1rem 0;flex:1}
+.sb-section{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:3px;color:rgba(255,248,240,0.2);padding:0.5rem 1.25rem;margin-top:0.5rem;text-transform:uppercase}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 1.25rem;font-size:13px;color:var(--muted);cursor:pointer;transition:all 0.2s;border-left:2px solid transparent;text-decoration:none}
+.sb-item:hover{color:var(--cream);background:rgba(255,255,255,0.03)}
+.sb-item.active{color:var(--cream);border-left-color:var(--fire);background:rgba(232,70,10,0.08)}
+.sb-item-icon{font-size:16px;width:20px;text-align:center}
+.sb-bottom{padding:1rem 1.25rem;border-top:1px solid var(--border)}
+.sb-logout{width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);padding:8px;border-radius:8px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all 0.2s}
+.sb-logout:hover{border-color:var(--fire);color:var(--fire)}
+
+/* ── MAIN CONTENT ── */
+.content{margin-left:220px;flex:1;min-width:0}
+.topbar{background:var(--panel);border-bottom:1px solid var(--border);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
+.topbar-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.live-pill{display:flex;align-items:center;gap:6px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);color:var(--green);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;padding:5px 12px;border-radius:100px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.date-pill{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
+
+.page{padding:2rem;display:none}
+.page.active{display:block}
+
+/* ── KPI CARDS ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:2rem}
+.kpi{background:var(--panel2);border:1px solid var(--border);border-radius:16px;padding:1.25rem;position:relative;overflow:hidden;transition:border-color 0.2s}
+.kpi:hover{border-color:rgba(232,70,10,0.25)}
+.kpi::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent,var(--fire));border-radius:16px 16px 0 0}
+.kpi-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:0.5rem}
+.kpi-val{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,42px);letter-spacing:2px;color:var(--cream);line-height:1}
+.kpi-sub{font-family:'DM Mono',monospace;font-size:10px;margin-top:6px}
+.kpi-up{color:var(--green)}
+.kpi-down{color:var(--red)}
+.kpi-icon{position:absolute;top:1rem;right:1rem;font-size:22px;opacity:0.4}
+
+/* ── SECTION HEADERS ── */
+.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.section-hd h2{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--cream)}
+.section-hd span{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px}
+
+/* ── CHARTS ── */
+.chart-grid{display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-bottom:2rem}
+.chart-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2rem}
+.chart-box{background:var(--panel2);border:1px solid var(--border);border-radius:16px;padding:1.25rem}
+.chart-box h3{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--muted);margin-bottom:1rem}
+.chart-wrap{position:relative;height:220px}
+.chart-wrap-sm{position:relative;height:180px}
+
+/* ── TABLE ── */
+.table-box{background:var(--panel2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:2rem}
+.table-head{padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.table-head h3{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--muted)}
+table{width:100%;border-collapse:collapse}
+th{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:rgba(255,248,240,0.25);text-transform:uppercase;padding:10px 1.25rem;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:10px 1.25rem;font-size:13px;border-bottom:1px solid rgba(255,255,255,0.04);color:var(--cream)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.badge{display:inline-block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;padding:3px 9px;border-radius:100px}
+.badge-green{background:rgba(34,197,94,0.1);color:var(--green);border:1px solid rgba(34,197,94,0.2)}
+.badge-amber{background:rgba(245,158,11,0.1);color:var(--amber);border:1px solid rgba(245,158,11,0.2)}
+.badge-red{background:rgba(239,68,68,0.1);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.badge-blue{background:rgba(59,130,246,0.1);color:var(--blue);border:1px solid rgba(59,130,246,0.2)}
+
+/* ── PROJECTION CARD ── */
+.projection-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:2rem}
+.proj-card{background:var(--panel2);border:1px solid var(--border);border-radius:16px;padding:1.5rem}
+.proj-card h3{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:1rem}
+.proj-val{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:2px;color:var(--gold);line-height:1;margin-bottom:4px}
+.proj-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)}
+.proj-bar{height:4px;background:rgba(255,255,255,0.07);border-radius:100px;margin-top:1rem;overflow:hidden}
+.proj-bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--fire),var(--gold));transition:width 1s ease}
+
+/* ── WORKER SECTION ── */
+.worker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;margin-bottom:2rem}
+.worker-card{background:var(--panel2);border:1px solid var(--border);border-radius:16px;padding:1.25rem;position:relative;transition:border-color 0.2s}
+.worker-card:hover{border-color:rgba(232,70,10,0.2)}
+.worker-head{display:flex;align-items:center;gap:12px;margin-bottom:1rem}
+.worker-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--fire),var(--gold));display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;flex-shrink:0}
+.worker-name{font-weight:700;font-size:15px;color:var(--cream)}
+.worker-role{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px}
+.worker-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem}
+.ws{background:rgba(255,255,255,0.04);border-radius:8px;padding:8px;text-align:center}
+.ws-val{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);line-height:1}
+.ws-label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px}
+.efficiency-bar{height:6px;background:rgba(255,255,255,0.07);border-radius:100px;overflow:hidden;margin-top:4px}
+.efficiency-fill{height:100%;border-radius:100px;transition:width 1s ease}
+.eff-label{display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:4px}
+.worker-actions{display:flex;gap:6px;margin-top:0.75rem}
+.btn-sm{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;padding:6px 12px;border-radius:6px;cursor:pointer;border:none;transition:all 0.2s}
+.btn-fire{background:rgba(232,70,10,0.15);color:var(--fire);border:1px solid rgba(232,70,10,0.25)}
+.btn-fire:hover{background:rgba(232,70,10,0.3)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{border-color:var(--muted);color:var(--cream)}
+
+/* ── ADD WORKER FORM ── */
+.add-worker-box{background:var(--panel2);border:1px solid rgba(232,70,10,0.2);border-radius:16px;padding:1.5rem;margin-bottom:2rem}
+.add-worker-box h3{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:1rem}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:1rem}
+.form-group label{display:block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:5px}
+.form-group input,.form-group select{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--cream);font-family:'Syne',sans-serif;font-size:13px;outline:none;transition:border-color 0.2s}
+.form-group input:focus,.form-group select:focus{border-color:var(--fire)}
+.form-group select option{background:#140900}
+.btn-primary{background:var(--fire);color:#fff;border:none;padding:10px 24px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;cursor:pointer;transition:all 0.2s}
+.btn-primary:hover{opacity:0.85;transform:translateY(-1px)}
+
+/* ── TASK LOG ── */
+.task-form{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:1.5rem}
+@media(max-width:700px){.task-form{grid-template-columns:1fr}}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:2rem;right:2rem;background:#1A2A1A;border:1px solid var(--green);color:var(--green);font-family:'DM Mono',monospace;font-size:11px;letter-spacing:1px;padding:12px 20px;border-radius:10px;z-index:9999;transform:translateY(20px);opacity:0;transition:all 0.3s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.err{background:#2A1A1A;border-color:var(--red);color:var(--red)}
+
+/* ── REVENUE INPUT ── */
+.revenue-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:1.5rem}
+.revenue-controls input,.revenue-controls select{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--cream);font-family:'DM Mono',monospace;font-size:12px;outline:none;transition:border-color 0.2s}
+.revenue-controls input:focus,.revenue-controls select:focus{border-color:var(--fire)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .content{margin-left:0}
+  .chart-grid{grid-template-columns:1fr}
+  .chart-grid-3{grid-template-columns:1fr}
+  .projection-grid{grid-template-columns:1fr}
+  .task-form{grid-template-columns:1fr}
+}
+.menu-toggle{display:none;background:transparent;border:1px solid var(--border);color:var(--cream);padding:6px 10px;border-radius:6px;cursor:pointer;font-size:18px}
+@media(max-width:900px){.menu-toggle{display:block}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-glyph">📊</div>
+    <div class="login-title">STREET <span>KITCHEN</span></div>
+    <div class="login-sub">Business Intelligence</div>
+    <input type="password" id="pw-input" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="login-btn" onclick="doLogin()">ACCESS DASHBOARD</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-text">STREET <span>KITCHEN</span></div>
+      <div class="sb-logo-sub">BUSINESS INTELLIGENCE</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-section">Analytics</div>
+      <a class="sb-item active" onclick="showPage('overview',this)"><span class="sb-item-icon">🏠</span>Overview</a>
+      <a class="sb-item" onclick="showPage('revenue',this)"><span class="sb-item-icon">💰</span>Revenue</a>
+      <a class="sb-item" onclick="showPage('menu',this)"><span class="sb-item-icon">🍽</span>Menu Performance</a>
+      <a class="sb-item" onclick="showPage('projections',this)"><span class="sb-item-icon">📈</span>Projections</a>
+      <div class="sb-section">Operations</div>
+      <a class="sb-item" onclick="showPage('workers',this)"><span class="sb-item-icon">👥</span>Workers</a>
+      <a class="sb-item" onclick="showPage('tasks',this)"><span class="sb-item-icon">⚡</span>Task Tracker</a>
+    </nav>
+    <div class="sb-bottom">
+      <button class="sb-logout" onclick="logout()">← LOGOUT</button>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <div class="content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+        <div class="topbar-title" id="page-title">OVERVIEW</div>
+      </div>
+      <div class="topbar-right">
+        <div class="live-pill"><span class="live-dot"></span>LIVE</div>
+        <div class="date-pill" id="date-display"></div>
+      </div>
+    </div>
+
+    <!-- ── OVERVIEW PAGE ── -->
+    <div class="page active" id="page-overview">
+      <div class="kpi-grid" id="kpi-overview"></div>
+      <div class="chart-grid">
+        <div class="chart-box">
+          <h3>REVENUE THIS WEEK (UGX)</h3>
+          <div class="chart-wrap"><canvas id="chart-weekly"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <h3>ORDER TYPES</h3>
+          <div class="chart-wrap"><canvas id="chart-types"></canvas></div>
+        </div>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-box">
+          <h3>ORDERS PER HOUR (TODAY)</h3>
+          <div class="chart-wrap"><canvas id="chart-hourly"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <h3>TOP SELLERS</h3>
+          <div class="chart-wrap"><canvas id="chart-topsellers"></canvas></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── REVENUE PAGE ── -->
+    <div class="page" id="page-revenue">
+      <div class="revenue-controls">
+        <select id="rev-period" onchange="updateRevenuePage()">
+          <option value="day">Today</option>
+          <option value="week" selected>This Week</option>
+          <option value="month">This Month</option>
+          <option value="all">All Time</option>
+        </select>
+        <span style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">Filter by period</span>
+      </div>
+      <div class="kpi-grid" id="kpi-revenue"></div>
+      <div class="chart-grid">
+        <div class="chart-box">
+          <h3>DAILY REVENUE TREND</h3>
+          <div class="chart-wrap"><canvas id="chart-rev-trend"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <h3>REVENUE BY CATEGORY</h3>
+          <div class="chart-wrap"><canvas id="chart-rev-cat"></canvas></div>
+        </div>
+      </div>
+
+      <!-- MANUAL ENTRY -->
+      <div class="add-worker-box" style="border-color:rgba(245,166,35,0.2)">
+        <h3>➕ LOG DAILY REVENUE</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>Date</label><input type="date" id="rev-date"/></div>
+          <div class="form-group"><label>Total Revenue (UGX)</label><input type="number" id="rev-total" placeholder="e.g. 150000"/></div>
+          <div class="form-group"><label>Orders Count</label><input type="number" id="rev-orders" placeholder="e.g. 12"/></div>
+          <div class="form-group"><label>Category</label>
+            <select id="rev-cat">
+              <option value="rolex">Rolexes</option>
+              <option value="chicken">Chicken & Fries</option>
+              <option value="combo">Combos</option>
+              <option value="mixed">Mixed</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Notes</label><input type="text" id="rev-notes" placeholder="e.g. Busy Friday evening"/></div>
+        </div>
+        <button class="btn-primary" onclick="logRevenue()">LOG REVENUE 💰</button>
+      </div>
+
+      <div class="table-box">
+        <div class="table-head"><h3>REVENUE LOG</h3><span id="rev-total-display" style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold)"></span></div>
+        <table><thead><tr><th>Date</th><th>Revenue (UGX)</th><th>Orders</th><th>Category</th><th>Avg per Order</th><th>Notes</th></tr></thead>
+        <tbody id="rev-table"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ── MENU PERFORMANCE PAGE ── -->
+    <div class="page" id="page-menu">
+      <div class="kpi-grid" id="kpi-menu"></div>
+      <div class="chart-grid-3">
+        <div class="chart-box">
+          <h3>ROLEX SALES</h3>
+          <div class="chart-wrap-sm"><canvas id="chart-rolex"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <h3>CHICKEN & FRIES</h3>
+          <div class="chart-wrap-sm"><canvas id="chart-chicken"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <h3>COMBOS</h3>
+          <div class="chart-wrap-sm"><canvas id="chart-combo"></canvas></div>
+        </div>
+      </div>
+
+      <div class="add-worker-box" style="border-color:rgba(34,197,94,0.2)">
+        <h3>📦 LOG ITEM SALES</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>Date</label><input type="date" id="sale-date"/></div>
+          <div class="form-group"><label>Item Name</label><input type="text" id="sale-item" placeholder="e.g. Classic Rolex"/></div>
+          <div class="form-group"><label>Category</label>
+            <select id="sale-cat">
+              <option value="rolex">Rolex</option>
+              <option value="chicken">Chicken & Fries</option>
+              <option value="combo">Combo</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Qty Sold</label><input type="number" id="sale-qty" placeholder="e.g. 15"/></div>
+          <div class="form-group"><label>Price Each (UGX)</label><input type="number" id="sale-price" placeholder="e.g. 2500"/></div>
+        </div>
+        <button class="btn-primary" onclick="logSale()">LOG SALES 📊</button>
+      </div>
+
+      <div class="table-box">
+        <div class="table-head"><h3>ITEM SALES LOG</h3></div>
+        <table><thead><tr><th>Date</th><th>Item</th><th>Category</th><th>Qty</th><th>Revenue (UGX)</th></tr></thead>
+        <tbody id="sales-table"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ── PROJECTIONS PAGE ── -->
+    <div class="page" id="page-projections">
+      <div class="kpi-grid" id="kpi-proj"></div>
+
+      <div class="section-hd"><h2>REVENUE PROJECTIONS</h2><span>Based on your logged data</span></div>
+      <div class="projection-grid">
+        <div class="proj-card">
+          <h3>PROJECTED THIS WEEK</h3>
+          <div class="proj-val" id="proj-week">—</div>
+          <div class="proj-sub" id="proj-week-sub">UGX based on daily average</div>
+          <div class="proj-bar"><div class="proj-bar-fill" id="proj-week-bar" style="width:0%"></div></div>
+        </div>
+        <div class="proj-card">
+          <h3>PROJECTED THIS MONTH</h3>
+          <div class="proj-val" id="proj-month">—</div>
+          <div class="proj-sub" id="proj-month-sub">UGX based on weekly average</div>
+          <div class="proj-bar"><div class="proj-bar-fill" id="proj-month-bar" style="width:0%"></div></div>
+        </div>
+        <div class="proj-card">
+          <h3>PROJECTED THIS YEAR</h3>
+          <div class="proj-val" id="proj-year">—</div>
+          <div class="proj-sub">UGX annual projection</div>
+          <div class="proj-bar"><div class="proj-bar-fill" id="proj-year-bar" style="width:0%"></div></div>
+        </div>
+        <div class="proj-card">
+          <h3>BREAK-EVEN DAILY TARGET</h3>
+          <div class="proj-val" id="proj-target">—</div>
+          <div class="proj-sub" id="proj-target-sub">Set your monthly cost below</div>
+          <div class="proj-bar"><div class="proj-bar-fill" id="proj-target-bar" style="width:0%;background:linear-gradient(90deg,var(--green),var(--blue))"></div></div>
+        </div>
+      </div>
+
+      <div class="add-worker-box" style="border-color:rgba(59,130,246,0.2)">
+        <h3>⚙️ PROJECTION SETTINGS</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>Monthly Costs (UGX)</label><input type="number" id="monthly-costs" placeholder="e.g. 500000" onchange="updateProjections()"/></div>
+          <div class="form-group"><label>Growth Target (%/month)</label><input type="number" id="growth-target" placeholder="e.g. 15" onchange="updateProjections()"/></div>
+          <div class="form-group"><label>Best Day Revenue (UGX)</label><input type="number" id="best-day" placeholder="e.g. 200000" onchange="updateProjections()"/></div>
+        </div>
+      </div>
+
+      <div class="chart-box" style="margin-bottom:2rem">
+        <h3>6-MONTH REVENUE FORECAST</h3>
+        <div class="chart-wrap"><canvas id="chart-forecast"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ── WORKERS PAGE ── -->
+    <div class="page" id="page-workers">
+      <div class="add-worker-box">
+        <h3>➕ ADD WORKER</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>Full Name</label><input type="text" id="w-name" placeholder="e.g. Aisha Namugosa"/></div>
+          <div class="form-group"><label>Role</label>
+            <select id="w-role">
+              <option value="Chef">Chef</option>
+              <option value="Rolex Maker">Rolex Maker</option>
+              <option value="Cashier">Cashier</option>
+              <option value="Delivery">Delivery</option>
+              <option value="Assistant">Assistant</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Start Date</label><input type="date" id="w-start"/></div>
+          <div class="form-group"><label>Daily Pay (UGX)</label><input type="number" id="w-pay" placeholder="e.g. 15000"/></div>
+        </div>
+        <button class="btn-primary" onclick="addWorker()">ADD WORKER 👤</button>
+      </div>
+
+      <div class="section-hd"><h2>YOUR TEAM</h2><span id="worker-count">0 workers</span></div>
+      <div class="worker-grid" id="worker-grid">
+        <div style="color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;padding:2rem;text-align:center;grid-column:1/-1">No workers added yet. Add your first worker above.</div>
+      </div>
+
+      <div class="table-box">
+        <div class="table-head"><h3>WORKER PERFORMANCE TABLE</h3></div>
+        <table><thead><tr><th>Name</th><th>Role</th><th>Tasks Done</th><th>Avg Speed</th><th>Efficiency</th><th>Days Active</th><th>Status</th><th></th></tr></thead>
+        <tbody id="worker-table"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ── TASK TRACKER PAGE ── -->
+    <div class="page" id="page-tasks">
+      <div class="add-worker-box" style="border-color:rgba(245,158,11,0.2)">
+        <h3>⚡ LOG COMPLETED TASK</h3>
+        <div class="task-form">
+          <div class="form-group"><label>Worker</label>
+            <select id="task-worker"><option value="">Select worker...</option></select>
+          </div>
+          <div class="form-group"><label>Task</label>
+            <select id="task-type">
+              <option value="Rolex">Made Rolex</option>
+              <option value="Fries">Fries Batch</option>
+              <option value="Chicken">Fried Chicken</option>
+              <option value="Order">Completed Order</option>
+              <option value="Delivery">Delivery Run</option>
+              <option value="Prep">Food Prep</option>
+              <option value="Cleaning">Cleaning</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Time Taken (mins)</label>
+            <input type="number" id="task-mins" placeholder="e.g. 8"/>
+          </div>
+          <button class="btn-primary" style="margin-top:1.3rem" onclick="logTask()">LOG ⚡</button>
+        </div>
+        <div class="form-group" style="max-width:400px"><label>Notes (optional)</label><input type="text" id="task-notes" placeholder="e.g. rush hour, extra order"/></div>
+      </div>
+
+      <div class="chart-grid">
+        <div class="chart-box">
+          <h3>TASKS BY WORKER</h3>
+          <div class="chart-wrap"><canvas id="chart-worker-tasks"></canvas></div>
+        </div>
+        <div class="chart-box">
+          <h3>AVG SPEED BY TASK (MINS)</h3>
+          <div class="chart-wrap"><canvas id="chart-task-speed"></canvas></div>
+        </div>
+      </div>
+
+      <div class="table-box">
+        <div class="table-head"><h3>TASK LOG</h3><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)" id="task-count"></span></div>
+        <table><thead><tr><th>Time</th><th>Worker</th><th>Task</th><th>Duration</th><th>Rating</th><th>Notes</th></tr></thead>
+        <tbody id="task-table"></tbody></table>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /shell -->
+</div><!-- /app -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   AUTH
+══════════════════════════════════════════ */
+const DEFAULT_PW = 'rAyRmToHnUdR1738';
+function doLogin(){
+  const pw = localStorage.getItem('sk_admin_pw') || DEFAULT_PW;
+  if(document.getElementById('pw-input').value === pw){
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    init();
+  } else {
+    document.getElementById('login-err').textContent='Wrong password.';
+    document.getElementById('pw-input').value='';
+  }
+}
+function logout(){
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
+}
+document.getElementById('pw-input').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+/* ══════════════════════════════════════════
+   DATA STORE (localStorage)
+══════════════════════════════════════════ */
+function save(key, val){ localStorage.setItem('sk_bi_'+key, JSON.stringify(val)); }
+function load(key, def){ try{ const v=localStorage.getItem('sk_bi_'+key); return v?JSON.parse(v):def; }catch(e){ return def; } }
+
+let revenues = load('revenues', generateSampleRevenues());
+let sales    = load('sales', generateSampleSales());
+let workers  = load('workers', []);
+let tasks    = load('tasks', []);
+
+function generateSampleRevenues(){
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const data = [];
+  const today = new Date();
+  for(let i=13;i>=0;i--){
+    const d = new Date(today); d.setDate(d.getDate()-i);
+    const base = 80000 + Math.random()*120000;
+    const weekend = d.getDay()===0||d.getDay()===6 ? 1.4 : 1;
+    data.push({
+      date: d.toISOString().split('T')[0],
+      total: Math.round(base*weekend),
+      orders: Math.round(8+Math.random()*15),
+      category:'mixed',
+      notes:''
+    });
+  }
+  return data;
+}
+
+function generateSampleSales(){
+  const items = [
+    {name:'Classic Rolex',cat:'rolex',price:2500},
+    {name:'Chicken Rolex',cat:'rolex',price:5000},
+    {name:'Beef Rolex',cat:'rolex',price:4500},
+    {name:'Fried Chicken 2 Pcs',cat:'chicken',price:12000},
+    {name:'Spicy Wings 5 Pcs',cat:'chicken',price:15000},
+    {name:'Plain Fries',cat:'chicken',price:7000},
+    {name:'Signature Combo',cat:'combo',price:20000},
+  ];
+  const data = [];
+  const today = new Date();
+  for(let i=6;i>=0;i--){
+    const d = new Date(today); d.setDate(d.getDate()-i);
+    const dateStr = d.toISOString().split('T')[0];
+    items.forEach(item=>{
+      const qty = Math.round(2+Math.random()*12);
+      data.push({date:dateStr,item:item.name,category:item.cat,qty,price:item.price,revenue:qty*item.price});
+    });
+  }
+  return data;
+}
+
+/* ══════════════════════════════════════════
+   CHARTS REGISTRY
+══════════════════════════════════════════ */
+const charts = {};
+function makeChart(id, config){
+  if(charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  charts[id] = new Chart(ctx, config);
+  return charts[id];
+}
+
+const CHART_DEFAULTS = {
+  color:'rgba(255,248,240,0.6)',
+  grid:'rgba(255,255,255,0.05)',
+  fire:'#E8460A', gold:'#F5A623', green:'#22C55E', blue:'#3B82F6', amber:'#F59E0B', red:'#EF4444'
+};
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+function init(){
+  document.getElementById('date-display').textContent = new Date().toLocaleDateString('en-UG',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  renderOverview();
+  updateProjections();
+  renderWorkers();
+  renderTasks();
+  updateRevenuePage();
+  renderMenuPage();
+}
+
+/* ══════════════════════════════════════════
+   PAGE NAVIGATION
+══════════════════════════════════════════ */
+function showPage(name, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  if(el) el.classList.add('active');
+  document.getElementById('page-title').textContent = name.toUpperCase();
+  document.getElementById('sidebar').classList.remove('open');
+  // Re-render charts when switching pages
+  if(name==='overview') renderOverview();
+  if(name==='revenue') updateRevenuePage();
+  if(name==='menu') renderMenuPage();
+  if(name==='projections') updateProjections();
+  if(name==='tasks') renderTaskCharts();
+}
+
+/* ══════════════════════════════════════════
+   OVERVIEW
+══════════════════════════════════════════ */
+function renderOverview(){
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayRev = revenues.filter(r=>r.date===todayStr).reduce((s,r)=>s+r.total,0);
+  const weekRevs = revenues.slice(-7);
+  const weekTotal = weekRevs.reduce((s,r)=>s+r.total,0);
+  const prevWeek = revenues.slice(-14,-7).reduce((s,r)=>s+r.total,0);
+  const weekChange = prevWeek ? ((weekTotal-prevWeek)/prevWeek*100).toFixed(1) : 0;
+  const totalOrders = revenues.reduce((s,r)=>s+r.orders,0);
+  const avgOrder = totalOrders ? Math.round(revenues.reduce((s,r)=>s+r.total,0)/totalOrders) : 0;
+
+  document.getElementById('kpi-overview').innerHTML = `
+    ${kpiCard('TODAY\'S REVENUE','💰',todayRev.toLocaleString()+' UGX','','var(--gold)')}
+    ${kpiCard('THIS WEEK','📈',weekTotal.toLocaleString()+' UGX',weekChange+'% vs last week',weekChange>=0?'var(--green)':'var(--red)')}
+    ${kpiCard('TOTAL ORDERS','🛒',totalOrders.toLocaleString(),'all time','var(--blue)')}
+    ${kpiCard('AVG ORDER VALUE','⚡',avgOrder.toLocaleString()+' UGX','per order','var(--fire)')}`;
+
+  // Weekly bar chart
+  const labels = weekRevs.map(r=>{ const d=new Date(r.date); return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]; });
+  const vals = weekRevs.map(r=>r.total);
+  makeChart('chart-weekly',{
+    type:'bar',
+    data:{labels,datasets:[{data:vals,backgroundColor:vals.map((v,i)=>i===vals.length-1?CHART_DEFAULTS.fire+'CC':CHART_DEFAULTS.fire+'44'),borderColor:vals.map((v,i)=>i===vals.length-1?CHART_DEFAULTS.fire:CHART_DEFAULTS.fire+'88'),borderWidth:1,borderRadius:6}]},
+    options:chartOpts('UGX')
+  });
+
+  // Order types donut
+  const deliveries = Math.round(totalOrders*0.4);
+  const pickups = totalOrders - deliveries;
+  makeChart('chart-types',{
+    type:'doughnut',
+    data:{labels:['Delivery','Pickup'],datasets:[{data:[deliveries,pickups],backgroundColor:[CHART_DEFAULTS.fire+'CC',CHART_DEFAULTS.gold+'CC'],borderColor:'#140900',borderWidth:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:CHART_DEFAULTS.color,font:{size:11},boxWidth:12}}}}
+  });
+
+  // Hourly orders (simulated)
+  const hours = ['8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm'];
+  const hourlyData = [1,2,3,5,8,10,7,6,8,9,10,7,4];
+  makeChart('chart-hourly',{
+    type:'line',
+    data:{labels:hours,datasets:[{data:hourlyData,borderColor:CHART_DEFAULTS.gold,backgroundColor:CHART_DEFAULTS.gold+'22',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:CHART_DEFAULTS.gold}]},
+    options:chartOpts('orders')
+  });
+
+  // Top sellers from sales data
+  const itemTotals = {};
+  sales.forEach(s=>{ itemTotals[s.item]=(itemTotals[s.item]||0)+s.qty; });
+  const sorted = Object.entries(itemTotals).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  makeChart('chart-topsellers',{
+    type:'bar',
+    data:{labels:sorted.map(e=>e[0].split(' ').slice(0,2).join(' ')),datasets:[{data:sorted.map(e=>e[1]),backgroundColor:[CHART_DEFAULTS.fire,CHART_DEFAULTS.gold,CHART_DEFAULTS.green,CHART_DEFAULTS.blue,CHART_DEFAULTS.amber,CHART_DEFAULTS.red].map(c=>c+'CC'),borderRadius:6}]},
+    options:{...chartOpts('sold'),indexAxis:'y'}
+  });
+}
+
+/* ══════════════════════════════════════════
+   REVENUE PAGE
+══════════════════════════════════════════ */
+function logRevenue(){
+  const date=document.getElementById('rev-date').value;
+  const total=parseInt(document.getElementById('rev-total').value);
+  const orders=parseInt(document.getElementById('rev-orders').value)||0;
+  const category=document.getElementById('rev-cat').value;
+  const notes=document.getElementById('rev-notes').value;
+  if(!date||!total){ showToast('Enter date and revenue amount',true); return; }
+  revenues.push({date,total,orders,category,notes});
+  revenues.sort((a,b)=>a.date.localeCompare(b.date));
+  save('revenues',revenues);
+  updateRevenuePage();
+  updateProjections();
+  showToast('✓ Revenue logged!');
+  document.getElementById('rev-total').value='';
+  document.getElementById('rev-orders').value='';
+  document.getElementById('rev-notes').value='';
+}
+
+function updateRevenuePage(){
+  const period = document.getElementById('rev-period')?.value||'week';
+  const now = new Date();
+  const filtered = revenues.filter(r=>{
+    const d = new Date(r.date);
+    if(period==='day') return r.date===now.toISOString().split('T')[0];
+    if(period==='week'){ const w=new Date(now); w.setDate(w.getDate()-7); return d>=w; }
+    if(period==='month'){ const m=new Date(now); m.setDate(m.getDate()-30); return d>=m; }
+    return true;
+  });
+
+  const total = filtered.reduce((s,r)=>s+r.total,0);
+  const orders = filtered.reduce((s,r)=>s+r.orders,0);
+  const avg = orders ? Math.round(total/orders) : 0;
+  const best = filtered.length ? Math.max(...filtered.map(r=>r.total)) : 0;
+
+  document.getElementById('kpi-revenue').innerHTML = `
+    ${kpiCard('TOTAL REVENUE','💰',total.toLocaleString()+' UGX','in selected period','var(--gold)')}
+    ${kpiCard('TOTAL ORDERS','🛒',orders.toLocaleString(),'orders placed','var(--blue)')}
+    ${kpiCard('AVG ORDER VALUE','⚡',avg.toLocaleString()+' UGX','per order','var(--fire)')}
+    ${kpiCard('BEST DAY','🏆',best.toLocaleString()+' UGX','highest revenue day','var(--green)')}`;
+
+  // Trend chart
+  const last14 = revenues.slice(-14);
+  makeChart('chart-rev-trend',{
+    type:'line',
+    data:{
+      labels:last14.map(r=>{ const d=new Date(r.date); return d.getDate()+'/'+( d.getMonth()+1); }),
+      datasets:[{data:last14.map(r=>r.total),borderColor:CHART_DEFAULTS.gold,backgroundColor:CHART_DEFAULTS.gold+'15',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:CHART_DEFAULTS.gold}]
+    },
+    options:chartOpts('UGX')
+  });
+
+  // Category pie
+  const cats = {};
+  filtered.forEach(r=>{ cats[r.category]=(cats[r.category]||0)+r.total; });
+  makeChart('chart-rev-cat',{
+    type:'pie',
+    data:{labels:Object.keys(cats),datasets:[{data:Object.values(cats),backgroundColor:[CHART_DEFAULTS.fire+'CC',CHART_DEFAULTS.gold+'CC',CHART_DEFAULTS.green+'CC',CHART_DEFAULTS.blue+'CC'],borderColor:'#140900',borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:CHART_DEFAULTS.color,font:{size:10},boxWidth:10}}}}
+  });
+
+  // Table
+  const tbody = document.getElementById('rev-table');
+  tbody.innerHTML = [...filtered].reverse().map(r=>`<tr>
+    <td>${formatDate(r.date)}</td>
+    <td style="font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--gold)">${r.total.toLocaleString()}</td>
+    <td>${r.orders}</td>
+    <td><span class="badge ${r.category==='rolex'?'badge-amber':r.category==='chicken'?'badge-red':'badge-green'}">${r.category}</span></td>
+    <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">${r.orders?Math.round(r.total/r.orders).toLocaleString():'-'}</td>
+    <td style="color:var(--muted);font-size:12px">${r.notes||'-'}</td>
+  </tr>`).join('');
+
+  document.getElementById('rev-total-display').textContent = total.toLocaleString()+' UGX TOTAL';
+}
+
+/* ══════════════════════════════════════════
+   MENU PERFORMANCE
+══════════════════════════════════════════ */
+function logSale(){
+  const date=document.getElementById('sale-date').value;
+  const item=document.getElementById('sale-item').value.trim();
+  const category=document.getElementById('sale-cat').value;
+  const qty=parseInt(document.getElementById('sale-qty').value);
+  const price=parseInt(document.getElementById('sale-price').value);
+  if(!date||!item||!qty||!price){ showToast('Fill all fields',true); return; }
+  sales.push({date,item,category,qty,price,revenue:qty*price});
+  save('sales',sales);
+  renderMenuPage();
+  showToast('✓ Sale logged!');
+  document.getElementById('sale-item').value='';
+  document.getElementById('sale-qty').value='';
+  document.getElementById('sale-price').value='';
+}
+
+function renderMenuPage(){
+  const totalRev = sales.reduce((s,i)=>s+i.revenue,0);
+  const totalUnits = sales.reduce((s,i)=>s+i.qty,0);
+  const itemMap = {};
+  sales.forEach(s=>{ if(!itemMap[s.item]) itemMap[s.item]={qty:0,revenue:0}; itemMap[s.item].qty+=s.qty; itemMap[s.item].revenue+=s.revenue; });
+  const topItem = Object.entries(itemMap).sort((a,b)=>b[1].qty-a[1].qty)[0];
+
+  document.getElementById('kpi-menu').innerHTML = `
+    ${kpiCard('TOTAL ITEM REVENUE','🍽',totalRev.toLocaleString()+' UGX','from item sales','var(--fire)')}
+    ${kpiCard('UNITS SOLD','📦',totalUnits.toLocaleString(),'total items','var(--blue)')}
+    ${kpiCard('TOP SELLER','🏆',topItem?topItem[0].split(' ').slice(0,2).join(' '):'—','best performer','var(--gold)')}
+    ${kpiCard('UNIQUE ITEMS','⭐',Object.keys(itemMap).length.toString(),'on menu','var(--green)')}`;
+
+  ['rolex','chicken','combo'].forEach((cat,ci)=>{
+    const catSales = sales.filter(s=>s.category===cat);
+    const itemMap2 = {};
+    catSales.forEach(s=>{ if(!itemMap2[s.item]) itemMap2[s.item]=0; itemMap2[s.item]+=s.qty; });
+    const sorted = Object.entries(itemMap2).sort((a,b)=>b[1]-a[1]);
+    const colors = [CHART_DEFAULTS.fire,CHART_DEFAULTS.gold,CHART_DEFAULTS.green,CHART_DEFAULTS.blue,CHART_DEFAULTS.amber,CHART_DEFAULTS.red];
+    makeChart(`chart-${cat}`,{
+      type:'doughnut',
+      data:{labels:sorted.map(e=>e[0].split(' ').slice(0,2).join(' ')),datasets:[{data:sorted.map(e=>e[1]),backgroundColor:colors.map(c=>c+'BB'),borderColor:'#140900',borderWidth:2}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:CHART_DEFAULTS.color,font:{size:9},boxWidth:8}}}}
+    });
+  });
+
+  // Table
+  const tbody = document.getElementById('sales-table');
+  tbody.innerHTML = [...sales].reverse().slice(0,50).map(s=>`<tr>
+    <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${formatDate(s.date)}</td>
+    <td>${s.item}</td>
+    <td><span class="badge ${s.category==='rolex'?'badge-amber':s.category==='chicken'?'badge-red':'badge-green'}">${s.category}</span></td>
+    <td style="font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--gold)">${s.qty}</td>
+    <td style="font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--fire)">${s.revenue.toLocaleString()}</td>
+  </tr>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   PROJECTIONS
+══════════════════════════════════════════ */
+function updateProjections(){
+  const costs = parseInt(document.getElementById('monthly-costs')?.value)||0;
+  const growth = parseInt(document.getElementById('growth-target')?.value)||10;
+
+  const last7 = revenues.slice(-7);
+  const avgDaily = last7.length ? last7.reduce((s,r)=>s+r.total,0)/last7.length : 0;
+  const projWeek = Math.round(avgDaily*7);
+  const projMonth = Math.round(avgDaily*30);
+  const projYear = Math.round(projMonth*12*(1+growth/100*6)); // 6 month avg growth
+  const dailyTarget = costs ? Math.round(costs/30) : 0;
+  const todayRev = revenues.filter(r=>r.date===new Date().toISOString().split('T')[0]).reduce((s,r)=>s+r.total,0);
+
+  const fmt = n => n>=1000000 ? (n/1000000).toFixed(1)+'M' : n>=1000 ? (n/1000).toFixed(0)+'K' : n.toString();
+
+  if(document.getElementById('proj-week')){
+    document.getElementById('proj-week').textContent = fmt(projWeek);
+    document.getElementById('proj-month').textContent = fmt(projMonth);
+    document.getElementById('proj-year').textContent = fmt(projYear);
+    document.getElementById('proj-target').textContent = dailyTarget ? fmt(dailyTarget) : 'Set costs →';
+    document.getElementById('proj-week-sub').textContent = `UGX · avg ${fmt(avgDaily)}/day`;
+    document.getElementById('proj-target-sub').textContent = dailyTarget ? `UGX/day to cover ${fmt(costs)} monthly costs` : 'Enter monthly costs above';
+
+    const pct = n => Math.min(100,Math.round(n));
+    document.getElementById('proj-week-bar').style.width = pct(projWeek/projMonth*100)+'%';
+    document.getElementById('proj-month-bar').style.width = '60%';
+    document.getElementById('proj-year-bar').style.width = '80%';
+    document.getElementById('proj-target-bar').style.width = dailyTarget&&todayRev ? pct(todayRev/dailyTarget*100)+'%' : '0%';
+  }
+
+  // KPIs
+  const totalAll = revenues.reduce((s,r)=>s+r.total,0);
+  if(document.getElementById('kpi-proj')){
+    document.getElementById('kpi-proj').innerHTML = `
+      ${kpiCard('AVG DAILY REVENUE','📅',fmt(avgDaily)+' UGX','last 7 days','var(--gold)')}
+      ${kpiCard('PROJECTED MONTHLY','📈',fmt(projMonth)+' UGX','at current pace','var(--green)')}
+      ${kpiCard('ALL TIME REVENUE','💎',fmt(totalAll)+' UGX','total earned','var(--fire)')}
+      ${kpiCard('GROWTH TARGET','🎯',growth+'% / month','set above','var(--blue)')}`;
+  }
+
+  // Forecast chart
+  const months = ['Now','Month 1','Month 2','Month 3','Month 4','Month 5','Month 6'];
+  const forecast = months.map((_,i)=>Math.round(projMonth*Math.pow(1+growth/100,i)));
+  if(document.getElementById('chart-forecast')){
+    makeChart('chart-forecast',{
+      type:'line',
+      data:{
+        labels:months,
+        datasets:[
+          {label:'Projected Revenue',data:forecast,borderColor:CHART_DEFAULTS.gold,backgroundColor:CHART_DEFAULTS.gold+'15',fill:true,tension:0.4,pointRadius:5,pointBackgroundColor:CHART_DEFAULTS.gold},
+          {label:'Break-even',data:months.map(()=>costs||0),borderColor:CHART_DEFAULTS.green,borderDash:[5,5],pointRadius:0,borderWidth:1.5,fill:false}
+        ]
+      },
+      options:chartOpts('UGX')
+    });
+  }
+}
+
+/* ══════════════════════════════════════════
+   WORKERS
+══════════════════════════════════════════ */
+function addWorker(){
+  const name=document.getElementById('w-name').value.trim();
+  const role=document.getElementById('w-role').value;
+  const start=document.getElementById('w-start').value;
+  const pay=parseInt(document.getElementById('w-pay').value)||0;
+  if(!name){ showToast('Enter worker name',true); return; }
+  workers.push({id:Date.now().toString(),name,role,start,pay,active:true,tasksCompleted:0,totalMins:0});
+  save('workers',workers);
+  renderWorkers();
+  updateTaskWorkerSelect();
+  showToast(`✓ ${name} added!`);
+  document.getElementById('w-name').value='';
+  document.getElementById('w-pay').value='';
+}
+
+function renderWorkers(){
+  const grid = document.getElementById('worker-grid');
+  const tbody = document.getElementById('worker-table');
+  document.getElementById('worker-count').textContent = workers.length+' worker'+(workers.length!==1?'s':'');
+
+  if(!workers.length){
+    grid.innerHTML='<div style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:12px;padding:2rem;text-align:center;grid-column:1/-1">No workers yet.</div>';
+    tbody.innerHTML='';
+    return;
+  }
+
+  grid.innerHTML = workers.filter(w=>w.active).map(w=>{
+    const wtasks = tasks.filter(t=>t.workerId===w.id);
+    const avgMins = wtasks.length ? Math.round(wtasks.reduce((s,t)=>s+t.mins,0)/wtasks.length) : 0;
+    const eff = calcEfficiency(wtasks);
+    const effColor = eff>=80?CHART_DEFAULTS.green:eff>=60?CHART_DEFAULTS.gold:CHART_DEFAULTS.red;
+    const initials = w.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+    return `<div class="worker-card">
+      <div class="worker-head">
+        <div class="worker-avatar">${initials}</div>
+        <div><div class="worker-name">${w.name}</div><div class="worker-role">${w.role.toUpperCase()}</div></div>
+      </div>
+      <div class="worker-stats">
+        <div class="ws"><div class="ws-val">${wtasks.length}</div><div class="ws-label">Tasks</div></div>
+        <div class="ws"><div class="ws-val">${avgMins||'—'}</div><div class="ws-label">Avg Mins</div></div>
+        <div class="ws"><div class="ws-val">${w.pay?w.pay.toLocaleString():'—'}</div><div class="ws-label">Daily Pay</div></div>
+      </div>
+      <div class="eff-label"><span>Efficiency</span><span style="color:${effColor}">${eff}%</span></div>
+      <div class="efficiency-bar"><div class="efficiency-fill" style="width:${eff}%;background:${effColor}"></div></div>
+      <div class="worker-actions">
+        <button class="btn-sm btn-fire" onclick="showPage('tasks',document.querySelector('[onclick*=tasks]'))">Log Task</button>
+        <button class="btn-sm btn-ghost" onclick="removeWorker('${w.id}')">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  tbody.innerHTML = workers.map(w=>{
+    const wtasks = tasks.filter(t=>t.workerId===w.id);
+    const avgMins = wtasks.length ? Math.round(wtasks.reduce((s,t)=>s+t.mins,0)/wtasks.length) : '-';
+    const eff = calcEfficiency(wtasks);
+    const days = w.start ? Math.round((Date.now()-new Date(w.start))/(86400000)) : '-';
+    return `<tr>
+      <td>${w.name}</td>
+      <td><span class="badge badge-amber">${w.role}</span></td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--gold)">${wtasks.length}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px">${avgMins} min</td>
+      <td><span class="badge ${eff>=80?'badge-green':eff>=60?'badge-amber':'badge-red'}">${eff}%</span></td>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${days} days</td>
+      <td><span class="badge ${w.active?'badge-green':'badge-red'}">${w.active?'Active':'Inactive'}</span></td>
+      <td><button class="btn-sm btn-ghost" onclick="removeWorker('${w.id}')">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function removeWorker(id){
+  if(!confirm('Remove this worker?')) return;
+  workers = workers.filter(w=>w.id!==id);
+  save('workers',workers);
+  renderWorkers();
+  updateTaskWorkerSelect();
+  showToast('Worker removed');
+}
+
+function calcEfficiency(wtasks){
+  if(!wtasks.length) return 0;
+  // Efficiency based on speed (faster = higher eff, baseline 10 mins)
+  const avgMins = wtasks.reduce((s,t)=>s+t.mins,0)/wtasks.length;
+  const eff = Math.min(100,Math.max(0,Math.round((10/Math.max(avgMins,1))*70 + wtasks.length*2)));
+  return Math.min(eff,100);
+}
+
+/* ══════════════════════════════════════════
+   TASKS
+══════════════════════════════════════════ */
+function updateTaskWorkerSelect(){
+  const sel = document.getElementById('task-worker');
+  if(!sel) return;
+  sel.innerHTML = '<option value="">Select worker...</option>' +
+    workers.filter(w=>w.active).map(w=>`<option value="${w.id}">${w.name}</option>`).join('');
+}
+
+function logTask(){
+  const workerId = document.getElementById('task-worker').value;
+  const type = document.getElementById('task-type').value;
+  const mins = parseInt(document.getElementById('task-mins').value);
+  const notes = document.getElementById('task-notes').value;
+  if(!workerId){ showToast('Select a worker',true); return; }
+  if(!mins||mins<1){ showToast('Enter time taken in minutes',true); return; }
+  const worker = workers.find(w=>w.id===workerId);
+  tasks.push({id:Date.now().toString(),workerId,workerName:worker?.name||'Unknown',type,mins,notes,time:new Date().toLocaleTimeString('en-UG',{hour:'2-digit',minute:'2-digit'}),date:new Date().toISOString().split('T')[0]});
+  save('tasks',tasks);
+  renderTasks();
+  renderWorkers();
+  showToast(`✓ Task logged for ${worker?.name}!`);
+  document.getElementById('task-mins').value='';
+  document.getElementById('task-notes').value='';
+}
+
+function renderTasks(){
+  updateTaskWorkerSelect();
+  renderTaskCharts();
+
+  document.getElementById('task-count').textContent = tasks.length+' total tasks';
+  const tbody = document.getElementById('task-table');
+  tbody.innerHTML = [...tasks].reverse().slice(0,50).map(t=>{
+    const speed = t.mins<=6?'🔥 Fast':t.mins<=10?'✅ Good':t.mins<=15?'⚡ OK':'🐢 Slow';
+    const badge = t.mins<=6?'badge-green':t.mins<=10?'badge-blue':t.mins<=15?'badge-amber':'badge-red';
+    return `<tr>
+      <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${t.date} ${t.time}</td>
+      <td>${t.workerName}</td>
+      <td><span class="badge badge-amber">${t.type}</span></td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--gold)">${t.mins} min</td>
+      <td><span class="badge ${badge}">${speed}</span></td>
+      <td style="color:var(--muted);font-size:12px">${t.notes||'-'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderTaskCharts(){
+  // Tasks by worker bar
+  const workerCounts = {};
+  tasks.forEach(t=>{ workerCounts[t.workerName]=(workerCounts[t.workerName]||0)+1; });
+  const wSorted = Object.entries(workerCounts).sort((a,b)=>b[1]-a[1]);
+  makeChart('chart-worker-tasks',{
+    type:'bar',
+    data:{labels:wSorted.map(e=>e[0].split(' ')[0]),datasets:[{data:wSorted.map(e=>e[1]),backgroundColor:CHART_DEFAULTS.fire+'99',borderColor:CHART_DEFAULTS.fire,borderWidth:1,borderRadius:6}]},
+    options:chartOpts('tasks')
+  });
+
+  // Avg speed by task type
+  const taskSpeeds = {};
+  tasks.forEach(t=>{ if(!taskSpeeds[t.type]) taskSpeeds[t.type]=[]; taskSpeeds[t.type].push(t.mins); });
+  const taskAvgs = Object.entries(taskSpeeds).map(([type,mins])=>({type,avg:Math.round(mins.reduce((s,m)=>s+m,0)/mins.length)}));
+  makeChart('chart-task-speed',{
+    type:'bar',
+    data:{labels:taskAvgs.map(e=>e.type),datasets:[{data:taskAvgs.map(e=>e.avg),backgroundColor:taskAvgs.map(e=>e.avg<=6?CHART_DEFAULTS.green+'99':e.avg<=10?CHART_DEFAULTS.gold+'99':CHART_DEFAULTS.red+'99'),borderRadius:6}]},
+    options:{...chartOpts('mins'),indexAxis:'y'}
+  });
+}
+
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function kpiCard(label, icon, val, sub, accent){
+  return `<div class="kpi" style="--accent:${accent}">
+    <div class="kpi-label">${label}</div>
+    <div class="kpi-val">${val}</div>
+    ${sub?`<div class="kpi-sub" style="color:${accent}">${sub}</div>`:''}
+    <div class="kpi-icon">${icon}</div>
+  </div>`;
+}
+
+function chartOpts(unit){
+  return {
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y?.toLocaleString()||ctx.parsed.x?.toLocaleString()||ctx.parsed} ${unit}`},backgroundColor:'#1A0C02',titleColor:CHART_DEFAULTS.color,bodyColor:CHART_DEFAULTS.gold,borderColor:'rgba(255,255,255,0.1)',borderWidth:1}},
+    scales:{
+      x:{grid:{color:CHART_DEFAULTS.grid},ticks:{color:CHART_DEFAULTS.color,font:{size:10},maxRotation:0}},
+      y:{grid:{color:CHART_DEFAULTS.grid},ticks:{color:CHART_DEFAULTS.color,font:{size:10}}}
+    }
+  };
+}
+
+function formatDate(str){
+  const d=new Date(str);
+  return d.toLocaleDateString('en-UG',{weekday:'short',day:'numeric',month:'short'});
+}
+
+function showToast(msg,isErr=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.className='toast show'+(isErr?' err':'');
+  setTimeout(()=>t.className='toast',3000);
+}
+
+// Set today's date on date inputs
+window.addEventListener('load',()=>{
+  const today=new Date().toISOString().split('T')[0];
+  ['rev-date','sale-date','w-start'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=today; });
+});
+</script>
+</body>
+</html>
