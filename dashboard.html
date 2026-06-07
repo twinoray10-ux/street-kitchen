@@ -207,6 +207,7 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <a class="sb-item" onclick="showPage('menu',this)"><span class="sb-item-icon">🍽</span>Menu Performance</a>
       <a class="sb-item" onclick="showPage('projections',this)"><span class="sb-item-icon">📈</span>Projections</a>
       <div class="sb-section">Operations</div>
+      <a class="sb-item" onclick="showPage('orders',this)"><span class="sb-item-icon">📋</span>Live Orders</a>
       <a class="sb-item" onclick="showPage('workers',this)"><span class="sb-item-icon">👥</span>Workers</a>
       <a class="sb-item" onclick="showPage('tasks',this)"><span class="sb-item-icon">⚡</span>Task Tracker</a>
     </nav>
@@ -393,6 +394,21 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       </div>
     </div>
 
+    <!-- ── LIVE ORDERS PAGE ── -->
+    <div class="page" id="page-orders">
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi" style="--accent:var(--gold)"><div class="kpi-label">TODAY'S ORDERS</div><div class="kpi-val" id="ord-stat-today">—</div><div class="kpi-icon">📦</div></div>
+        <div class="kpi" style="--accent:var(--fire)"><div class="kpi-label">PENDING</div><div class="kpi-val" id="ord-stat-new">—</div><div class="kpi-icon">🔥</div></div>
+        <div class="kpi" style="--accent:var(--green)"><div class="kpi-label">DONE</div><div class="kpi-val" id="ord-stat-done">—</div><div class="kpi-icon">✅</div></div>
+        <div class="kpi" style="--accent:var(--gold)"><div class="kpi-label">TODAY'S REVENUE</div><div class="kpi-val" id="ord-stat-rev">—</div><div class="kpi-icon">💰</div></div>
+      </div>
+      <div class="table-box">
+        <div class="table-head"><h3>ALL ORDERS — LIVE</h3><span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--green)">● Auto-updates from Firebase</span></div>
+        <table><thead><tr><th>Time</th><th>Ref</th><th>Customer</th><th>Phone</th><th>Type</th><th>Items</th><th>Total (UGX)</th><th>Status</th></tr></thead>
+        <tbody id="orders-live-list"></tbody></table>
+      </div>
+    </div>
+
     <!-- ── WORKERS PAGE ── -->
     <div class="page" id="page-workers">
       <div class="add-worker-box">
@@ -487,7 +503,7 @@ function doLogin(){
   if(document.getElementById('pw-input').value === pw){
     document.getElementById('login-screen').style.display='none';
     document.getElementById('app').style.display='block';
-    init();
+    initFirebase();
   } else {
     document.getElementById('login-err').textContent='Wrong password.';
     document.getElementById('pw-input').value='';
@@ -500,57 +516,77 @@ function logout(){
 document.getElementById('pw-input').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
 
 /* ══════════════════════════════════════════
-   DATA STORE (localStorage)
+   FIREBASE
+══════════════════════════════════════════ */
+async function initFirebase(){
+  const { initializeApp } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+  const { getDatabase, ref, onValue } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+
+  const app = initializeApp({
+    apiKey:"AIzaSyBvn2QXF-vkhXcVjScb-rh1veUdGdoI7qg",
+    authDomain:"street-kitchen-9f41e.firebaseapp.com",
+    projectId:"street-kitchen-9f41e",
+    databaseURL:"https://street-kitchen-9f41e-default-rtdb.firebaseio.com"
+  });
+  const db = getDatabase(app);
+
+  showToast('🔄 Loading live data...');
+
+  // Listen to orders in real time
+  onValue(ref(db,'orders'), snap => {
+    const raw = snap.val() || {};
+    fbOrders = Object.values(raw);
+    // Derive revenues & sales from real orders
+    revenues = deriveRevenues(fbOrders);
+    sales    = deriveSales(fbOrders);
+    save('workers', workers);
+    refreshAllPages();
+    showToast('✓ Live data loaded — '+fbOrders.length+' orders');
+  });
+}
+
+/* ══════════════════════════════════════════
+   DERIVE ANALYTICS FROM FIREBASE ORDERS
+══════════════════════════════════════════ */
+function deriveRevenues(orders){
+  // Group confirmed orders by date
+  const map = {};
+  orders.filter(o=>o.status==='done'||o.status==='preparing'||o.status==='new').forEach(o=>{
+    const date = o.timestamp ? new Date(o.timestamp).toISOString().split('T')[0] : (o.date||new Date().toISOString().split('T')[0]);
+    if(!map[date]) map[date]={date,total:0,orders:0,delivery:0,pickup:0,category:'mixed',notes:''};
+    map[date].total += o.total||0;
+    map[date].orders++;
+    if(o.type==='delivery') map[date].delivery++; else map[date].pickup++;
+  });
+  return Object.values(map).sort((a,b)=>a.date.localeCompare(b.date));
+}
+
+function deriveSales(orders){
+  const rows = [];
+  orders.forEach(o=>{
+    if(!o.items) return;
+    const date = o.timestamp ? new Date(o.timestamp).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+    o.items.forEach(item=>{
+      const cat = item.name?.toLowerCase().includes('rolex')||item.name?.toLowerCase().includes('chapati') ? 'rolex'
+                : item.name?.toLowerCase().includes('combo')||item.name?.toLowerCase().includes('bundle') ? 'combo'
+                : 'chicken';
+      rows.push({date,item:item.name,category:cat,qty:item.qty||1,price:item.price||0,revenue:(item.subtotal||item.price*item.qty)||0});
+    });
+  });
+  return rows;
+}
+
+/* ══════════════════════════════════════════
+   DATA STORE (localStorage for workers/tasks)
 ══════════════════════════════════════════ */
 function save(key, val){ localStorage.setItem('sk_bi_'+key, JSON.stringify(val)); }
 function load(key, def){ try{ const v=localStorage.getItem('sk_bi_'+key); return v?JSON.parse(v):def; }catch(e){ return def; } }
 
-let revenues = load('revenues', generateSampleRevenues());
-let sales    = load('sales', generateSampleSales());
+let fbOrders = [];
+let revenues = [];
+let sales    = [];
 let workers  = load('workers', []);
 let tasks    = load('tasks', []);
-
-function generateSampleRevenues(){
-  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const data = [];
-  const today = new Date();
-  for(let i=13;i>=0;i--){
-    const d = new Date(today); d.setDate(d.getDate()-i);
-    const base = 80000 + Math.random()*120000;
-    const weekend = d.getDay()===0||d.getDay()===6 ? 1.4 : 1;
-    data.push({
-      date: d.toISOString().split('T')[0],
-      total: Math.round(base*weekend),
-      orders: Math.round(8+Math.random()*15),
-      category:'mixed',
-      notes:''
-    });
-  }
-  return data;
-}
-
-function generateSampleSales(){
-  const items = [
-    {name:'Classic Rolex',cat:'rolex',price:2500},
-    {name:'Chicken Rolex',cat:'rolex',price:5000},
-    {name:'Beef Rolex',cat:'rolex',price:4500},
-    {name:'Fried Chicken 2 Pcs',cat:'chicken',price:12000},
-    {name:'Spicy Wings 5 Pcs',cat:'chicken',price:15000},
-    {name:'Plain Fries',cat:'chicken',price:7000},
-    {name:'Signature Combo',cat:'combo',price:20000},
-  ];
-  const data = [];
-  const today = new Date();
-  for(let i=6;i>=0;i--){
-    const d = new Date(today); d.setDate(d.getDate()-i);
-    const dateStr = d.toISOString().split('T')[0];
-    items.forEach(item=>{
-      const qty = Math.round(2+Math.random()*12);
-      data.push({date:dateStr,item:item.name,category:item.cat,qty,price:item.price,revenue:qty*item.price});
-    });
-  }
-  return data;
-}
 
 /* ══════════════════════════════════════════
    CHARTS REGISTRY
@@ -571,9 +607,9 @@ const CHART_DEFAULTS = {
 };
 
 /* ══════════════════════════════════════════
-   INIT
+   INIT & REFRESH
 ══════════════════════════════════════════ */
-function init(){
+function refreshAllPages(){
   document.getElementById('date-display').textContent = new Date().toLocaleDateString('en-UG',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
   renderOverview();
   updateProjections();
@@ -593,12 +629,12 @@ function showPage(name, el){
   if(el) el.classList.add('active');
   document.getElementById('page-title').textContent = name.toUpperCase();
   document.getElementById('sidebar').classList.remove('open');
-  // Re-render charts when switching pages
   if(name==='overview') renderOverview();
   if(name==='revenue') updateRevenuePage();
   if(name==='menu') renderMenuPage();
   if(name==='projections') updateProjections();
   if(name==='tasks') renderTaskCharts();
+  if(name==='orders') renderOrdersPage();
 }
 
 /* ══════════════════════════════════════════
@@ -606,51 +642,74 @@ function showPage(name, el){
 ══════════════════════════════════════════ */
 function renderOverview(){
   const todayStr = new Date().toISOString().split('T')[0];
-  const todayRev = revenues.filter(r=>r.date===todayStr).reduce((s,r)=>s+r.total,0);
-  const weekRevs = revenues.slice(-7);
-  const weekTotal = weekRevs.reduce((s,r)=>s+r.total,0);
-  const prevWeek = revenues.slice(-14,-7).reduce((s,r)=>s+r.total,0);
-  const weekChange = prevWeek ? ((weekTotal-prevWeek)/prevWeek*100).toFixed(1) : 0;
-  const totalOrders = revenues.reduce((s,r)=>s+r.orders,0);
-  const avgOrder = totalOrders ? Math.round(revenues.reduce((s,r)=>s+r.total,0)/totalOrders) : 0;
+  const todayOrders = fbOrders.filter(o=>o.timestamp&&new Date(o.timestamp).toISOString().split('T')[0]===todayStr);
+  const todayRev = todayOrders.reduce((s,o)=>s+( o.total||0),0);
+  const weekAgo = Date.now()-7*86400000;
+  const weekOrders = fbOrders.filter(o=>o.timestamp&&o.timestamp>weekAgo);
+  const weekTotal = weekOrders.reduce((s,o)=>s+(o.total||0),0);
+  const prevWeekOrders = fbOrders.filter(o=>o.timestamp&&o.timestamp>weekAgo-7*86400000&&o.timestamp<=weekAgo);
+  const prevWeekTotal = prevWeekOrders.reduce((s,o)=>s+(o.total||0),0);
+  const weekChange = prevWeekTotal ? ((weekTotal-prevWeekTotal)/prevWeekTotal*100).toFixed(1) : 0;
+  const totalOrders = fbOrders.length;
+  const avgOrder = totalOrders ? Math.round(fbOrders.reduce((s,o)=>s+(o.total||0),0)/totalOrders) : 0;
+  const doneToday = todayOrders.filter(o=>o.status==='done').length;
+  const pendingNow = fbOrders.filter(o=>o.status==='new'||o.status==='preparing').length;
 
   document.getElementById('kpi-overview').innerHTML = `
-    ${kpiCard('TODAY\'S REVENUE','💰',todayRev.toLocaleString()+' UGX','','var(--gold)')}
-    ${kpiCard('THIS WEEK','📈',weekTotal.toLocaleString()+' UGX',weekChange+'% vs last week',weekChange>=0?'var(--green)':'var(--red)')}
-    ${kpiCard('TOTAL ORDERS','🛒',totalOrders.toLocaleString(),'all time','var(--blue)')}
-    ${kpiCard('AVG ORDER VALUE','⚡',avgOrder.toLocaleString()+' UGX','per order','var(--fire)')}`;
+    ${kpiCard('TODAY\'S REVENUE','💰',todayRev.toLocaleString()+' UGX',doneToday+' orders done today','var(--gold)')}
+    ${kpiCard('THIS WEEK','📈',weekTotal.toLocaleString()+' UGX',(weekChange>=0?'↑ +':'↓ ')+Math.abs(weekChange)+'% vs last week',weekChange>=0?'var(--green)':'var(--red)')}
+    ${kpiCard('TOTAL ORDERS','🛒',totalOrders.toLocaleString(),'all time orders','var(--blue)')}
+    ${kpiCard('AVG ORDER VALUE','⚡',avgOrder.toLocaleString()+' UGX','per order','var(--fire)')}
+    ${kpiCard('PENDING NOW','⏳',pendingNow.toString(),'new + preparing','var(--amber)')}
+    ${kpiCard('ALL TIME REVENUE','💎',fbOrders.reduce((s,o)=>s+(o.total||0),0).toLocaleString()+' UGX','total earned','var(--green)')}`;
 
-  // Weekly bar chart
-  const labels = weekRevs.map(r=>{ const d=new Date(r.date); return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()]; });
-  const vals = weekRevs.map(r=>r.total);
+  // Weekly revenue by day
+  const dayMap = {};
+  for(let i=6;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const key = d.toISOString().split('T')[0];
+    dayMap[key] = {label:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()],total:0};
+  }
+  fbOrders.forEach(o=>{
+    if(!o.timestamp) return;
+    const key = new Date(o.timestamp).toISOString().split('T')[0];
+    if(dayMap[key]) dayMap[key].total += o.total||0;
+  });
+  const dayVals = Object.values(dayMap);
   makeChart('chart-weekly',{
     type:'bar',
-    data:{labels,datasets:[{data:vals,backgroundColor:vals.map((v,i)=>i===vals.length-1?CHART_DEFAULTS.fire+'CC':CHART_DEFAULTS.fire+'44'),borderColor:vals.map((v,i)=>i===vals.length-1?CHART_DEFAULTS.fire:CHART_DEFAULTS.fire+'88'),borderWidth:1,borderRadius:6}]},
+    data:{labels:dayVals.map(d=>d.label),datasets:[{data:dayVals.map(d=>d.total),backgroundColor:dayVals.map((_,i)=>i===dayVals.length-1?CHART_DEFAULTS.fire+'CC':CHART_DEFAULTS.fire+'44'),borderColor:dayVals.map((_,i)=>i===dayVals.length-1?CHART_DEFAULTS.fire:CHART_DEFAULTS.fire+'66'),borderWidth:1,borderRadius:6}]},
     options:chartOpts('UGX')
   });
 
-  // Order types donut
-  const deliveries = Math.round(totalOrders*0.4);
-  const pickups = totalOrders - deliveries;
+  // Real delivery vs pickup
+  const deliveries = fbOrders.filter(o=>o.type==='delivery').length;
+  const pickups = fbOrders.filter(o=>o.type!=='delivery').length;
   makeChart('chart-types',{
     type:'doughnut',
-    data:{labels:['Delivery','Pickup'],datasets:[{data:[deliveries,pickups],backgroundColor:[CHART_DEFAULTS.fire+'CC',CHART_DEFAULTS.gold+'CC'],borderColor:'#140900',borderWidth:3}]},
+    data:{labels:['Delivery 🛵','Pickup 🏃'],datasets:[{data:[deliveries,pickups],backgroundColor:[CHART_DEFAULTS.fire+'CC',CHART_DEFAULTS.gold+'CC'],borderColor:'#140900',borderWidth:3}]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:CHART_DEFAULTS.color,font:{size:11},boxWidth:12}}}}
   });
 
-  // Hourly orders (simulated)
-  const hours = ['8am','9am','10am','11am','12pm','1pm','2pm','3pm','4pm','5pm','6pm','7pm','8pm'];
-  const hourlyData = [1,2,3,5,8,10,7,6,8,9,10,7,4];
+  // Hourly orders from real data
+  const hourMap = {};
+  for(let h=8;h<=21;h++) hourMap[h]=0;
+  fbOrders.forEach(o=>{
+    if(!o.timestamp) return;
+    const h = new Date(o.timestamp).getHours();
+    if(hourMap[h]!==undefined) hourMap[h]++;
+  });
+  const hours = Object.keys(hourMap).map(h=>h+':00');
   makeChart('chart-hourly',{
     type:'line',
-    data:{labels:hours,datasets:[{data:hourlyData,borderColor:CHART_DEFAULTS.gold,backgroundColor:CHART_DEFAULTS.gold+'22',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:CHART_DEFAULTS.gold}]},
+    data:{labels:hours,datasets:[{data:Object.values(hourMap),borderColor:CHART_DEFAULTS.gold,backgroundColor:CHART_DEFAULTS.gold+'22',fill:true,tension:0.4,pointRadius:3,pointBackgroundColor:CHART_DEFAULTS.gold}]},
     options:chartOpts('orders')
   });
 
-  // Top sellers from sales data
-  const itemTotals = {};
-  sales.forEach(s=>{ itemTotals[s.item]=(itemTotals[s.item]||0)+s.qty; });
-  const sorted = Object.entries(itemTotals).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  // Top sellers from real order items
+  const itemMap = {};
+  fbOrders.forEach(o=>{ (o.items||[]).forEach(i=>{ itemMap[i.name]=(itemMap[i.name]||0)+(i.qty||1); }); });
+  const sorted = Object.entries(itemMap).sort((a,b)=>b[1]-a[1]).slice(0,6);
   makeChart('chart-topsellers',{
     type:'bar',
     data:{labels:sorted.map(e=>e[0].split(' ').slice(0,2).join(' ')),datasets:[{data:sorted.map(e=>e[1]),backgroundColor:[CHART_DEFAULTS.fire,CHART_DEFAULTS.gold,CHART_DEFAULTS.green,CHART_DEFAULTS.blue,CHART_DEFAULTS.amber,CHART_DEFAULTS.red].map(c=>c+'CC'),borderRadius:6}]},
@@ -659,21 +718,21 @@ function renderOverview(){
 }
 
 /* ══════════════════════════════════════════
-   REVENUE PAGE
+   REVENUE PAGE — from real Firebase orders
 ══════════════════════════════════════════ */
 function logRevenue(){
+  // Manual override entry (e.g. cash sales not on site)
   const date=document.getElementById('rev-date').value;
   const total=parseInt(document.getElementById('rev-total').value);
   const orders=parseInt(document.getElementById('rev-orders').value)||0;
   const category=document.getElementById('rev-cat').value;
   const notes=document.getElementById('rev-notes').value;
   if(!date||!total){ showToast('Enter date and revenue amount',true); return; }
-  revenues.push({date,total,orders,category,notes});
-  revenues.sort((a,b)=>a.date.localeCompare(b.date));
-  save('revenues',revenues);
+  const extra = load('extra_revenues',[]);
+  extra.push({date,total,orders,category,notes,manual:true});
+  save('extra_revenues', extra);
   updateRevenuePage();
-  updateProjections();
-  showToast('✓ Revenue logged!');
+  showToast('✓ Extra revenue logged!');
   document.getElementById('rev-total').value='';
   document.getElementById('rev-orders').value='';
   document.getElementById('rev-notes').value='';
@@ -682,7 +741,12 @@ function logRevenue(){
 function updateRevenuePage(){
   const period = document.getElementById('rev-period')?.value||'week';
   const now = new Date();
-  const filtered = revenues.filter(r=>{
+  const extra = load('extra_revenues',[]);
+
+  // Combine Firebase-derived + manual entries
+  const allRevenues = [...revenues, ...extra];
+
+  const filtered = allRevenues.filter(r=>{
     const d = new Date(r.date);
     if(period==='day') return r.date===now.toISOString().split('T')[0];
     if(period==='week'){ const w=new Date(now); w.setDate(w.getDate()-7); return d>=w; }
@@ -691,28 +755,26 @@ function updateRevenuePage(){
   });
 
   const total = filtered.reduce((s,r)=>s+r.total,0);
-  const orders = filtered.reduce((s,r)=>s+r.orders,0);
-  const avg = orders ? Math.round(total/orders) : 0;
+  const ordersCount = filtered.reduce((s,r)=>s+(r.orders||0),0);
+  const avg = ordersCount ? Math.round(total/ordersCount) : 0;
   const best = filtered.length ? Math.max(...filtered.map(r=>r.total)) : 0;
 
   document.getElementById('kpi-revenue').innerHTML = `
     ${kpiCard('TOTAL REVENUE','💰',total.toLocaleString()+' UGX','in selected period','var(--gold)')}
-    ${kpiCard('TOTAL ORDERS','🛒',orders.toLocaleString(),'orders placed','var(--blue)')}
+    ${kpiCard('TOTAL ORDERS','🛒',fbOrders.length.toLocaleString(),'from your site','var(--blue)')}
     ${kpiCard('AVG ORDER VALUE','⚡',avg.toLocaleString()+' UGX','per order','var(--fire)')}
     ${kpiCard('BEST DAY','🏆',best.toLocaleString()+' UGX','highest revenue day','var(--green)')}`;
 
-  // Trend chart
-  const last14 = revenues.slice(-14);
+  const last14 = allRevenues.slice(-14);
   makeChart('chart-rev-trend',{
     type:'line',
     data:{
-      labels:last14.map(r=>{ const d=new Date(r.date); return d.getDate()+'/'+( d.getMonth()+1); }),
+      labels:last14.map(r=>{ const d=new Date(r.date); return d.getDate()+'/'+(d.getMonth()+1); }),
       datasets:[{data:last14.map(r=>r.total),borderColor:CHART_DEFAULTS.gold,backgroundColor:CHART_DEFAULTS.gold+'15',fill:true,tension:0.4,pointRadius:4,pointBackgroundColor:CHART_DEFAULTS.gold}]
     },
     options:chartOpts('UGX')
   });
 
-  // Category pie
   const cats = {};
   filtered.forEach(r=>{ cats[r.category]=(cats[r.category]||0)+r.total; });
   makeChart('chart-rev-cat',{
@@ -721,13 +783,12 @@ function updateRevenuePage(){
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:CHART_DEFAULTS.color,font:{size:10},boxWidth:10}}}}
   });
 
-  // Table
   const tbody = document.getElementById('rev-table');
   tbody.innerHTML = [...filtered].reverse().map(r=>`<tr>
     <td>${formatDate(r.date)}</td>
     <td style="font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--gold)">${r.total.toLocaleString()}</td>
-    <td>${r.orders}</td>
-    <td><span class="badge ${r.category==='rolex'?'badge-amber':r.category==='chicken'?'badge-red':'badge-green'}">${r.category}</span></td>
+    <td>${r.orders||'—'}</td>
+    <td><span class="badge ${r.manual?'badge-blue':r.category==='rolex'?'badge-amber':r.category==='chicken'?'badge-red':'badge-green'}">${r.manual?'manual':r.category}</span></td>
     <td style="color:var(--muted);font-family:'DM Mono',monospace;font-size:11px">${r.orders?Math.round(r.total/r.orders).toLocaleString():'-'}</td>
     <td style="color:var(--muted);font-size:12px">${r.notes||'-'}</td>
   </tr>`).join('');
@@ -736,7 +797,39 @@ function updateRevenuePage(){
 }
 
 /* ══════════════════════════════════════════
-   MENU PERFORMANCE
+   ORDERS PAGE — live from Firebase
+══════════════════════════════════════════ */
+function renderOrdersPage(){
+  const container = document.getElementById('orders-live-list');
+  if(!container) return;
+
+  // Stats
+  const todayStr = new Date().toISOString().split('T')[0];
+  const todayOrds = fbOrders.filter(o=>o.timestamp&&new Date(o.timestamp).toISOString().split('T')[0]===todayStr);
+  document.getElementById('ord-stat-today').textContent = todayOrds.length;
+  document.getElementById('ord-stat-new').textContent = fbOrders.filter(o=>o.status==='new').length;
+  document.getElementById('ord-stat-done').textContent = fbOrders.filter(o=>o.status==='done').length;
+  document.getElementById('ord-stat-rev').textContent = todayOrds.reduce((s,o)=>s+(o.total||0),0).toLocaleString()+' UGX';
+
+  const sorted = [...fbOrders].sort((a,b)=>(b.timestamp||0)-(a.timestamp||0)).slice(0,50);
+  container.innerHTML = sorted.length ? sorted.map(o=>{
+    const badge = o.status==='new'?'badge-red':o.status==='preparing'?'badge-amber':'badge-green';
+    const itemList = (o.items||[]).map(i=>`${i.name} x${i.qty}`).join(', ');
+    return `<tr>
+      <td style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">${o.time||formatDate(o.timestamp?new Date(o.timestamp).toISOString().split('T')[0]:'')}</td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:14px;color:var(--gold)">#${o.ref||'—'}</td>
+      <td>${o.name||'—'}</td>
+      <td style="font-size:11px;color:var(--muted)">${o.phone||'—'}</td>
+      <td><span class="badge ${o.type==='delivery'?'badge-blue':'badge-amber'}">${o.type==='delivery'?'🛵':'🏃'}</span></td>
+      <td style="font-size:11px;color:var(--muted);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${itemList}</td>
+      <td style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--fire)">${(o.total||0).toLocaleString()}</td>
+      <td><span class="badge ${badge}">${o.status||'new'}</span></td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:12px">No orders yet</td></tr>';
+}
+
+/* ══════════════════════════════════════════
+   MENU PERFORMANCE — from real orders
 ══════════════════════════════════════════ */
 function logSale(){
   const date=document.getElementById('sale-date').value;
@@ -745,8 +838,9 @@ function logSale(){
   const qty=parseInt(document.getElementById('sale-qty').value);
   const price=parseInt(document.getElementById('sale-price').value);
   if(!date||!item||!qty||!price){ showToast('Fill all fields',true); return; }
-  sales.push({date,item,category,qty,price,revenue:qty*price});
-  save('sales',sales);
+  const extra = load('extra_sales',[]);
+  extra.push({date,item,category,qty,price,revenue:qty*price,manual:true});
+  save('extra_sales',extra);
   renderMenuPage();
   showToast('✓ Sale logged!');
   document.getElementById('sale-item').value='';
@@ -755,36 +849,37 @@ function logSale(){
 }
 
 function renderMenuPage(){
-  const totalRev = sales.reduce((s,i)=>s+i.revenue,0);
-  const totalUnits = sales.reduce((s,i)=>s+i.qty,0);
+  const extraSales = load('extra_sales',[]);
+  const allSales = [...sales, ...extraSales];
+
+  const totalRev = allSales.reduce((s,i)=>s+i.revenue,0);
+  const totalUnits = allSales.reduce((s,i)=>s+i.qty,0);
   const itemMap = {};
-  sales.forEach(s=>{ if(!itemMap[s.item]) itemMap[s.item]={qty:0,revenue:0}; itemMap[s.item].qty+=s.qty; itemMap[s.item].revenue+=s.revenue; });
+  allSales.forEach(s=>{ if(!itemMap[s.item]) itemMap[s.item]={qty:0,revenue:0}; itemMap[s.item].qty+=s.qty; itemMap[s.item].revenue+=s.revenue; });
   const topItem = Object.entries(itemMap).sort((a,b)=>b[1].qty-a[1].qty)[0];
 
   document.getElementById('kpi-menu').innerHTML = `
-    ${kpiCard('TOTAL ITEM REVENUE','🍽',totalRev.toLocaleString()+' UGX','from item sales','var(--fire)')}
+    ${kpiCard('ITEM REVENUE','🍽',totalRev.toLocaleString()+' UGX','from all items sold','var(--fire)')}
     ${kpiCard('UNITS SOLD','📦',totalUnits.toLocaleString(),'total items','var(--blue)')}
     ${kpiCard('TOP SELLER','🏆',topItem?topItem[0].split(' ').slice(0,2).join(' '):'—','best performer','var(--gold)')}
-    ${kpiCard('UNIQUE ITEMS','⭐',Object.keys(itemMap).length.toString(),'on menu','var(--green)')}`;
+    ${kpiCard('UNIQUE ITEMS','⭐',Object.keys(itemMap).length.toString(),'sold so far','var(--green)')}`;
 
-  ['rolex','chicken','combo'].forEach((cat,ci)=>{
-    const catSales = sales.filter(s=>s.category===cat);
-    const itemMap2 = {};
-    catSales.forEach(s=>{ if(!itemMap2[s.item]) itemMap2[s.item]=0; itemMap2[s.item]+=s.qty; });
-    const sorted = Object.entries(itemMap2).sort((a,b)=>b[1]-a[1]);
-    const colors = [CHART_DEFAULTS.fire,CHART_DEFAULTS.gold,CHART_DEFAULTS.green,CHART_DEFAULTS.blue,CHART_DEFAULTS.amber,CHART_DEFAULTS.red];
+  ['rolex','chicken','combo'].forEach(cat=>{
+    const catSales = allSales.filter(s=>s.category===cat);
+    const im = {};
+    catSales.forEach(s=>{ if(!im[s.item]) im[s.item]=0; im[s.item]+=s.qty; });
+    const sortedCat = Object.entries(im).sort((a,b)=>b[1]-a[1]);
+    const colors=[CHART_DEFAULTS.fire,CHART_DEFAULTS.gold,CHART_DEFAULTS.green,CHART_DEFAULTS.blue,CHART_DEFAULTS.amber,CHART_DEFAULTS.red];
     makeChart(`chart-${cat}`,{
       type:'doughnut',
-      data:{labels:sorted.map(e=>e[0].split(' ').slice(0,2).join(' ')),datasets:[{data:sorted.map(e=>e[1]),backgroundColor:colors.map(c=>c+'BB'),borderColor:'#140900',borderWidth:2}]},
+      data:{labels:sortedCat.map(e=>e[0].split(' ').slice(0,2).join(' ')),datasets:[{data:sortedCat.map(e=>e[1]),backgroundColor:colors.map(c=>c+'BB'),borderColor:'#140900',borderWidth:2}]},
       options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:CHART_DEFAULTS.color,font:{size:9},boxWidth:8}}}}
     });
   });
 
-  // Table
-  const tbody = document.getElementById('sales-table');
-  tbody.innerHTML = [...sales].reverse().slice(0,50).map(s=>`<tr>
+  document.getElementById('sales-table').innerHTML = [...allSales].reverse().slice(0,50).map(s=>`<tr>
     <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${formatDate(s.date)}</td>
-    <td>${s.item}</td>
+    <td>${s.item} ${s.manual?'<span class="badge badge-blue" style="font-size:8px">manual</span>':''}</td>
     <td><span class="badge ${s.category==='rolex'?'badge-amber':s.category==='chicken'?'badge-red':'badge-green'}">${s.category}</span></td>
     <td style="font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--gold)">${s.qty}</td>
     <td style="font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--fire)">${s.revenue.toLocaleString()}</td>
@@ -792,60 +887,57 @@ function renderMenuPage(){
 }
 
 /* ══════════════════════════════════════════
-   PROJECTIONS
+   PROJECTIONS — from real Firebase data
 ══════════════════════════════════════════ */
 function updateProjections(){
   const costs = parseInt(document.getElementById('monthly-costs')?.value)||0;
   const growth = parseInt(document.getElementById('growth-target')?.value)||10;
 
-  const last7 = revenues.slice(-7);
-  const avgDaily = last7.length ? last7.reduce((s,r)=>s+r.total,0)/last7.length : 0;
+  // Use last 7 days of real order data
+  const weekAgo = Date.now()-7*86400000;
+  const last7Orders = fbOrders.filter(o=>o.timestamp&&o.timestamp>weekAgo);
+  const last7Rev = last7Orders.reduce((s,o)=>s+(o.total||0),0);
+  const avgDaily = last7Rev/7;
   const projWeek = Math.round(avgDaily*7);
   const projMonth = Math.round(avgDaily*30);
-  const projYear = Math.round(projMonth*12*(1+growth/100*6)); // 6 month avg growth
+  const projYear = Math.round(projMonth*12*(1+growth/100*6));
   const dailyTarget = costs ? Math.round(costs/30) : 0;
-  const todayRev = revenues.filter(r=>r.date===new Date().toISOString().split('T')[0]).reduce((s,r)=>s+r.total,0);
+  const todayRev = fbOrders.filter(o=>o.timestamp&&new Date(o.timestamp).toISOString().split('T')[0]===new Date().toISOString().split('T')[0]).reduce((s,o)=>s+(o.total||0),0);
+  const totalAll = fbOrders.reduce((s,o)=>s+(o.total||0),0);
 
-  const fmt = n => n>=1000000 ? (n/1000000).toFixed(1)+'M' : n>=1000 ? (n/1000).toFixed(0)+'K' : n.toString();
+  const fmt = n => n>=1000000?(n/1000000).toFixed(1)+'M':n>=1000?(n/1000).toFixed(0)+'K':n.toString();
 
   if(document.getElementById('proj-week')){
     document.getElementById('proj-week').textContent = fmt(projWeek);
     document.getElementById('proj-month').textContent = fmt(projMonth);
     document.getElementById('proj-year').textContent = fmt(projYear);
-    document.getElementById('proj-target').textContent = dailyTarget ? fmt(dailyTarget) : 'Set costs →';
-    document.getElementById('proj-week-sub').textContent = `UGX · avg ${fmt(avgDaily)}/day`;
-    document.getElementById('proj-target-sub').textContent = dailyTarget ? `UGX/day to cover ${fmt(costs)} monthly costs` : 'Enter monthly costs above';
-
-    const pct = n => Math.min(100,Math.round(n));
-    document.getElementById('proj-week-bar').style.width = pct(projWeek/projMonth*100)+'%';
-    document.getElementById('proj-month-bar').style.width = '60%';
-    document.getElementById('proj-year-bar').style.width = '80%';
-    document.getElementById('proj-target-bar').style.width = dailyTarget&&todayRev ? pct(todayRev/dailyTarget*100)+'%' : '0%';
+    document.getElementById('proj-target').textContent = dailyTarget?fmt(dailyTarget):'Set costs →';
+    document.getElementById('proj-week-sub').textContent = `UGX · avg ${fmt(avgDaily)}/day (last 7 days)`;
+    document.getElementById('proj-target-sub').textContent = dailyTarget?`UGX/day to cover ${fmt(costs)} monthly costs`:'Enter monthly costs above';
+    const pct=n=>Math.min(100,Math.round(n));
+    document.getElementById('proj-week-bar').style.width=pct(avgDaily/Math.max(projMonth/30,1)*100)+'%';
+    document.getElementById('proj-month-bar').style.width='60%';
+    document.getElementById('proj-year-bar').style.width='80%';
+    document.getElementById('proj-target-bar').style.width=dailyTarget&&todayRev?pct(todayRev/dailyTarget*100)+'%':'0%';
   }
 
-  // KPIs
-  const totalAll = revenues.reduce((s,r)=>s+r.total,0);
   if(document.getElementById('kpi-proj')){
     document.getElementById('kpi-proj').innerHTML = `
-      ${kpiCard('AVG DAILY REVENUE','📅',fmt(avgDaily)+' UGX','last 7 days','var(--gold)')}
+      ${kpiCard('AVG DAILY (7 DAYS)','📅',fmt(avgDaily)+' UGX','from real orders','var(--gold)')}
       ${kpiCard('PROJECTED MONTHLY','📈',fmt(projMonth)+' UGX','at current pace','var(--green)')}
-      ${kpiCard('ALL TIME REVENUE','💎',fmt(totalAll)+' UGX','total earned','var(--fire)')}
+      ${kpiCard('ALL TIME REVENUE','💎',fmt(totalAll)+' UGX','total earned on site','var(--fire)')}
       ${kpiCard('GROWTH TARGET','🎯',growth+'% / month','set above','var(--blue)')}`;
   }
 
-  // Forecast chart
-  const months = ['Now','Month 1','Month 2','Month 3','Month 4','Month 5','Month 6'];
-  const forecast = months.map((_,i)=>Math.round(projMonth*Math.pow(1+growth/100,i)));
+  const months=['Now','Month 1','Month 2','Month 3','Month 4','Month 5','Month 6'];
+  const forecast=months.map((_,i)=>Math.round(projMonth*Math.pow(1+growth/100,i)));
   if(document.getElementById('chart-forecast')){
     makeChart('chart-forecast',{
       type:'line',
-      data:{
-        labels:months,
-        datasets:[
-          {label:'Projected Revenue',data:forecast,borderColor:CHART_DEFAULTS.gold,backgroundColor:CHART_DEFAULTS.gold+'15',fill:true,tension:0.4,pointRadius:5,pointBackgroundColor:CHART_DEFAULTS.gold},
-          {label:'Break-even',data:months.map(()=>costs||0),borderColor:CHART_DEFAULTS.green,borderDash:[5,5],pointRadius:0,borderWidth:1.5,fill:false}
-        ]
-      },
+      data:{labels:months,datasets:[
+        {label:'Projected',data:forecast,borderColor:CHART_DEFAULTS.gold,backgroundColor:CHART_DEFAULTS.gold+'15',fill:true,tension:0.4,pointRadius:5,pointBackgroundColor:CHART_DEFAULTS.gold},
+        {label:'Break-even',data:months.map(()=>costs||0),borderColor:CHART_DEFAULTS.green,borderDash:[5,5],pointRadius:0,borderWidth:1.5,fill:false}
+      ]},
       options:chartOpts('UGX')
     });
   }
@@ -859,8 +951,8 @@ function addWorker(){
   const role=document.getElementById('w-role').value;
   const start=document.getElementById('w-start').value;
   const pay=parseInt(document.getElementById('w-pay').value)||0;
-  if(!name){ showToast('Enter worker name',true); return; }
-  workers.push({id:Date.now().toString(),name,role,start,pay,active:true,tasksCompleted:0,totalMins:0});
+  if(!name){showToast('Enter worker name',true);return;}
+  workers.push({id:Date.now().toString(),name,role,start,pay,active:true});
   save('workers',workers);
   renderWorkers();
   updateTaskWorkerSelect();
@@ -870,22 +962,19 @@ function addWorker(){
 }
 
 function renderWorkers(){
-  const grid = document.getElementById('worker-grid');
-  const tbody = document.getElementById('worker-table');
-  document.getElementById('worker-count').textContent = workers.length+' worker'+(workers.length!==1?'s':'');
-
+  const grid=document.getElementById('worker-grid');
+  const tbody=document.getElementById('worker-table');
+  document.getElementById('worker-count').textContent=workers.length+' worker'+(workers.length!==1?'s':'');
   if(!workers.length){
     grid.innerHTML='<div style="color:var(--muted);font-family:\'DM Mono\',monospace;font-size:12px;padding:2rem;text-align:center;grid-column:1/-1">No workers yet.</div>';
-    tbody.innerHTML='';
-    return;
+    tbody.innerHTML=''; return;
   }
-
-  grid.innerHTML = workers.filter(w=>w.active).map(w=>{
-    const wtasks = tasks.filter(t=>t.workerId===w.id);
-    const avgMins = wtasks.length ? Math.round(wtasks.reduce((s,t)=>s+t.mins,0)/wtasks.length) : 0;
-    const eff = calcEfficiency(wtasks);
-    const effColor = eff>=80?CHART_DEFAULTS.green:eff>=60?CHART_DEFAULTS.gold:CHART_DEFAULTS.red;
-    const initials = w.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  grid.innerHTML=workers.filter(w=>w.active).map(w=>{
+    const wtasks=tasks.filter(t=>t.workerId===w.id);
+    const avgMins=wtasks.length?Math.round(wtasks.reduce((s,t)=>s+t.mins,0)/wtasks.length):0;
+    const eff=calcEfficiency(wtasks);
+    const effColor=eff>=80?CHART_DEFAULTS.green:eff>=60?CHART_DEFAULTS.gold:CHART_DEFAULTS.red;
+    const initials=w.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
     return `<div class="worker-card">
       <div class="worker-head">
         <div class="worker-avatar">${initials}</div>
@@ -899,17 +988,16 @@ function renderWorkers(){
       <div class="eff-label"><span>Efficiency</span><span style="color:${effColor}">${eff}%</span></div>
       <div class="efficiency-bar"><div class="efficiency-fill" style="width:${eff}%;background:${effColor}"></div></div>
       <div class="worker-actions">
-        <button class="btn-sm btn-fire" onclick="showPage('tasks',document.querySelector('[onclick*=tasks]'))">Log Task</button>
+        <button class="btn-sm btn-fire" onclick="showPage('tasks',null)">+ Log Task</button>
         <button class="btn-sm btn-ghost" onclick="removeWorker('${w.id}')">Remove</button>
       </div>
     </div>`;
   }).join('');
-
-  tbody.innerHTML = workers.map(w=>{
-    const wtasks = tasks.filter(t=>t.workerId===w.id);
-    const avgMins = wtasks.length ? Math.round(wtasks.reduce((s,t)=>s+t.mins,0)/wtasks.length) : '-';
-    const eff = calcEfficiency(wtasks);
-    const days = w.start ? Math.round((Date.now()-new Date(w.start))/(86400000)) : '-';
+  tbody.innerHTML=workers.map(w=>{
+    const wtasks=tasks.filter(t=>t.workerId===w.id);
+    const avgMins=wtasks.length?Math.round(wtasks.reduce((s,t)=>s+t.mins,0)/wtasks.length):'-';
+    const eff=calcEfficiency(wtasks);
+    const days=w.start?Math.round((Date.now()-new Date(w.start))/86400000):'-';
     return `<tr>
       <td>${w.name}</td>
       <td><span class="badge badge-amber">${w.role}</span></td>
@@ -924,8 +1012,8 @@ function renderWorkers(){
 }
 
 function removeWorker(id){
-  if(!confirm('Remove this worker?')) return;
-  workers = workers.filter(w=>w.id!==id);
+  if(!confirm('Remove this worker?'))return;
+  workers=workers.filter(w=>w.id!==id);
   save('workers',workers);
   renderWorkers();
   updateTaskWorkerSelect();
@@ -933,31 +1021,28 @@ function removeWorker(id){
 }
 
 function calcEfficiency(wtasks){
-  if(!wtasks.length) return 0;
-  // Efficiency based on speed (faster = higher eff, baseline 10 mins)
-  const avgMins = wtasks.reduce((s,t)=>s+t.mins,0)/wtasks.length;
-  const eff = Math.min(100,Math.max(0,Math.round((10/Math.max(avgMins,1))*70 + wtasks.length*2)));
-  return Math.min(eff,100);
+  if(!wtasks.length)return 0;
+  const avgMins=wtasks.reduce((s,t)=>s+t.mins,0)/wtasks.length;
+  return Math.min(100,Math.max(0,Math.round((10/Math.max(avgMins,1))*70+wtasks.length*2)));
 }
 
 /* ══════════════════════════════════════════
    TASKS
 ══════════════════════════════════════════ */
 function updateTaskWorkerSelect(){
-  const sel = document.getElementById('task-worker');
-  if(!sel) return;
-  sel.innerHTML = '<option value="">Select worker...</option>' +
-    workers.filter(w=>w.active).map(w=>`<option value="${w.id}">${w.name}</option>`).join('');
+  const sel=document.getElementById('task-worker');
+  if(!sel)return;
+  sel.innerHTML='<option value="">Select worker...</option>'+workers.filter(w=>w.active).map(w=>`<option value="${w.id}">${w.name}</option>`).join('');
 }
 
 function logTask(){
-  const workerId = document.getElementById('task-worker').value;
-  const type = document.getElementById('task-type').value;
-  const mins = parseInt(document.getElementById('task-mins').value);
-  const notes = document.getElementById('task-notes').value;
-  if(!workerId){ showToast('Select a worker',true); return; }
-  if(!mins||mins<1){ showToast('Enter time taken in minutes',true); return; }
-  const worker = workers.find(w=>w.id===workerId);
+  const workerId=document.getElementById('task-worker').value;
+  const type=document.getElementById('task-type').value;
+  const mins=parseInt(document.getElementById('task-mins').value);
+  const notes=document.getElementById('task-notes').value;
+  if(!workerId){showToast('Select a worker',true);return;}
+  if(!mins||mins<1){showToast('Enter time in minutes',true);return;}
+  const worker=workers.find(w=>w.id===workerId);
   tasks.push({id:Date.now().toString(),workerId,workerName:worker?.name||'Unknown',type,mins,notes,time:new Date().toLocaleTimeString('en-UG',{hour:'2-digit',minute:'2-digit'}),date:new Date().toISOString().split('T')[0]});
   save('tasks',tasks);
   renderTasks();
@@ -970,12 +1055,10 @@ function logTask(){
 function renderTasks(){
   updateTaskWorkerSelect();
   renderTaskCharts();
-
-  document.getElementById('task-count').textContent = tasks.length+' total tasks';
-  const tbody = document.getElementById('task-table');
-  tbody.innerHTML = [...tasks].reverse().slice(0,50).map(t=>{
-    const speed = t.mins<=6?'🔥 Fast':t.mins<=10?'✅ Good':t.mins<=15?'⚡ OK':'🐢 Slow';
-    const badge = t.mins<=6?'badge-green':t.mins<=10?'badge-blue':t.mins<=15?'badge-amber':'badge-red';
+  document.getElementById('task-count').textContent=tasks.length+' total tasks';
+  document.getElementById('task-table').innerHTML=[...tasks].reverse().slice(0,50).map(t=>{
+    const speed=t.mins<=6?'🔥 Fast':t.mins<=10?'✅ Good':t.mins<=15?'⚡ OK':'🐢 Slow';
+    const badge=t.mins<=6?'badge-green':t.mins<=10?'badge-blue':t.mins<=15?'badge-amber':'badge-red';
     return `<tr>
       <td style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted)">${t.date} ${t.time}</td>
       <td>${t.workerName}</td>
@@ -988,31 +1071,20 @@ function renderTasks(){
 }
 
 function renderTaskCharts(){
-  // Tasks by worker bar
-  const workerCounts = {};
-  tasks.forEach(t=>{ workerCounts[t.workerName]=(workerCounts[t.workerName]||0)+1; });
-  const wSorted = Object.entries(workerCounts).sort((a,b)=>b[1]-a[1]);
-  makeChart('chart-worker-tasks',{
-    type:'bar',
-    data:{labels:wSorted.map(e=>e[0].split(' ')[0]),datasets:[{data:wSorted.map(e=>e[1]),backgroundColor:CHART_DEFAULTS.fire+'99',borderColor:CHART_DEFAULTS.fire,borderWidth:1,borderRadius:6}]},
-    options:chartOpts('tasks')
-  });
-
-  // Avg speed by task type
-  const taskSpeeds = {};
-  tasks.forEach(t=>{ if(!taskSpeeds[t.type]) taskSpeeds[t.type]=[]; taskSpeeds[t.type].push(t.mins); });
-  const taskAvgs = Object.entries(taskSpeeds).map(([type,mins])=>({type,avg:Math.round(mins.reduce((s,m)=>s+m,0)/mins.length)}));
-  makeChart('chart-task-speed',{
-    type:'bar',
-    data:{labels:taskAvgs.map(e=>e.type),datasets:[{data:taskAvgs.map(e=>e.avg),backgroundColor:taskAvgs.map(e=>e.avg<=6?CHART_DEFAULTS.green+'99':e.avg<=10?CHART_DEFAULTS.gold+'99':CHART_DEFAULTS.red+'99'),borderRadius:6}]},
-    options:{...chartOpts('mins'),indexAxis:'y'}
-  });
+  const workerCounts={};
+  tasks.forEach(t=>{workerCounts[t.workerName]=(workerCounts[t.workerName]||0)+1;});
+  const wSorted=Object.entries(workerCounts).sort((a,b)=>b[1]-a[1]);
+  makeChart('chart-worker-tasks',{type:'bar',data:{labels:wSorted.map(e=>e[0].split(' ')[0]),datasets:[{data:wSorted.map(e=>e[1]),backgroundColor:CHART_DEFAULTS.fire+'99',borderColor:CHART_DEFAULTS.fire,borderWidth:1,borderRadius:6}]},options:chartOpts('tasks')});
+  const taskSpeeds={};
+  tasks.forEach(t=>{if(!taskSpeeds[t.type])taskSpeeds[t.type]=[];taskSpeeds[t.type].push(t.mins);});
+  const taskAvgs=Object.entries(taskSpeeds).map(([type,mins])=>({type,avg:Math.round(mins.reduce((s,m)=>s+m,0)/mins.length)}));
+  makeChart('chart-task-speed',{type:'bar',data:{labels:taskAvgs.map(e=>e.type),datasets:[{data:taskAvgs.map(e=>e.avg),backgroundColor:taskAvgs.map(e=>e.avg<=6?CHART_DEFAULTS.green+'99':e.avg<=10?CHART_DEFAULTS.gold+'99':CHART_DEFAULTS.red+'99'),borderRadius:6}]},options:{...chartOpts('mins'),indexAxis:'y'}});
 }
 
 /* ══════════════════════════════════════════
    HELPERS
 ══════════════════════════════════════════ */
-function kpiCard(label, icon, val, sub, accent){
+function kpiCard(label,icon,val,sub,accent){
   return `<div class="kpi" style="--accent:${accent}">
     <div class="kpi-label">${label}</div>
     <div class="kpi-val">${val}</div>
@@ -1022,18 +1094,11 @@ function kpiCard(label, icon, val, sub, accent){
 }
 
 function chartOpts(unit){
-  return {
-    responsive:true,
-    maintainAspectRatio:false,
-    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y?.toLocaleString()||ctx.parsed.x?.toLocaleString()||ctx.parsed} ${unit}`},backgroundColor:'#1A0C02',titleColor:CHART_DEFAULTS.color,bodyColor:CHART_DEFAULTS.gold,borderColor:'rgba(255,255,255,0.1)',borderWidth:1}},
-    scales:{
-      x:{grid:{color:CHART_DEFAULTS.grid},ticks:{color:CHART_DEFAULTS.color,font:{size:10},maxRotation:0}},
-      y:{grid:{color:CHART_DEFAULTS.grid},ticks:{color:CHART_DEFAULTS.color,font:{size:10}}}
-    }
-  };
+  return{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y?.toLocaleString()||ctx.parsed.x?.toLocaleString()||ctx.parsed} ${unit}`},backgroundColor:'#1A0C02',titleColor:CHART_DEFAULTS.color,bodyColor:CHART_DEFAULTS.gold,borderColor:'rgba(255,255,255,0.1)',borderWidth:1}},scales:{x:{grid:{color:CHART_DEFAULTS.grid},ticks:{color:CHART_DEFAULTS.color,font:{size:10},maxRotation:0}},y:{grid:{color:CHART_DEFAULTS.grid},ticks:{color:CHART_DEFAULTS.color,font:{size:10}}}}};
 }
 
 function formatDate(str){
+  if(!str)return '—';
   const d=new Date(str);
   return d.toLocaleDateString('en-UG',{weekday:'short',day:'numeric',month:'short'});
 }
@@ -1045,10 +1110,9 @@ function showToast(msg,isErr=false){
   setTimeout(()=>t.className='toast',3000);
 }
 
-// Set today's date on date inputs
 window.addEventListener('load',()=>{
   const today=new Date().toISOString().split('T')[0];
-  ['rev-date','sale-date','w-start'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=today; });
+  ['rev-date','sale-date','w-start'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
 });
 </script>
 </body>
