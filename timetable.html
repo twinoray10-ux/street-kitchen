@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Street Kitchen — Shared Timetable</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--orange:#D4611E;--orange-light:#FDEBD0;--orange-mid:#EF9F27;--dark:#1A0A00;--cream:#FFFBF5;--text:#2C1810;--muted:#7A5A48;--border:#E8D5C4;--green:#2D6A2D;--green-bg:#E9F7EF;--blue-bg:#E6F1FB;--gray:#F5F0EB;--red:#C0392B;--red-bg:#FDEDEC}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);line-height:1.6}
+@media print{.no-print{display:none}body{background:white}}
+.nav{background:var(--dark);color:white;padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
+.nav-brand{font-family:'Playfair Display',serif;font-size:17px;color:var(--orange-mid)}
+.nav-sub{font-size:11px;color:rgba(255,255,255,.4);margin-top:1px}
+.nav-right{display:flex;align-items:center;gap:10px}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:#888;display:inline-block;margin-right:5px;transition:background .3s}
+.sync-dot.green{background:#27ae60;box-shadow:0 0 6px #27ae60}
+.sync-dot.red{background:#e74c3c}
+.sync-dot.yellow{background:var(--orange-mid);animation:pulse .8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.sync-label{font-size:11px;color:rgba(255,255,255,.5)}
+.nbtn{font-size:11px;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.7);transition:all .15s}
+.nbtn:hover{background:rgba(255,255,255,.1)}
+.nbtn-add{border-color:var(--orange-mid);color:var(--orange-mid)}
+.overlay{position:fixed;inset:0;background:rgba(26,10,0,.88);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
+.box{background:var(--cream);border-radius:20px;padding:2rem;max-width:460px;width:100%;max-height:90vh;overflow-y:auto}
+.box-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--dark);margin-bottom:.3rem}
+.box-sub{font-size:13px;color:var(--muted);margin-bottom:1.5rem;line-height:1.5}
+.step{display:flex;gap:12px;margin-bottom:1.1rem;align-items:flex-start}
+.step-num{background:var(--orange);color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.step-title{font-size:14px;font-weight:500;color:var(--dark);margin-bottom:3px}
+.step-desc{font-size:12px;color:var(--muted);line-height:1.5}
+label{font-size:13px;color:var(--muted);display:block;margin-bottom:4px;margin-top:10px}
+input[type=text],input[type=date],textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:'DM Sans',sans-serif;background:white;color:var(--text);outline:none;transition:border-color .15s}
+input[type=text]:focus,input[type=date]:focus,textarea:focus{border-color:var(--orange)}
+textarea{resize:vertical;min-height:72px}
+.tag-picker{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tag-opt{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:white;cursor:pointer;color:var(--muted);transition:all .15s;font-family:'DM Sans',sans-serif}
+.tag-opt.sel{border-color:var(--orange);background:var(--orange-light);color:var(--orange)}
+.actions{display:flex;gap:8px;margin-top:1.5rem}
+.btn-primary{background:var(--orange);color:white;border:none;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;flex:1;transition:background .15s}
+.btn-primary:hover{background:#b8501a}
+.btn-primary:disabled{background:#ccc;cursor:not-allowed}
+.btn-secondary{background:white;color:var(--muted);border:1px solid var(--border);padding:10px 16px;border-radius:8px;font-size:14px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.btn-secondary:hover{border-color:var(--orange);color:var(--orange)}
+.share-box{background:var(--orange-light);border:1px solid var(--orange);border-radius:10px;padding:14px;margin-top:1rem}
+.share-box-title{font-size:13px;font-weight:500;color:var(--orange);margin-bottom:8px}
+.share-url{font-size:12px;color:var(--dark);word-break:break-all;background:white;padding:8px 10px;border-radius:6px;border:1px solid var(--border);margin-bottom:8px;font-family:monospace;line-height:1.5}
+.copy-btn{font-size:12px;padding:6px 14px;border-radius:6px;background:var(--orange);color:white;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500}
+.hero{background:var(--dark);padding:40px 1.5rem 32px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,rgba(212,97,30,.2) 0%,transparent 60%)}
+.hero-tag{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:var(--orange-mid);margin-bottom:10px;position:relative}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(26px,5vw,44px);font-weight:900;color:white;position:relative;margin-bottom:6px}
+.hero-sub{font-size:13px;color:rgba(255,255,255,.45);position:relative;margin-bottom:24px}
+.hero-pills{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;position:relative}
+.pill{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 14px;font-size:12px;color:rgba(255,255,255,.6)}
+.pill span{color:var(--orange-mid);font-weight:500}
+.progress-bar{background:white;border-bottom:1px solid var(--border);padding:12px 1.5rem;position:sticky;top:56px;z-index:99;display:flex;align-items:center;gap:14px}
+.prog-label{font-size:12px;color:var(--muted);white-space:nowrap}
+.prog-track{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.prog-fill{height:100%;background:var(--orange);border-radius:3px;transition:width .4s}
+.prog-count{font-size:12px;font-weight:500;color:var(--orange);white-space:nowrap}
+.container{max-width:960px;margin:0 auto;padding:0 1.5rem}
+.summary-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;background:white;border:1px solid var(--border);border-radius:14px;padding:1.1rem;margin:1.2rem 0}
+.sum-item{text-align:center}
+.sum-val{font-size:22px;font-weight:500;color:var(--dark)}
+.sum-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.sum-orange{color:var(--orange)}
+.sum-green{color:var(--green)}
+.group-block{margin-bottom:2rem}
+.group-header{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);margin-bottom:10px}
+.group-label{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.days-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:8px}
+.day-card{background:white;border:1px solid var(--border);border-radius:12px;padding:12px;position:relative;min-height:120px;display:flex;flex-direction:column;transition:all .2s}
+.day-card.done{background:var(--green-bg);border-color:var(--green)}
+.day-card.done::after{content:'✓';position:absolute;top:8px;right:10px;font-size:16px;color:var(--green);font-weight:700}
+.day-card.skipped{background:var(--red-bg);border-color:#E74C3C}
+.day-card.skipped::after{content:'✗';position:absolute;top:8px;right:10px;font-size:16px;color:var(--red);font-weight:700}
+.day-card.today{border-color:var(--orange);border-width:2px;background:var(--orange-light)}
+.dc-date{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.dc-day{font-size:13px;font-weight:500;color:var(--dark);margin-bottom:5px;padding-right:20px}
+.dc-task{font-size:11px;color:var(--muted);line-height:1.4;flex:1}
+.dc-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.dt{font-size:9px;padding:2px 6px;border-radius:10px;font-weight:500}
+.dt-recipe{background:#EEEDFE;color:#3C3489}
+.dt-ops{background:#FAECE7;color:#4A1B0C}
+.dt-finance{background:#FAEEDA;color:#633806}
+.dt-setup{background:#E1F5EE;color:#085041}
+.dt-marketing{background:var(--green-bg);color:var(--green)}
+.dt-custom{background:var(--blue-bg);color:#0D3B6E}
+.dc-bottom{display:flex;gap:4px;margin-top:8px;align-items:center}
+.dc-status{display:flex;gap:4px;flex:1}
+.status-btn{flex:1;font-size:10px;padding:4px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .15s}
+.done-btn:hover,.day-card.done .done-btn{background:var(--green);border-color:var(--green);color:white}
+.skip-btn:hover,.day-card.skipped .skip-btn{background:#E74C3C;border-color:#E74C3C;color:white}
+.del-btn{font-size:10px;padding:4px 6px;border-radius:6px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--muted);font-family:'DM Sans',sans-serif;transition:all .15s;display:none}
+.del-btn:hover{background:var(--red-bg);border-color:var(--red);color:var(--red)}
+.edit-mode-on .del-btn{display:block}
+.who-badge{display:inline-flex;align-items:center;font-size:10px;padding:2px 8px;border-radius:20px;margin-left:4px;vertical-align:middle}
+.who-you{background:var(--orange-light);color:var(--orange)}
+.who-them{background:var(--blue-bg);color:#2471A3}
+.user-info{background:white;border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.user-info-left{font-size:13px;color:var(--muted)}
+.user-info-left strong{color:var(--dark)}
+.last-sync{font-size:11px;color:var(--muted)}
+.callout{border-radius:12px;padding:.85rem 1rem;margin:.8rem 0 1rem;font-size:13px;line-height:1.6}
+.co{background:var(--orange-light);border-left:3px solid var(--orange);color:var(--dark)}
+.loading-overlay{position:fixed;inset:0;background:rgba(255,251,245,.88);z-index:150;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+.spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--orange);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px;color:var(--muted)}
+footer{background:var(--dark);color:rgba(255,255,255,.4);text-align:center;padding:1.5rem;font-size:13px;margin-top:3rem}
+footer span{color:var(--orange-mid)}
+@media(max-width:600px){.days-grid{grid-template-columns:repeat(2,1fr)}.hero{padding:28px 1rem 24px}.nav-sub{display:none}}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loadingText">Loading...</div>
+</div>
+
+<!-- SETUP -->
+<div class="overlay" id="setupOverlay" style="display:none">
+  <div class="box">
+    <div class="box-title">Set up shared timetable</div>
+    <div class="box-sub">Syncs live between you and your partner. One person creates, the other joins with the shared link.</div>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <div class="step-title">Your name</div>
+        <div class="step-desc">So your partner sees who checked or added what</div>
+        <input type="text" id="nameInput" placeholder="e.g. Brian" maxlength="20"/>
+      </div>
+    </div>
+    <div class="step" id="joinStep">
+      <div class="step-num">2</div>
+      <div>
+        <div class="step-title">Create or join</div>
+        <div class="step-desc">Leave empty to create new, or paste the share link your partner sent you</div>
+        <input type="text" id="joinInput" placeholder="Paste share link here to join (optional)"/>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn-primary" id="createBtn" onclick="handleSetup()">Create new timetable</button>
+    </div>
+    <div id="shareSection" style="display:none">
+      <div class="share-box">
+        <div class="share-box-title">✓ Created! Send this link to your partner on WhatsApp</div>
+        <div class="share-url" id="shareUrlBox"></div>
+        <button class="copy-btn" onclick="copyShareLink()">Copy link</button>
+        <div style="font-size:11px;color:var(--muted);margin-top:8px">They open the link, enter their name, and you are both connected live</div>
+      </div>
+      <div class="actions" style="margin-top:1rem">
+        <button class="btn-primary" onclick="continueToApp()">Open my timetable →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD TASK -->
+<div class="overlay" id="addOverlay" style="display:none">
+  <div class="box">
+    <div class="box-title">Add a task</div>
+    <div class="box-sub">Both you and your partner will see it instantly.</div>
+    <label>Date</label>
+    <input type="date" id="taskDate"/>
+    <label>Task name</label>
+    <input type="text" id="taskName" placeholder="e.g. Day 17"/>
+    <label>What to do</label>
+    <textarea id="taskDesc" placeholder="Describe what needs to happen..."></textarea>
+    <label>Group / Week</label>
+    <input type="text" id="taskGroup" placeholder="e.g. Week 4 — July"/>
+    <label>Tags</label>
+    <div class="tag-picker" id="tagPicker">
+      <button class="tag-opt" data-tag="recipe" onclick="toggleTag(this)">recipe</button>
+      <button class="tag-opt" data-tag="ops" onclick="toggleTag(this)">ops</button>
+      <button class="tag-opt" data-tag="finance" onclick="toggleTag(this)">finance</button>
+      <button class="tag-opt" data-tag="setup" onclick="toggleTag(this)">setup</button>
+      <button class="tag-opt" data-tag="marketing" onclick="toggleTag(this)">marketing</button>
+      <button class="tag-opt" data-tag="custom" onclick="toggleTag(this)">other</button>
+    </div>
+    <div class="actions">
+      <button class="btn-secondary" onclick="closeAdd()">Cancel</button>
+      <button class="btn-primary" onclick="saveTask()">Add task</button>
+    </div>
+  </div>
+</div>
+
+<nav class="nav no-print">
+  <div>
+    <div class="nav-brand">Street Kitchen</div>
+    <div class="nav-sub">Shared Timetable · Jun 11 → Launch</div>
+  </div>
+  <div class="nav-right">
+    <div style="display:flex;align-items:center">
+      <span class="sync-dot" id="syncDot"></span>
+      <span class="sync-label" id="syncLabel">connecting...</span>
+    </div>
+    <button class="nbtn nbtn-add no-print" onclick="openAdd()">+ Add task</button>
+    <button class="nbtn no-print" id="editToggle" onclick="toggleEditMode()">Edit tasks</button>
+    <button class="nbtn no-print" onclick="showShareLink()">Share link</button>
+    <button class="nbtn no-print" onclick="window.print()">🖨 Print</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">Shared Live Timetable</div>
+  <div class="hero-title">Street Kitchen Prep Plan</div>
+  <div class="hero-sub">Both of you can add tasks, tick boxes, and see changes live</div>
+  <div class="hero-pills">
+    <div class="pill">Start: <span>Wed 11 June</span></div>
+    <div class="pill">Launch: <span>1 July 2025</span></div>
+    <div class="pill">Tasks: <span id="totalCount">0</span></div>
+  </div>
+</div>
+
+<div class="progress-bar no-print">
+  <span class="prog-label">Progress</span>
+  <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  <span class="prog-count" id="progCount">0 / 0 done</span>
+</div>
+
+<div class="container" style="padding-top:1.2rem">
+  <div class="user-info no-print" id="userInfo" style="display:none">
+    <div class="user-info-left">Viewing as: <strong id="displayName"></strong></div>
+    <div class="last-sync" id="lastSync">Not synced yet</div>
+  </div>
+  <div class="summary-strip">
+    <div class="sum-item"><div class="sum-val sum-orange" id="sDone">0</div><div class="sum-label">Completed</div></div>
+    <div class="sum-item"><div class="sum-val" id="sLeft">0</div><div class="sum-label">Remaining</div></div>
+    <div class="sum-item"><div class="sum-val" id="sSkip">0</div><div class="sum-label">Skipped</div></div>
+    <div class="sum-item"><div class="sum-val sum-green" id="sPct">0%</div><div class="sum-label">Complete</div></div>
+  </div>
+  <div class="callout co no-print"><strong>Tip:</strong> Use <strong>+ Add task</strong> to add new tasks anytime. Use <strong>Share link</strong> to get the link for your partner. Use <strong>Edit tasks</strong> to delete tasks.</div>
+  <div id="groupsContainer"></div>
+</div>
+
+<footer>Street Kitchen · Shared Timetable · <span>Kampala 2025</span></footer>
+
+<script>
+var DEFAULT_TASKS=[
+  {id:'d01',date:'2025-06-11',name:'Day 1',task:'Cook 8 rolexes. Test on 3 people. Write what they say.',tags:['recipe','ops'],group:'Week 1 — 11–15 June'},
+  {id:'d02',date:'2025-06-12',name:'Day 2',task:'Make fried chicken batch 1. Time yourself. Note coating issues.',tags:['recipe'],group:'Week 1 — 11–15 June'},
+  {id:'d03',date:'2025-06-13',name:'Day 3',task:'Make loaded fries batch 1. Test the double-fry timing.',tags:['recipe'],group:'Week 1 — 11–15 June'},
+  {id:'d04',date:'2025-06-14',name:'Day 4',task:'Full menu trial: rolex + chicken + fries for 5 people. Real feedback.',tags:['recipe','ops'],group:'Week 1 — 11–15 June'},
+  {id:'d05',date:'2025-06-15',name:'Day 5',task:'Rest and review. Write what needs improving. Buy missing spices.',tags:['finance','ops'],group:'Week 1 — 11–15 June'},
+  {id:'d06',date:'2025-06-18',name:'Day 6',task:'Scout 3 potential locations. Ask about council fees at each one.',tags:['ops','setup'],group:'Week 2 — 18–22 June'},
+  {id:'d07',date:'2025-06-19',name:'Day 7',task:'Make chicken batch 2. Refine coating. Compare to batch 1.',tags:['recipe'],group:'Week 2 — 18–22 June'},
+  {id:'d08',date:'2025-06-20',name:'Day 8',task:'Visit market. Find best tomato, egg, potato supplier. Get prices.',tags:['ops','finance'],group:'Week 2 — 18–22 June'},
+  {id:'d09',date:'2025-06-21',name:'Day 9',task:'Full practice day: 6:30am wake → cook → serve neighbours → 7:30pm count up.',tags:['ops','recipe'],group:'Week 2 — 18–22 June'},
+  {id:'d10',date:'2025-06-22',name:'Day 10',task:'Calculate exact cost per rolex, chicken portion, fries. Know your numbers.',tags:['finance'],group:'Week 2 — 18–22 June'},
+  {id:'d11',date:'2025-06-25',name:'Day 11',task:'Confirm location. Talk to a current vendor about their experience.',tags:['ops','setup'],group:'Week 3 — 25–30 June'},
+  {id:'d12',date:'2025-06-26',name:'Day 12',task:'Set up WhatsApp Business. Write catalogue with all items + prices.',tags:['marketing'],group:'Week 3 — 25–30 June'},
+  {id:'d13',date:'2025-06-27',name:'Day 13',task:'Make your menu price sign or board. Keep it clean and visible.',tags:['setup','marketing'],group:'Week 3 — 25–30 June'},
+  {id:'d14',date:'2025-06-28',name:'Day 14',task:'Big stock run. Buy all equipment and packaging for opening week.',tags:['finance','setup'],group:'Week 3 — 25–30 June'},
+  {id:'d15',date:'2025-06-29',name:'Day 15',task:'Send launch message to 50 contacts. "Opening tomorrow — first 10 get a deal."',tags:['marketing'],group:'Week 3 — 25–30 June'},
+  {id:'d16',date:'2025-06-30',name:'Day 16 — Final Prep',task:'Final full practice cook. Equipment at location. 6am tomorrow you open.',tags:['ops','recipe'],group:'Week 3 — 25–30 June'}
+];
+
+var TAG_CLS={recipe:'dt-recipe',ops:'dt-ops',finance:'dt-finance',setup:'dt-setup',marketing:'dt-marketing',custom:'dt-custom'};
+
+// ── STORAGE KEY ───────────────────────────────────────
+// Using a single shared key stored in the URL hash
+// Data stored in a public pastebin-style API (paste.rs) — simple PUT/GET, no auth needed
+var STORE_ID=null;
+var MY_NAME='';
+var DB={tasks:[],checks:{}};
+var editMode=false;
+var syncTimer=null;
+var selectedTags=[];
+var BASE='https://api.jsonbin.io/v3/b';
+// Using a pre-created public bin as fallback with a hardcoded master key approach
+// Actually using a cleaner approach: store everything in a unique hash in the URL
+// and sync via a reliable free REST store
+
+// ── RELIABLE SYNC via restdb.io style using npoint.io ─
+// npoint.io: free, no auth, simple JSON store, reliable
+var NPOINT='https://api.npoint.io';
+
+window.addEventListener('load',function(){
+  var params=new URLSearchParams(window.location.search);
+  var idFromUrl=params.get('id');
+  var savedId=localStorage.getItem('sk3_id');
+  var savedName=localStorage.getItem('sk3_name');
+
+  if(idFromUrl){
+    STORE_ID=idFromUrl;
+    localStorage.setItem('sk3_id',STORE_ID);
+    if(savedName&&localStorage.getItem('sk3_id')===STORE_ID){
+      MY_NAME=savedName;startApp();
+    } else {
+      hideLoading();showSetup(true);
+    }
+  } else if(savedId&&savedName){
+    STORE_ID=savedId;MY_NAME=savedName;startApp();
+  } else {
+    hideLoading();showSetup(false);
+  }
+});
+
+function hideLoading(){document.getElementById('loadingOverlay').style.display='none';}
+function showLoading(t){document.getElementById('loadingOverlay').style.display='flex';if(t)document.getElementById('loadingText').textContent=t;}
+
+function showSetup(joining){
+  document.getElementById('setupOverlay').style.display='flex';
+  if(joining){
+    document.getElementById('createBtn').textContent='Join timetable';
+  }
+}
+
+function handleSetup(){
+  var name=document.getElementById('nameInput').value.trim();
+  if(!name){alert('Please enter your name');return;}
+  MY_NAME=name;
+  localStorage.setItem('sk3_name',name);
+  var joinVal=document.getElementById('joinInput').value.trim();
+  if(joinVal){
+    var m=joinVal.match(/[?&]id=([a-zA-Z0-9]+)/);
+    if(m){
+      STORE_ID=m[1];
+      localStorage.setItem('sk3_id',STORE_ID);
+      continueToApp();return;
+    }
+  }
+  if(STORE_ID){continueToApp();return;}
+  document.getElementById('createBtn').disabled=true;
+  document.getElementById('createBtn').textContent='Creating...';
+  createStore();
+}
+
+function createStore(){
+  // Use npoint.io — free JSON hosting, no auth needed, reliable
+  fetch('https://api.npoint.io/create',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({tasks:DEFAULT_TASKS,checks:{},v:3})
+  })
+  .then(function(r){return r.json();})
+  .then(function(data){
+    STORE_ID=data.id||data.token||data._id;
+    if(!STORE_ID)throw new Error('no id');
+    localStorage.setItem('sk3_id',STORE_ID);
+    DB={tasks:DEFAULT_TASKS,checks:{},v:3};
+    showShareLink();
+    document.getElementById('shareSection').style.display='block';
+    document.getElementById('createBtn').style.display='none';
+  })
+  .catch(function(){
+    // Final fallback: use a timestamp-based localStorage key shared via URL fragment
+    STORE_ID='ls_'+Date.now();
+    localStorage.setItem('sk3_id',STORE_ID);
+    DB={tasks:DEFAULT_TASKS,checks:{},v:3};
+    saveLocal();
+    showShareLinkBox();
+    document.getElementById('shareSection').style.display='block';
+    document.getElementById('createBtn').style.display='none';
+  });
+}
+
+function getShareUrl(){
+  return window.location.origin+window.location.pathname+'?id='+STORE_ID;
+}
+
+function showShareLinkBox(){
+  var url=getShareUrl();
+  document.getElementById('shareUrlBox').textContent=url;
+}
+
+function showShareLink(){
+  // Show the share link in a simple alert if called from nav button
+  if(!STORE_ID){alert('Please set up first');return;}
+  var url=getShareUrl();
+  // Show in a small overlay
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;inset:0;background:rgba(26,10,0,.8);z-index:300;display:flex;align-items:center;justify-content:center;padding:1rem';
+  d.innerHTML='<div style="background:var(--cream);border-radius:16px;padding:1.5rem;max-width:400px;width:100%">'
+    +'<div style="font-family:Playfair Display,serif;font-size:18px;color:var(--dark);margin-bottom:.5rem">Your share link</div>'
+    +'<div style="font-size:12px;color:var(--muted);margin-bottom:1rem">Send this to your partner on WhatsApp</div>'
+    +'<div style="font-size:12px;word-break:break-all;background:white;padding:10px;border-radius:8px;border:1px solid var(--border);font-family:monospace;margin-bottom:1rem">'+url+'</div>'
+    +'<div style="display:flex;gap:8px">'
+    +'<button onclick="copyText(\''+url+'\',this)" style="flex:1;background:var(--orange);color:white;border:none;padding:10px;border-radius:8px;font-size:14px;cursor:pointer;font-family:DM Sans,sans-serif">Copy link</button>'
+    +'<button onclick="this.closest(\'div[style]\').remove()" style="background:white;color:var(--muted);border:1px solid var(--border);padding:10px 16px;border-radius:8px;font-size:14px;cursor:pointer;font-family:DM Sans,sans-serif">Close</button>'
+    +'</div></div>';
+  document.body.appendChild(d);
+}
+
+function copyText(txt,btn){
+  if(navigator.clipboard){navigator.clipboard.writeText(txt);}
+  else{var t=document.createElement('textarea');t.value=txt;document.body.appendChild(t);t.select();document.execCommand('copy');document.body.removeChild(t);}
+  btn.textContent='Copied!';setTimeout(function(){btn.textContent='Copy link';},2000);
+}
+
+function copyShareLink(){
+  var url=document.getElementById('shareUrlBox').textContent;
+  copyText(url,document.querySelector('.copy-btn'));
+}
+
+function continueToApp(){
+  document.getElementById('setupOverlay').style.display='none';
+  startApp();
+}
+
+function startApp(){
+  document.getElementById('userInfo').style.display='flex';
+  document.getElementById('displayName').textContent=MY_NAME;
+  renderAll();
+  fetchData();
+  syncTimer=setInterval(fetchData,8000);
+}
+
+// ── SYNC ──────────────────────────────────────────────
+function setSyncStatus(s){
+  var dot=document.getElementById('syncDot'),lbl=document.getElementById('syncLabel');
+  if(s==='ok'){dot.className='sync-dot green';lbl.textContent='live';}
+  else if(s==='syncing'){dot.className='sync-dot yellow';lbl.textContent='syncing...';}
+  else if(s==='offline'){dot.className='sync-dot red';lbl.textContent='saved locally';}
+  else{dot.className='sync-dot';lbl.textContent='connecting...';}
+}
+
+function isLocal(){return !STORE_ID||STORE_ID.startsWith('ls_');}
+
+function saveLocal(){
+  try{localStorage.setItem('sk3_data_'+STORE_ID,JSON.stringify(DB));}catch(e){}
+}
+
+function fetchData(){
+  if(isLocal()){
+    try{var s=localStorage.getItem('sk3_data_'+STORE_ID);if(s){DB=JSON.parse(s);renderAll();}}catch(e){}
+    hideLoading();setSyncStatus('offline');return;
+  }
+  setSyncStatus('syncing');
+  fetch('https://api.npoint.io/'+STORE_ID)
+  .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+  .then(function(data){
+    hideLoading();
+    if(data&&data.tasks){DB=data;renderAll();}
+    setSyncStatus('ok');
+    var now=new Date();
+    document.getElementById('lastSync').textContent='Synced '+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0')+':'+String(now.getSeconds()).padStart(2,'0');
+  })
+  .catch(function(){
+    hideLoading();
+    // Try loading from local cache
+    try{var s=localStorage.getItem('sk3_cache');if(s){DB=JSON.parse(s);renderAll();}}catch(e){}
+    setSyncStatus('offline');
+  });
+}
+
+function pushData(){
+  saveLocal();
+  if(isLocal()){renderAll();setSyncStatus('offline');return;}
+  setSyncStatus('syncing');
+  fetch('https://api.npoint.io/'+STORE_ID,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(DB)
+  })
+  .then(function(){
+    setSyncStatus('ok');
+    try{localStorage.setItem('sk3_cache',JSON.stringify(DB));}catch(e){}
+  })
+  .catch(function(){setSyncStatus('offline');});
+}
+
+// ── MARK ─────────────────────────────────────────────
+function mark(id,status,evt){
+  evt.stopPropagation();
+  var c=DB.checks[id]||{};
+  if(c.status===status){delete DB.checks[id];}
+  else{DB.checks[id]={status:status,by:MY_NAME,at:new Date().toISOString()};}
+  renderAll();pushData();
+}
+
+function deleteTask(id,evt){
+  evt.stopPropagation();
+  if(!confirm('Delete this task?'))return;
+  DB.tasks=DB.tasks.filter(function(t){return t.id!==id;});
+  delete DB.checks[id];
+  renderAll();pushData();
+}
+
+// ── ADD TASK ─────────────────────────────────────────
+function openAdd(){
+  selectedTags=[];
+  document.querySelectorAll('.tag-opt').forEach(function(b){b.classList.remove('sel');});
+  document.getElementById('taskDate').value='';
+  document.getElementById('taskName').value='';
+  document.getElementById('taskDesc').value='';
+  document.getElementById('taskGroup').value='';
+  document.getElementById('addOverlay').style.display='flex';
+}
+function closeAdd(){document.getElementById('addOverlay').style.display='none';}
+function toggleTag(btn){
+  var tag=btn.getAttribute('data-tag');
+  if(btn.classList.contains('sel')){btn.classList.remove('sel');selectedTags=selectedTags.filter(function(t){return t!==tag;});}
+  else{btn.classList.add('sel');selectedTags.push(tag);}
+}
+function saveTask(){
+  var date=document.getElementById('taskDate').value;
+  var name=document.getElementById('taskName').value.trim();
+  var desc=document.getElementById('taskDesc').value.trim();
+  var group=document.getElementById('taskGroup').value.trim()||'Extra tasks';
+  if(!date||!name){alert('Please enter a date and task name');return;}
+  DB.tasks.push({id:'c'+Date.now(),date:date,name:name,task:desc,tags:selectedTags.length?selectedTags:['custom'],group:group,label:fmtDate(date),addedBy:MY_NAME});
+  DB.tasks.sort(function(a,b){return a.date.localeCompare(b.date);});
+  closeAdd();renderAll();pushData();
+}
+function fmtDate(d){
+  var dt=new Date(d+'T12:00:00');
+  var days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return days[dt.getDay()]+' '+dt.getDate()+' '+months[dt.getMonth()];
+}
+
+// ── EDIT MODE ─────────────────────────────────────────
+function toggleEditMode(){
+  editMode=!editMode;
+  var btn=document.getElementById('editToggle');
+  var gc=document.getElementById('groupsContainer');
+  if(editMode){btn.textContent='Done editing';btn.style.color='var(--orange-mid)';gc.classList.add('edit-mode-on');}
+  else{btn.textContent='Edit tasks';btn.style.color='';gc.classList.remove('edit-mode-on');}
+}
+
+// ── RENDER ────────────────────────────────────────────
+function renderAll(){
+  var container=document.getElementById('groupsContainer');
+  container.innerHTML='';
+  if(editMode)container.classList.add('edit-mode-on');
+  var groups={};
+  (DB.tasks||[]).forEach(function(t){var g=t.group||'Other';if(!groups[g])groups[g]=[];groups[g].push(t);});
+  var keys=Object.keys(groups);
+  if(!keys.length){container.innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:14px">No tasks yet. Click <strong>+ Add task</strong> to get started.</div>';updateStats();return;}
+  keys.forEach(function(gName){
+    var block=document.createElement('div');block.className='group-block';
+    var hdr=document.createElement('div');hdr.className='group-header';
+    hdr.innerHTML='<div class="group-label">'+gName+'</div>';
+    block.appendChild(hdr);
+    var grid=document.createElement('div');grid.className='days-grid';
+    groups[gName].forEach(function(task){
+      var chk=DB.checks[task.id]||{};
+      var status=chk.status||'';
+      var todayStr=new Date().toISOString().slice(0,10);
+      var cls='day-card'+(status==='done'?' done':status==='skip'?' skipped':'')+(task.date===todayStr?' today':'');
+      var tagsHtml=(task.tags||[]).map(function(tg){return '<span class="dt '+(TAG_CLS[tg]||'dt-custom')+'">'+tg+'</span>';}).join('');
+      var byHtml=chk.by?('<span class="who-badge '+(chk.by===MY_NAME?'who-you':'who-them')+'">'+chk.by+'</span>'):'';
+      var addedHtml=task.addedBy?('<span class="who-badge who-them" style="font-size:9px">+'+task.addedBy+'</span>'):'';
+      var label=task.label||fmtDate(task.date);
+      var card=document.createElement('div');card.className=cls;
+      card.innerHTML='<div class="dc-date">'+label+'</div>'
+        +'<div class="dc-day">'+task.name+addedHtml+byHtml+'</div>'
+        +'<div class="dc-task">'+task.task+'</div>'
+        +'<div class="dc-tags">'+tagsHtml+'</div>'
+        +'<div class="dc-bottom">'
+        +'<div class="dc-status no-print">'
+        +'<button class="status-btn done-btn" onclick="mark(\''+task.id+'\',\'done\',event)">✓ Done</button>'
+        +'<button class="status-btn skip-btn" onclick="mark(\''+task.id+'\',\'skip\',event)">✗ Skip</button>'
+        +'</div>'
+        +'<button class="del-btn no-print" onclick="deleteTask(\''+task.id+'\',event)">🗑</button>'
+        +'</div>';
+      grid.appendChild(card);
+    });
+    block.appendChild(grid);container.appendChild(block);
+  });
+  updateStats();
+}
+
+function updateStats(){
+  var tasks=DB.tasks||[],total=tasks.length,done=0,skip=0;
+  tasks.forEach(function(t){var c=DB.checks[t.id]||{};if(c.status==='done')done++;if(c.status==='skip')skip++;});
+  var pct=total>0?Math.round(done/total*100):0;
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progCount').textContent=done+' / '+total+' done';
+  document.getElementById('totalCount').textContent=total;
+  document.getElementById('sDone').textContent=done;
+  document.getElementById('sLeft').textContent=total-done-skip;
+  document.getElementById('sSkip').textContent=skip;
+  document.getElementById('sPct').textContent=pct+'%';
+}
+</script>
+</body>
+</html>
