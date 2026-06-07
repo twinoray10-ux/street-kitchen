@@ -525,12 +525,89 @@ tr:hover td{background:rgba(255,255,255,0.02)}
           <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:0.5rem">CURRENT PASSWORD HINT</div>
           <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;color:rgba(255,248,240,0.2)" id="pw-hint">••••••••••••••••</div>
         </div>
+
+        <!-- ── DANGER ZONE ── -->
+        <div style="margin-top:2.5rem">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(22px,3vw,32px);letter-spacing:3px;margin-bottom:0.25rem;color:var(--red)">DANGER ZONE</div>
+          <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;margin-bottom:1.5rem">CLEAR ARCHIVED ORDER DATA</div>
+
+          <!-- FULL WIPE -->
+          <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:16px;padding:1.5rem;margin-bottom:1rem">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap">
+              <div>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--red)">FULL WIPE</div>
+                <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px;line-height:1.5">Exports ALL archived orders to CSV,<br>then permanently deletes everything.</div>
+              </div>
+              <button onclick="openClearModal('all')" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:var(--red);padding:10px 20px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;cursor:pointer;white-space:nowrap;flex-shrink:0">
+                🗑 WIPE ALL DATA
+              </button>
+            </div>
+          </div>
+
+          <!-- DATE RANGE CLEAR -->
+          <div style="background:rgba(239,68,68,0.05);border:1px solid rgba(239,68,68,0.2);border-radius:16px;padding:1.5rem">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;color:var(--red);margin-bottom:0.75rem">CLEAR BY DATE RANGE</div>
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:1.25rem;line-height:1.5">Exports matching orders to CSV, then deletes only that range.</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem">
+              <div>
+                <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">From Date</div>
+                <input type="date" id="clear-from" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;color:var(--cream);font-family:'DM Mono',monospace;font-size:13px;outline:none;color-scheme:dark"/>
+              </div>
+              <div>
+                <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px">To Date</div>
+                <input type="date" id="clear-to" style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;color:var(--cream);font-family:'DM Mono',monospace;font-size:13px;outline:none;color-scheme:dark"/>
+              </div>
+            </div>
+            <button onclick="openClearModal('range')" style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:var(--red);padding:10px 20px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;cursor:pointer;width:100%">
+              🗑 CLEAR DATE RANGE
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
 
   </div><!-- /content -->
 </div><!-- /shell -->
 </div><!-- /app -->
+
+<!-- ── CLEAR DATA MODAL ── -->
+<div id="clear-modal" style="position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.88);display:none;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:#1A0C02;border:1px solid rgba(239,68,68,0.35);border-radius:20px;width:100%;max-width:480px;padding:2rem;max-height:90vh;overflow-y:auto">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--red);margin-bottom:0.25rem" id="clear-modal-title">CONFIRM WIPE</div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:1.5rem">This cannot be undone. CSV will download automatically.</div>
+
+    <!-- SUMMARY -->
+    <div id="clear-summary" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:1.25rem;margin-bottom:1.5rem">
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:1rem">WHAT WILL BE DELETED</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem;text-align:center">
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--gold)" id="cs-orders">—</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px">ORDERS</div>
+        </div>
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--fire)" id="cs-revenue">—</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px">UGX REVENUE</div>
+        </div>
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--cream)" id="cs-range">—</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px">DATE RANGE</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-bottom:1.25rem;padding:12px;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.15);border-radius:8px;line-height:1.6">
+      ⬇️ A CSV export will download to your device first, then the data will be permanently deleted from Firebase.
+    </div>
+
+    <div style="display:flex;gap:0.75rem">
+      <button onclick="closeClearModal()" style="flex:1;background:transparent;border:1px solid rgba(255,255,255,0.1);color:var(--muted);padding:12px;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;cursor:pointer">Cancel</button>
+      <button onclick="executeExportAndClear()" id="clear-execute-btn" style="flex:2;background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.5);color:var(--red);padding:12px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;cursor:pointer">
+        ⬇️ EXPORT & DELETE
+      </button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -1244,6 +1321,149 @@ function showToast(msg,isErr=false){
 window.addEventListener('load',()=>{
   const today=new Date().toISOString().split('T')[0];
   ['rev-date','sale-date','w-start'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=today;});
+});
+
+/* ══════════════════════════════════════════
+   CLEAR DATA — Export CSV then Delete
+══════════════════════════════════════════ */
+let _clearMode = 'all'; // 'all' or 'range'
+let _clearTargets = []; // array of {fbKey, order} to delete
+
+function getOrderDate(o){
+  return o.confirmedDate
+    || (o.confirmedAt ? new Date(o.confirmedAt).toISOString().split('T')[0] : null)
+    || (o.timestamp   ? new Date(o.timestamp).toISOString().split('T')[0]   : null)
+    || '';
+}
+
+function openClearModal(mode){
+  _clearMode = mode;
+
+  if(mode === 'range'){
+    const from = document.getElementById('clear-from').value;
+    const to   = document.getElementById('clear-to').value;
+    if(!from || !to){ showToast('Please select both From and To dates first.', true); return; }
+    if(from > to){ showToast('From date must be before To date.', true); return; }
+    _clearTargets = fbOrders.filter(o => {
+      const d = getOrderDate(o);
+      return d >= from && d <= to;
+    });
+    if(!_clearTargets.length){ showToast('No confirmed orders found in that date range.', true); return; }
+    document.getElementById('clear-modal-title').textContent = 'CONFIRM RANGE DELETE';
+    document.getElementById('cs-range').textContent = from.slice(5) + ' – ' + to.slice(5);
+  } else {
+    _clearTargets = [...fbOrders];
+    if(!_clearTargets.length){ showToast('No archived orders to delete.', true); return; }
+    document.getElementById('clear-modal-title').textContent = 'CONFIRM FULL WIPE';
+    const dates = _clearTargets.map(o => getOrderDate(o)).filter(Boolean).sort();
+    const rangeLabel = dates.length
+      ? dates[0].slice(5) + ' – ' + dates[dates.length-1].slice(5)
+      : 'All dates';
+    document.getElementById('cs-range').textContent = rangeLabel;
+  }
+
+  const totalRev = _clearTargets.reduce((s,o) => s + (o.total||0), 0);
+  document.getElementById('cs-orders').textContent  = _clearTargets.length.toLocaleString();
+  document.getElementById('cs-revenue').textContent = totalRev >= 1000000
+    ? (totalRev/1000000).toFixed(1)+'M'
+    : totalRev >= 1000 ? (totalRev/1000).toFixed(0)+'K'
+    : totalRev.toLocaleString();
+
+  document.getElementById('clear-modal').style.display = 'flex';
+}
+
+function closeClearModal(){
+  document.getElementById('clear-modal').style.display = 'none';
+  _clearTargets = [];
+}
+
+function exportToCSV(orders){
+  const headers = ['Ref','Customer','Phone','Type','Items','Total (UGX)','Date','Time','Worker','Notes'];
+  const rows = orders.map(o => {
+    const itemStr = (o.items||[]).map(i => `${i.name} x${i.qty}`).join(' | ');
+    const date = getOrderDate(o);
+    return [
+      o.ref||'',
+      (o.name||'').replace(/,/g,' '),
+      o.phone||'',
+      o.type||'pickup',
+      itemStr.replace(/,/g,' '),
+      o.total||0,
+      date,
+      o.time||'',
+      (o.workerName||'').replace(/,/g,' '),
+      (o.notes||'').replace(/,/g,' ')
+    ].join(',');
+  });
+  const csv = [headers.join(','), ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const dateStr = new Date().toISOString().split('T')[0];
+  a.href = url;
+  a.download = `street-kitchen-orders-${dateStr}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function executeExportAndClear(){
+  if(!_clearTargets.length){ closeClearModal(); return; }
+
+  const btn = document.getElementById('clear-execute-btn');
+  btn.textContent = '⬇️ Exporting...';
+  btn.disabled = true;
+
+  // Step 1 — Export CSV
+  exportToCSV(_clearTargets);
+
+  // Small delay so download registers before we proceed
+  await new Promise(r => setTimeout(r, 800));
+  btn.textContent = '🗑 Deleting...';
+
+  // Step 2 — Delete from Firebase orders_archive
+  // We need Firebase ref & remove — import dynamically since this page uses async import
+  try {
+    const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const { getDatabase, ref, get, remove } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js');
+
+    const existingApps = getApps();
+    const app = existingApps.length ? existingApps[0] : initializeApp({
+      apiKey:"AIzaSyBvn2QXF-vkhXcVjScb-rh1veUdGdoI7qg",
+      databaseURL:"https://street-kitchen-9f41e-default-rtdb.firebaseio.com"
+    });
+    const db = getDatabase(app);
+
+    // Get all archive keys so we can match by ref/timestamp
+    const snap = await get(ref(db, 'orders_archive'));
+    const raw = snap.val() || {};
+
+    // Build a set of identifying fingerprints from targets
+    const targetPrints = new Set(_clearTargets.map(o =>
+      (o.ref||'') + '|' + (o.timestamp||'') + '|' + (o.confirmedAt||'')
+    ));
+
+    // Find matching Firebase keys and delete them
+    const deletePromises = Object.entries(raw)
+      .filter(([, o]) => targetPrints.has((o.ref||'')+'|'+(o.timestamp||'')+'|'+(o.confirmedAt||'')))
+      .map(([key]) => remove(ref(db, 'orders_archive/' + key)));
+
+    await Promise.all(deletePromises);
+
+    const count = deletePromises.length;
+    closeClearModal();
+    showToast(`✅ ${count} order(s) exported & deleted!`);
+  } catch(e){
+    btn.textContent = '⬇️ EXPORT & DELETE';
+    btn.disabled = false;
+    showToast('Delete failed: ' + e.message, true);
+  }
+}
+
+// Close modal on backdrop click
+document.getElementById('clear-modal').addEventListener('click', e => {
+  if(e.target === document.getElementById('clear-modal')) closeClearModal();
 });
 </script>
 </body>
