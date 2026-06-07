@@ -583,10 +583,28 @@ function save(key, val){ localStorage.setItem('sk_bi_'+key, JSON.stringify(val))
 function load(key, def){ try{ const v=localStorage.getItem('sk_bi_'+key); return v?JSON.parse(v):def; }catch(e){ return def; } }
 
 let fbOrders = [];
-let revenues = [];
-let sales    = [];
+let revenues = load('revenues', generateSampleRevenues());
+let sales    = load('sales', generateSampleSales());
 let workers  = load('workers', []);
 let tasks    = load('tasks', []);
+
+// Sync tasks from Firebase (auto-timed tasks from orders.html)
+function syncTasksFromFirebase(){
+  fetch('https://street-kitchen-9f41e-default-rtdb.firebaseio.com/tasks.json')
+    .then(r=>r.json())
+    .then(data=>{
+      if(!data) return;
+      const fbTasks = Object.entries(data).map(([id,t])=>({id,...t}));
+      const localKeys = new Set(tasks.map(t=>(t.timestamp||t.date+t.workerName+t.mins)));
+      const newOnes = fbTasks.filter(t=>!localKeys.has(t.timestamp||t.date+t.workerName+t.mins));
+      if(newOnes.length){
+        tasks = [...tasks,...newOnes].sort((a,b)=>(b.timestamp||0)-(a.timestamp||0));
+        save('tasks',tasks);
+        renderTasks();
+        renderWorkers();
+      }
+    }).catch(()=>{});
+}
 
 /* ══════════════════════════════════════════
    CHARTS REGISTRY
@@ -611,6 +629,7 @@ const CHART_DEFAULTS = {
 ══════════════════════════════════════════ */
 function refreshAllPages(){
   document.getElementById('date-display').textContent = new Date().toLocaleDateString('en-UG',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  syncTasksFromFirebase();
   renderOverview();
   updateProjections();
   renderWorkers();
@@ -618,6 +637,9 @@ function refreshAllPages(){
   updateRevenuePage();
   renderMenuPage();
 }
+
+// Auto-sync tasks every 30 seconds
+setInterval(syncTasksFromFirebase, 30000);
 
 /* ══════════════════════════════════════════
    PAGE NAVIGATION
