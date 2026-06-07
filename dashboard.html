@@ -210,6 +210,8 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       <a class="sb-item" onclick="showPage('orders',this)"><span class="sb-item-icon">📋</span>Live Orders</a>
       <a class="sb-item" onclick="showPage('workers',this)"><span class="sb-item-icon">👥</span>Workers</a>
       <a class="sb-item" onclick="showPage('tasks',this)"><span class="sb-item-icon">⚡</span>Task Tracker</a>
+      <div class="sb-section">Account</div>
+      <a class="sb-item" onclick="showPage('settings',this)"><span class="sb-item-icon">🔐</span>Password</a>
     </nav>
     <div class="sb-bottom">
       <button class="sb-logout" onclick="logout()">← LOGOUT</button>
@@ -487,6 +489,45 @@ tr:hover td{background:rgba(255,255,255,0.02)}
       </div>
     </div>
 
+    <!-- ── SETTINGS PAGE ── -->
+    <div class="page" id="page-settings">
+      <div style="max-width:480px">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,42px);letter-spacing:3px;margin-bottom:0.25rem">CHANGE PASSWORD</div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px;margin-bottom:2rem">UPDATES PASSWORD FOR ALL PAGES</div>
+
+        <div style="background:var(--panel2);border:1px solid rgba(232,70,10,0.2);border-radius:16px;padding:1.75rem">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:1.5rem">
+            One password unlocks: <span style="color:var(--cream)">admin.html</span> · <span style="color:var(--cream)">orders.html</span> · <span style="color:var(--cream)">dashboard.html</span>
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:1rem;margin-bottom:1.5rem">
+            <div class="form-group">
+              <label>Current Password</label>
+              <input type="password" id="pw-current" placeholder="Enter current password"/>
+            </div>
+            <div class="form-group">
+              <label>New Password</label>
+              <input type="password" id="pw-new" placeholder="Enter new password (min 6 chars)"/>
+            </div>
+            <div class="form-group">
+              <label>Confirm New Password</label>
+              <input type="password" id="pw-confirm" placeholder="Repeat new password"/>
+            </div>
+          </div>
+
+          <button class="btn-primary" onclick="changePassword()" style="width:100%;font-size:18px;padding:14px">
+            UPDATE PASSWORD 🔐
+          </button>
+          <div id="pw-result" style="font-family:'DM Mono',monospace;font-size:11px;text-align:center;margin-top:1rem;min-height:18px"></div>
+        </div>
+
+        <div style="background:var(--panel2);border:1px solid var(--border);border-radius:16px;padding:1.25rem;margin-top:1rem">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);margin-bottom:0.5rem">CURRENT PASSWORD HINT</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;color:rgba(255,248,240,0.2)" id="pw-hint">••••••••••••••••</div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /content -->
 </div><!-- /shell -->
 </div><!-- /app -->
@@ -656,6 +697,10 @@ function showPage(name, el){
   if(name==='menu') renderMenuPage();
   if(name==='projections') updateProjections();
   if(name==='tasks') renderTaskCharts();
+  if(name==='settings'){
+    const stored = localStorage.getItem('sk_admin_pw') || 'rAyRmToHnUdR1738';
+    document.getElementById('pw-hint').textContent = stored[0] + '•'.repeat(stored.length-2) + stored[stored.length-1];
+  }
   if(name==='orders') renderOrdersPage();
 }
 
@@ -1104,8 +1149,39 @@ function renderTaskCharts(){
 }
 
 /* ══════════════════════════════════════════
-   HELPERS
+   CHANGE PASSWORD
 ══════════════════════════════════════════ */
+function changePassword(){
+  const DEFAULT_PW = 'rAyRmToHnUdR1738';
+  const current = document.getElementById('pw-current').value;
+  const newPw   = document.getElementById('pw-new').value;
+  const confirm = document.getElementById('pw-confirm').value;
+  const result  = document.getElementById('pw-result');
+  const stored  = localStorage.getItem('sk_admin_pw') || DEFAULT_PW;
+
+  if(current !== stored){
+    result.style.color = 'var(--red)';
+    result.textContent = '✕ Current password is wrong.';
+    return;
+  }
+  if(newPw.length < 6){
+    result.style.color = 'var(--red)';
+    result.textContent = '✕ Password must be at least 6 characters.';
+    return;
+  }
+  if(newPw !== confirm){
+    result.style.color = 'var(--red)';
+    result.textContent = '✕ Passwords do not match.';
+    return;
+  }
+  localStorage.setItem('sk_admin_pw', newPw);
+  document.getElementById('pw-current').value = '';
+  document.getElementById('pw-new').value = '';
+  document.getElementById('pw-confirm').value = '';
+  result.style.color = 'var(--green)';
+  result.textContent = '✓ Password updated! All pages now use the new password.';
+  setTimeout(()=>result.textContent='', 4000);
+}
 function kpiCard(label,icon,val,sub,accent){
   return `<div class="kpi" style="--accent:${accent}">
     <div class="kpi-label">${label}</div>
