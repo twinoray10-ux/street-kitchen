@@ -58,6 +58,9 @@ header{background:var(--panel);border-bottom:1px solid rgba(232,70,10,0.2);paddi
 .order-card.new{border-color:var(--fire);animation:pulse 2s ease-in-out 3}
 .order-card.preparing{border-color:var(--amber)}
 .order-card.done{border-color:rgba(76,175,80,0.4);opacity:0.7}
+.order-card.pending_confirm{border-color:rgba(59,130,246,0.6);background:rgba(59,130,246,0.04)}
+.btn-confirm{background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.5);color:#60A5FA;padding:8px 16px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1px;cursor:pointer;flex:2;transition:all 0.2s}
+.btn-confirm:hover{background:rgba(59,130,246,0.4)}
 
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,70,10,0)}50%{box-shadow:0 0 0 6px rgba(232,70,10,0.2)}}
 
@@ -94,6 +97,7 @@ header{background:var(--panel);border-bottom:1px solid rgba(232,70,10,0.2);paddi
 .status-new{background:rgba(232,70,10,0.2);color:var(--fire);border:1px solid rgba(232,70,10,0.4)}
 .status-preparing{background:rgba(255,152,0,0.2);color:#FF9800;border:1px solid rgba(255,152,0,0.4)}
 .status-done{background:rgba(76,175,80,0.15);color:#4CAF50;border:1px solid rgba(76,175,80,0.3)}
+.status-pending_confirm{background:rgba(59,130,246,0.2);color:#60A5FA;border:1px solid rgba(59,130,246,0.4)}
 
 /* EMPTY */
 .empty{text-align:center;padding:4rem 1rem;color:var(--muted)}
@@ -157,6 +161,7 @@ header{background:var(--panel);border-bottom:1px solid rgba(232,70,10,0.2);paddi
       <button class="ftab active" onclick="setFilter('all',this)">ALL</button>
       <button class="ftab" onclick="setFilter('new',this)">🔥 NEW</button>
       <button class="ftab" onclick="setFilter('preparing',this)">🍳 PREPARING</button>
+      <button class="ftab" onclick="setFilter('pending_confirm',this)">⏳ PENDING CONFIRM</button>
       <button class="ftab" onclick="setFilter('done',this)">✅ DONE</button>
       <button class="ftab" onclick="clearDoneOrders()" style="border-color:rgba(244,67,54,0.3);color:#F44336;margin-left:auto">🗑 Clear Done</button>
     </div>
@@ -290,31 +295,45 @@ window.renderOrders = function(orders){
 
 function orderCard(o){
   const statusClass = o.status || 'new';
-  const statusLabel = statusClass === 'new' ? '🔥 NEW' : statusClass === 'preparing' ? '🍳 PREPARING' : '✅ DONE';
+  const statusLabel = statusClass === 'new' ? '🔥 NEW'
+    : statusClass === 'preparing'       ? '🍳 PREPARING'
+    : statusClass === 'pending_confirm' ? '⏳ AWAITING CONFIRM'
+    : '✅ DONE';
+
   const itemsHtml = (o.items||[]).map(i=>`
     <div class="card-item">
       <span class="card-item-name">${i.name} <span style="color:var(--muted)">x${i.qty}</span></span>
       <span class="card-item-price">${(i.subtotal||i.price*i.qty).toLocaleString()} UGX</span>
     </div>`).join('');
 
-  // Timer badge for preparing orders
   const timerBadge = statusClass==='preparing'
     ? `<span class="timer-badge"><span class="timer-dot"></span><span id="timer-${o.id}">⏱ --:--</span></span>`
     : '';
 
-  // Worker badge
   const workerBadge = o.workerName
     ? `<span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-left:6px">👤 ${o.workerName}</span>`
     : '';
 
-  const actionBtns = statusClass === 'new'
-    ? `<button class="btn-preparing" onclick="updateStatus('${o.id}','preparing')">🍳 PREPARING</button>
-       <button class="btn-done" onclick="updateStatus('${o.id}','done')">✅ DONE</button>
-       <a class="btn-call" href="tel:${o.phone}" title="Call customer">📞</a>`
-    : statusClass === 'preparing'
-    ? `<button class="btn-done" onclick="updateStatus('${o.id}','done')" style="flex:2">✅ MARK AS DONE</button>
-       <a class="btn-call" href="tel:${o.phone}" title="Call customer">📞</a>`
-    : `<button class="btn-preparing" onclick="doUpdateStatus('${o.id}','new',null,null)" style="opacity:0.6;flex:1">↩ REOPEN</button>`;
+  let actionBtns;
+  if(statusClass === 'new'){
+    actionBtns = `
+      <button class="btn-preparing" onclick="updateStatus('${o.id}','preparing')">🍳 PREPARING</button>
+      <button class="btn-done" onclick="updateStatus('${o.id}','pending_confirm')">✅ MARK DONE</button>
+      <a class="btn-call" href="tel:${o.phone}" title="Call customer">📞</a>`;
+  } else if(statusClass === 'preparing'){
+    actionBtns = `
+      <button class="btn-done" onclick="updateStatus('${o.id}','pending_confirm')" style="flex:2">✅ MARK DONE</button>
+      <a class="btn-call" href="tel:${o.phone}" title="Call customer">📞</a>`;
+  } else if(statusClass === 'pending_confirm'){
+    actionBtns = `
+      <div style="flex:1;background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.2);border-radius:8px;padding:8px 12px;font-family:'Space Mono',monospace;font-size:10px;color:#60A5FA;letter-spacing:1px">
+        👤 <b style="color:var(--cream)">${o.workerName||'Worker'}</b> marked done — owner must confirm
+      </div>
+      <button class="btn-confirm" onclick="confirmAndArchive('${o.id}')">🔒 CONFIRM & CLOSE</button>
+      <button class="btn-preparing" onclick="doUpdateStatus('${o.id}','preparing',null,null)" style="flex:0;padding:8px 12px;font-size:12px">↩</button>`;
+  } else {
+    actionBtns = `<button class="btn-preparing" onclick="doUpdateStatus('${o.id}','new',null,null)" style="opacity:0.6;flex:1">↩ REOPEN</button>`;
+  }
 
   return `<div class="order-card ${statusClass}" id="card-${o.id}">
     <div class="card-header">
@@ -426,7 +445,6 @@ async function completeOrder(id){
   const timer = activeTimers[id];
   const minsElapsed = timer ? Math.max(1, Math.round((Date.now()-timer.startTime)/60000)) : null;
 
-  // Save task to dashboard & Firebase if we have timer data
   if(timer){
     const taskData = {
       workerId: timer.workerId,
@@ -438,24 +456,36 @@ async function completeOrder(id){
       date: new Date().toISOString().split('T')[0],
       timestamp: Date.now()
     };
-    // Save to Firebase tasks
-    try {
-      if(window.saveTaskToFirebase) await window.saveTaskToFirebase(taskData);
-    } catch(e){}
-    // Also save to localStorage for dashboard
+    try { if(window.saveTaskToFirebase) await window.saveTaskToFirebase(taskData); } catch(e){}
     try {
       const existing = JSON.parse(localStorage.getItem('sk_bi_tasks')||'[]');
       existing.push({id: Date.now().toString(), ...taskData});
       localStorage.setItem('sk_bi_tasks', JSON.stringify(existing));
     } catch(e){}
-
     delete activeTimers[id];
-    showToast(`✅ Done! ${timer.workerName} took ${minsElapsed} min 🔥`);
+    showToast(`⏳ ${timer.workerName} marked done — awaiting your confirmation`);
   } else {
-    showToast('✅ Order marked done!');
+    showToast('⏳ Marked done — awaiting owner confirmation');
   }
 
-  doUpdateStatus(id, 'done', null, null);
+  // Set to pending_confirm — owner must verify before revenue is counted
+  doUpdateStatus(id, 'pending_confirm', null, null);
+}
+
+async function confirmAndArchive(id){
+  const order = window._allOrders.find(o => o.id === id);
+  if(!order){ showToast('Order not found.'); return; }
+  if(!confirm(`Confirm order #${order.ref} (${(order.total||0).toLocaleString()} UGX) is genuinely complete?\n\nThis archives it and counts the revenue in the dashboard.`)) return;
+
+  try {
+    // Archive the order with confirmed metadata
+    const archiveData = {...order, status:'done', confirmedAt:Date.now(), confirmedDate:new Date().toISOString().split('T')[0]};
+    delete archiveData.id;
+    await window._push(window._ref(window._db, 'orders_archive'), archiveData);
+    // Remove from live queue
+    await window._remove(window._ref(window._db, `orders/${id}`));
+    showToast(`✅ #${order.ref} confirmed & archived — revenue counted!`);
+  } catch(e){ showToast('Error: ' + e.message); }
 }
 
 async function doUpdateStatus(id, status, workerId, workerName){
@@ -475,7 +505,7 @@ async function doUpdateStatus(id, status, workerId, workerName){
 function updateStats(orders){
   const today = new Date().toDateString();
   document.getElementById('stat-new').textContent = orders.filter(o=>o.status==='new').length;
-  document.getElementById('stat-prep').textContent = orders.filter(o=>o.status==='preparing').length;
+  document.getElementById('stat-prep').textContent = orders.filter(o=>o.status==='preparing'||o.status==='pending_confirm').length;
   document.getElementById('stat-done').textContent = orders.filter(o=>o.status==='done' && new Date(o.timestamp).toDateString()===today).length;
 }
 
@@ -525,14 +555,17 @@ async function enableNotifications(){
 
 async function clearDoneOrders(){
   const doneOrders = window._allOrders.filter(o => o.status === 'done');
-  if(!doneOrders.length){ showToast('No done orders to clear.'); return; }
-  if(!confirm(`Delete ${doneOrders.length} completed order(s)? This cannot be undone.`)) return;
+  const pendingOrders = window._allOrders.filter(o => o.status === 'pending_confirm');
+  if(!doneOrders.length && !pendingOrders.length){ showToast('No done orders to clear.'); return; }
+  if(pendingOrders.length){
+    showToast(`⚠ ${pendingOrders.length} order(s) still awaiting your confirmation! Confirm them first.`);
+    return;
+  }
+  if(!confirm(`Clear ${doneOrders.length} done order(s) from the queue?\n\nThese were already confirmed & archived — dashboard data is safe.`)) return;
   try {
-    await Promise.all(doneOrders.map(o =>
-      window._remove(window._ref(window._db, `orders/${o.id}`))
-    ));
-    showToast(`✅ ${doneOrders.length} done order(s) cleared!`);
-  } catch(e){ showToast('Error clearing orders. Try again.'); }
+    await Promise.all(doneOrders.map(o => window._remove(window._ref(window._db, `orders/${o.id}`))));
+    showToast(`✅ ${doneOrders.length} cleared from queue.`);
+  } catch(e){ showToast('Error clearing. Try again.'); }
 }
 
 function showToast(msg){
