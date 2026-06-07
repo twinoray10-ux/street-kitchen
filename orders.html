@@ -104,8 +104,22 @@ header{background:var(--panel);border-bottom:1px solid rgba(232,70,10,0.2);paddi
 .new-order-alert{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:#E8460A;color:#fff;padding:12px 24px;border-radius:100px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;z-index:999;opacity:0;transition:all 0.4s;white-space:nowrap;box-shadow:0 4px 20px rgba(232,70,10,0.5)}
 .new-order-alert.show{opacity:1}
 
-/* TOAST */
-.toast{position:fixed;bottom:2rem;right:1rem;left:1rem;background:#1E3A1E;border:1px solid var(--green);color:var(--green);font-family:'Space Mono',monospace;font-size:12px;padding:12px 16px;border-radius:10px;z-index:9999;transform:translateY(20px);opacity:0;transition:all 0.3s;text-align:center}
+/* WORKER PICKER MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{background:var(--panel);border:1px solid rgba(232,70,10,0.3);border-radius:20px;padding:1.75rem;width:100%;max-width:360px;transform:translateY(20px);transition:transform 0.25s}
+.modal-overlay.open .modal-box{transform:translateY(0)}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;margin-bottom:0.25rem}
+.modal-sub{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:1.25rem}
+.worker-btn-list{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.worker-pick-btn{background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--cream);font-family:'Syne',sans-serif;font-size:14px;cursor:pointer;text-align:left;display:flex;align-items:center;gap:10px;transition:all 0.2s}
+.worker-pick-btn:hover{border-color:var(--fire);background:rgba(232,70,10,0.08)}
+.worker-pick-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--fire),var(--gold));display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:13px;color:#fff;flex-shrink:0}
+.modal-cancel{width:100%;background:transparent;border:1px solid var(--border);color:var(--muted);padding:10px;border-radius:8px;font-family:'Space Mono',monospace;font-size:11px;cursor:pointer}
+
+/* TIMER BADGE on card */
+.timer-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(255,152,0,0.15);border:1px solid rgba(255,152,0,0.3);color:#FF9800;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;padding:3px 10px;border-radius:100px;margin-left:8px}
+.timer-dot{width:5px;height:5px;border-radius:50%;background:#FF9800;animation:blink 0.8s ease-in-out infinite}background:#1E3A1E;border:1px solid var(--green);color:var(--green);font-family:'Space Mono',monospace;font-size:12px;padding:12px 16px;border-radius:10px;z-index:9999;transform:translateY(20px);opacity:0;transition:all 0.3s;text-align:center}
 .toast.show{transform:translateY(0);opacity:1}
 </style>
 </head>
@@ -153,12 +167,24 @@ header{background:var(--panel);border-bottom:1px solid rgba(232,70,10,0.2);paddi
   </div>
 </div>
 
+<!-- WORKER PICKER MODAL -->
+<div class="modal-overlay" id="worker-modal">
+  <div class="modal-box">
+    <div class="modal-title">👤 ASSIGN WORKER</div>
+    <div class="modal-sub">WHO IS PREPARING THIS ORDER?</div>
+    <div class="worker-btn-list" id="worker-btn-list">
+      <div style="color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;text-align:center;padding:1rem">No workers added yet.<br>Add workers in the dashboard first.</div>
+    </div>
+    <button class="modal-cancel" onclick="closeWorkerModal()">No worker / Skip</button>
+  </div>
+</div>
+
 <div class="new-order-alert" id="new-alert">🔥 NEW ORDER INCOMING!</div>
 <div class="toast" id="toast"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, onValue, update, remove, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBvn2QXF-vkhXcVjScb-rh1veUdGdoI7qg",
@@ -175,7 +201,20 @@ const db = getDatabase(app);
 window._db = db;
 window._update = update;
 window._remove = remove;
+window._push = push;
 window._ref = ref;
+
+// Load workers from localStorage (shared with dashboard)
+window.loadWorkers = function(){
+  try {
+    const saved = localStorage.getItem('sk_bi_workers');
+    return saved ? JSON.parse(saved) : [];
+  } catch(e){ return []; }
+};
+
+window.saveTaskToFirebase = async function(taskData){
+  await push(ref(db, 'tasks'), taskData);
+};
 
 window.listenOrders = function(){
   onValue(ref(db, 'orders'), (snapshot) => {
@@ -186,6 +225,18 @@ window.listenOrders = function(){
     window._allOrders = orders;
     window.renderOrders(orders);
     updateStats(orders);
+
+    // Resume timers for orders already in preparing state
+    orders.filter(o=>o.status==='preparing' && o.prepStartTime).forEach(o=>{
+      if(!activeTimers[o.id]){
+        activeTimers[o.id] = {
+          startTime: o.prepStartTime,
+          workerId: o.workerId||null,
+          workerName: o.workerName||'Unknown'
+        };
+      }
+    });
+    if(Object.keys(activeTimers).length) startTimerTick();
 
     // Alert on new orders (after first load)
     if(window._loaded){
@@ -246,6 +297,16 @@ function orderCard(o){
       <span class="card-item-price">${(i.subtotal||i.price*i.qty).toLocaleString()} UGX</span>
     </div>`).join('');
 
+  // Timer badge for preparing orders
+  const timerBadge = statusClass==='preparing'
+    ? `<span class="timer-badge"><span class="timer-dot"></span><span id="timer-${o.id}">⏱ --:--</span></span>`
+    : '';
+
+  // Worker badge
+  const workerBadge = o.workerName
+    ? `<span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-left:6px">👤 ${o.workerName}</span>`
+    : '';
+
   const actionBtns = statusClass === 'new'
     ? `<button class="btn-preparing" onclick="updateStatus('${o.id}','preparing')">🍳 PREPARING</button>
        <button class="btn-done" onclick="updateStatus('${o.id}','done')">✅ DONE</button>
@@ -253,13 +314,15 @@ function orderCard(o){
     : statusClass === 'preparing'
     ? `<button class="btn-done" onclick="updateStatus('${o.id}','done')" style="flex:2">✅ MARK AS DONE</button>
        <a class="btn-call" href="tel:${o.phone}" title="Call customer">📞</a>`
-    : `<button class="btn-preparing" onclick="updateStatus('${o.id}','new')" style="opacity:0.6;flex:1">↩ REOPEN</button>`;
+    : `<button class="btn-preparing" onclick="doUpdateStatus('${o.id}','new',null,null)" style="opacity:0.6;flex:1">↩ REOPEN</button>`;
 
   return `<div class="order-card ${statusClass}" id="card-${o.id}">
     <div class="card-header">
-      <div>
+      <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px">
         <span class="card-ref">#${o.ref||'—'}</span>
         <span class="card-time" style="margin-left:8px">${o.time||''}</span>
+        ${timerBadge}
+        ${workerBadge}
       </div>
       <div style="display:flex;gap:6px;align-items:center">
         <span class="card-type ${o.type||'pickup'}">${o.type==='delivery'?'🛵 DELIVERY':'🏃 PICKUP'}</span>
@@ -283,11 +346,128 @@ function orderCard(o){
   </div>`;
 }
 
-async function updateStatus(id, status){
+// Track active timers: orderId -> {startTime, workerId, workerName}
+const activeTimers = {};
+let timerInterval = null;
+
+function startTimerTick(){
+  if(timerInterval) return;
+  timerInterval = setInterval(()=>{
+    Object.keys(activeTimers).forEach(id=>{
+      const el = document.getElementById(`timer-${id}`);
+      if(el){
+        const secs = Math.floor((Date.now()-activeTimers[id].startTime)/1000);
+        const m = Math.floor(secs/60).toString().padStart(2,'0');
+        const s = (secs%60).toString().padStart(2,'0');
+        el.textContent = `⏱ ${m}:${s}`;
+      }
+    });
+  }, 1000);
+}
+
+// Pending action waiting for worker pick
+let pendingAction = null;
+
+function updateStatus(id, status){
+  if(status === 'preparing'){
+    // Show worker picker first
+    pendingAction = {id, status};
+    openWorkerModal(id);
+  } else if(status === 'done'){
+    completeOrder(id);
+  } else {
+    doUpdateStatus(id, status, null, null);
+  }
+}
+
+function openWorkerModal(orderId){
+  const workers = window.loadWorkers ? window.loadWorkers() : [];
+  const list = document.getElementById('worker-btn-list');
+  if(workers.length){
+    list.innerHTML = workers.filter(w=>w.active).map(w=>{
+      const initials = w.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+      return `<button class="worker-pick-btn" onclick="assignWorkerAndStart('${w.id}','${w.name.replace(/'/g,"\\'")}')">
+        <div class="worker-pick-avatar">${initials}</div>
+        <div>
+          <div style="font-weight:700">${w.name}</div>
+          <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace">${w.role||'Worker'}</div>
+        </div>
+      </button>`;
+    }).join('');
+  } else {
+    list.innerHTML = `<div style="color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;text-align:center;padding:1rem">No workers in dashboard yet.<br>Add workers first, or skip.</div>`;
+  }
+  document.getElementById('worker-modal').classList.add('open');
+}
+
+function closeWorkerModal(){
+  document.getElementById('worker-modal').classList.remove('open');
+  // Still mark as preparing even without a worker
+  if(pendingAction){
+    doUpdateStatus(pendingAction.id, 'preparing', null, null);
+    pendingAction = null;
+  }
+}
+
+function assignWorkerAndStart(workerId, workerName){
+  document.getElementById('worker-modal').classList.remove('open');
+  if(pendingAction){
+    const {id} = pendingAction;
+    // Start timer
+    activeTimers[id] = {startTime: Date.now(), workerId, workerName};
+    startTimerTick();
+    doUpdateStatus(id, 'preparing', workerId, workerName);
+    pendingAction = null;
+    showToast(`⏱ Timer started for ${workerName}`);
+  }
+}
+
+async function completeOrder(id){
+  const timer = activeTimers[id];
+  const minsElapsed = timer ? Math.max(1, Math.round((Date.now()-timer.startTime)/60000)) : null;
+
+  // Save task to dashboard & Firebase if we have timer data
+  if(timer){
+    const taskData = {
+      workerId: timer.workerId,
+      workerName: timer.workerName,
+      type: 'Order',
+      mins: minsElapsed,
+      notes: `Auto-timed from order`,
+      time: new Date().toLocaleTimeString('en-UG',{hour:'2-digit',minute:'2-digit'}),
+      date: new Date().toISOString().split('T')[0],
+      timestamp: Date.now()
+    };
+    // Save to Firebase tasks
+    try {
+      if(window.saveTaskToFirebase) await window.saveTaskToFirebase(taskData);
+    } catch(e){}
+    // Also save to localStorage for dashboard
+    try {
+      const existing = JSON.parse(localStorage.getItem('sk_bi_tasks')||'[]');
+      existing.push({id: Date.now().toString(), ...taskData});
+      localStorage.setItem('sk_bi_tasks', JSON.stringify(existing));
+    } catch(e){}
+
+    delete activeTimers[id];
+    showToast(`✅ Done! ${timer.workerName} took ${minsElapsed} min 🔥`);
+  } else {
+    showToast('✅ Order marked done!');
+  }
+
+  doUpdateStatus(id, 'done', null, null);
+}
+
+async function doUpdateStatus(id, status, workerId, workerName){
   try {
     if(window._db && window._update && window._ref){
-      await window._update(window._ref(window._db, `orders/${id}`), {status});
-      showToast(status==='done'?'✅ Order marked done!':status==='preparing'?'🍳 Now preparing!':'↩ Order reopened');
+      const updates = {status};
+      if(workerId) updates.workerId = workerId;
+      if(workerName) updates.workerName = workerName;
+      if(status==='preparing') updates.prepStartTime = Date.now();
+      if(status==='done') updates.prepEndTime = Date.now();
+      await window._update(window._ref(window._db, `orders/${id}`), updates);
+      if(status==='preparing') showToast('🍳 Now preparing!');
     }
   } catch(e){ showToast('Could not update. Check connection.'); }
 }
