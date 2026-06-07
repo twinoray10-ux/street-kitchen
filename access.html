@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Street Kitchen — Access Control</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --fire:#E8460A;--gold:#F5A623;--cream:#FFF8F0;--dark:#0D0500;
+  --panel:#140900;--card:#1A0C02;--border:rgba(255,255,255,0.08);
+  --muted:rgba(255,248,240,0.4);--green:#22C55E;--red:#EF4444;
+}
+html,body{min-height:100vh;font-family:'Syne',sans-serif;background:var(--dark);color:var(--cream)}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 70% 50% at 15% 5%,rgba(232,70,10,0.07),transparent),radial-gradient(ellipse 50% 40% at 85% 85%,rgba(245,166,35,0.04),transparent);pointer-events:none;z-index:0}
+
+/* ── LOGIN ── */
+#login-screen{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem;background:var(--dark)}
+.login-box{width:100%;max-width:380px;background:var(--panel);border:1px solid rgba(232,70,10,0.2);border-radius:20px;padding:2.5rem;text-align:center;position:relative;z-index:1}
+.login-fire{font-size:44px;margin-bottom:0.75rem}
+.login-box h1{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:5px;margin-bottom:4px}
+.login-box h1 span{color:var(--fire)}
+.login-sub{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--gold);margin-bottom:2rem;text-transform:uppercase}
+.login-box input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--cream);font-family:'Space Mono',monospace;font-size:15px;outline:none;text-align:center;letter-spacing:4px;margin-bottom:1rem;transition:border-color 0.2s}
+.login-box input:focus{border-color:var(--fire)}
+.login-btn{width:100%;background:var(--fire);color:#fff;border:none;padding:13px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;transition:opacity 0.2s}
+.login-btn:hover{opacity:0.88}
+.login-err{color:var(--fire);font-size:11px;font-family:'Space Mono',monospace;margin-top:0.75rem;min-height:16px}
+
+/* ── APP SHELL ── */
+#app{display:none;position:relative;z-index:1;min-height:100vh}
+header{background:var(--panel);border-bottom:1px solid var(--border);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.hd-logo{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px}
+.hd-logo span{color:var(--fire)}
+.hd-right{display:flex;align-items:center;gap:1rem}
+.hd-badge{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;background:rgba(232,70,10,0.12);border:1px solid rgba(232,70,10,0.25);color:var(--fire);padding:5px 12px;border-radius:100px}
+.logout-btn{background:none;border:none;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;letter-spacing:1px}
+.logout-btn:hover{color:var(--fire)}
+
+.main{max-width:900px;margin:0 auto;padding:2rem 1.5rem}
+
+/* ── SECTION TITLE ── */
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--cream);margin-bottom:1.25rem}
+.sec-sub{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:-0.75rem;margin-bottom:1.5rem}
+
+/* ── CREATE USER FORM ── */
+.create-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:1.75rem;margin-bottom:2.5rem}
+.create-card h2{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--cream);margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--border)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem}
+.form-group label{display:block;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
+.form-group input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--cream);font-family:'Syne',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s}
+.form-group input:focus{border-color:var(--fire)}
+
+/* PAGES PICKER */
+.pages-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:10px}
+.pages-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:1.5rem}
+.page-opt{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all 0.2s;user-select:none}
+.page-opt:hover{border-color:rgba(232,70,10,0.3)}
+.page-opt.sel{background:rgba(232,70,10,0.1);border-color:var(--fire)}
+.page-opt-check{width:18px;height:18px;border-radius:4px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;transition:all 0.2s}
+.page-opt.sel .page-opt-check{background:var(--fire);border-color:var(--fire);color:#fff}
+.page-opt-icon{font-size:18px}
+.page-opt-info{flex:1;min-width:0}
+.page-opt-name{font-size:13px;font-weight:700;color:var(--cream)}
+.page-opt-desc{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-top:1px}
+
+.create-btn{background:var(--fire);color:#fff;border:none;padding:11px 32px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;cursor:pointer;transition:opacity 0.2s}
+.create-btn:hover{opacity:0.88}
+.form-msg{font-family:'Space Mono',monospace;font-size:11px;margin-left:1rem}
+.form-msg.ok{color:var(--green)}.form-msg.err{color:var(--red)}
+
+/* ── USER LIST ── */
+.users-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.user-count{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px}
+.user-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.25rem 1.5rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:1.25rem;flex-wrap:wrap;transition:border-color 0.2s}
+.user-card:hover{border-color:rgba(232,70,10,0.2)}
+.user-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--fire),var(--gold));display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;flex-shrink:0}
+.user-info{flex:1;min-width:140px}
+.user-name{font-weight:700;font-size:15px;color:var(--cream)}
+.user-role{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;margin-top:2px}
+.user-pages{display:flex;gap:5px;flex-wrap:wrap}
+.page-badge{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;padding:3px 10px;border-radius:100px;border:1px solid;white-space:nowrap}
+.pb-menu{background:rgba(232,70,10,0.1);border-color:rgba(232,70,10,0.3);color:var(--fire)}
+.pb-track{background:rgba(59,130,246,0.1);border-color:rgba(59,130,246,0.3);color:#60A5FA}
+.pb-admin{background:rgba(245,166,35,0.1);border-color:rgba(245,166,35,0.3);color:var(--gold)}
+.pb-dashboard{background:rgba(34,197,94,0.1);border-color:rgba(34,197,94,0.3);color:var(--green)}
+.user-actions{display:flex;gap:6px;flex-shrink:0}
+.act-btn{background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:6px;font-family:'Space Mono',monospace;font-size:9px;cursor:pointer;transition:all 0.2s;letter-spacing:1px}
+.act-btn:hover{border-color:var(--fire);color:var(--fire)}
+.act-btn.danger:hover{border-color:var(--red);color:var(--red);background:rgba(239,68,68,0.06)}
+.empty-state{text-align:center;padding:3rem;background:var(--card);border:1px solid var(--border);border-radius:14px;color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;line-height:1.8}
+
+/* ── EDIT MODAL ── */
+.modal-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.85);display:none;align-items:center;justify-content:center;padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:#1A0C02;border:1px solid rgba(232,70,10,0.3);border-radius:18px;width:100%;max-width:460px;padding:2rem;max-height:90vh;overflow-y:auto}
+.modal h2{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:3px;margin-bottom:1.5rem}
+.modal-btns{display:flex;gap:0.75rem;margin-top:1.5rem}
+.cancel-btn{flex:1;background:transparent;border:1px solid var(--border);color:var(--muted);padding:10px;border-radius:8px;font-family:'Syne',sans-serif;font-size:14px;cursor:pointer}
+.save-btn{flex:2;background:var(--fire);color:#fff;border:none;padding:10px;border-radius:8px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;transition:opacity 0.2s}
+.save-btn:hover{opacity:0.88}
+
+/* ── FIREBASE STATUS ── */
+.fb-bar{display:flex;align-items:center;gap:8px;font-family:'Space Mono',monospace;font-size:10px;padding:10px 16px;border-radius:10px;margin-bottom:1.75rem;letter-spacing:1px}
+.fb-bar.ok{background:rgba(34,197,94,0.08);border:1px solid rgba(34,197,94,0.2);color:var(--green)}
+.fb-bar.err{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:var(--red)}
+.fb-dot{width:7px;height:7px;border-radius:50%;background:currentColor;animation:blink 1.2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* ── PASSWORD RESET ROW ── */
+.pw-inline{display:flex;gap:0.75rem;align-items:flex-end;flex-wrap:wrap}
+.pw-inline .form-group{flex:1;min-width:120px}
+
+@media(max-width:580px){
+  .form-row,.pages-grid{grid-template-columns:1fr}
+  .user-card{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-fire">🔐</div>
+    <h1>STREET <span>KITCHEN</span></h1>
+    <div class="login-sub">Access Control · Owner Only</div>
+    <input type="password" id="owner-pwd" placeholder="Owner password" autocomplete="current-password"/>
+    <button class="login-btn" onclick="ownerLogin()">ENTER</button>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="hd-logo">STREET <span>KITCHEN</span></div>
+    <div class="hd-right">
+      <span class="hd-badge">ACCESS CONTROL</span>
+      <button class="logout-btn" onclick="ownerLogout()">LOGOUT</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="fb-bar ok" id="fb-bar">
+      <span class="fb-dot"></span>
+      <span id="fb-msg">Connected to Firebase</span>
+    </div>
+
+    <!-- CREATE USER -->
+    <div class="create-card">
+      <h2>➕ CREATE NEW USER</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="u-name" placeholder="e.g. Brian Otieno"/>
+        </div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="u-username" placeholder="e.g. brian" autocomplete="off"/>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Password</label>
+          <input type="text" id="u-password" placeholder="Set a password" autocomplete="off"/>
+        </div>
+        <div class="form-group">
+          <label>Role / Title</label>
+          <input type="text" id="u-role" placeholder="e.g. Kitchen Staff"/>
+        </div>
+      </div>
+
+      <div class="pages-label">Pages This User Can Access</div>
+      <div class="pages-grid">
+        <div class="page-opt" id="opt-menu" onclick="togglePage('menu')">
+          <div class="page-opt-check" id="chk-menu"></div>
+          <div class="page-opt-icon">🍔</div>
+          <div class="page-opt-info">
+            <div class="page-opt-name">Menu / Order</div>
+            <div class="page-opt-desc">index.html · Customer ordering</div>
+          </div>
+        </div>
+        <div class="page-opt" id="opt-track" onclick="togglePage('track')">
+          <div class="page-opt-check" id="chk-track"></div>
+          <div class="page-opt-icon">📍</div>
+          <div class="page-opt-info">
+            <div class="page-opt-name">Order Tracker</div>
+            <div class="page-opt-desc">track.html · Order status</div>
+          </div>
+        </div>
+        <div class="page-opt" id="opt-admin" onclick="togglePage('admin')">
+          <div class="page-opt-check" id="chk-admin"></div>
+          <div class="page-opt-icon">⚙️</div>
+          <div class="page-opt-info">
+            <div class="page-opt-name">Admin Panel</div>
+            <div class="page-opt-desc">admin.html · Menu management</div>
+          </div>
+        </div>
+        <div class="page-opt" id="opt-dashboard" onclick="togglePage('dashboard')">
+          <div class="page-opt-check" id="chk-dashboard"></div>
+          <div class="page-opt-icon">📊</div>
+          <div class="page-opt-info">
+            <div class="page-opt-name">Dashboard</div>
+            <div class="page-opt-desc">dashboard.html · Business analytics</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center">
+        <button class="create-btn" onclick="createUser()">CREATE USER</button>
+        <span class="form-msg" id="create-msg"></span>
+      </div>
+    </div>
+
+    <!-- USER LIST -->
+    <div class="users-header">
+      <div class="sec-title" style="margin-bottom:0">TEAM ACCESS</div>
+      <div class="user-count" id="user-count">Loading...</div>
+    </div>
+    <div id="user-list"><div class="empty-state">Loading users...</div></div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal">
+  <div class="modal">
+    <h2>✏️ EDIT USER</h2>
+    <input type="hidden" id="e-uid"/>
+    <div class="form-row" style="margin-bottom:1rem">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="e-name" placeholder="Full name"/>
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="e-username" placeholder="Username"/>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:1rem">
+      <label>Role / Title</label>
+      <input type="text" id="e-role" placeholder="e.g. Kitchen Staff"/>
+    </div>
+    <div class="form-group" style="margin-bottom:1.25rem">
+      <label>New Password (leave blank to keep current)</label>
+      <input type="text" id="e-password" placeholder="Leave blank to keep"/>
+    </div>
+    <div class="pages-label">Page Access</div>
+    <div class="pages-grid" id="edit-pages-grid">
+      <div class="page-opt" id="e-opt-menu" onclick="toggleEditPage('menu')">
+        <div class="page-opt-check" id="e-chk-menu"></div>
+        <div class="page-opt-icon">🍔</div>
+        <div class="page-opt-info"><div class="page-opt-name">Menu / Order</div><div class="page-opt-desc">index.html</div></div>
+      </div>
+      <div class="page-opt" id="e-opt-track" onclick="toggleEditPage('track')">
+        <div class="page-opt-check" id="e-chk-track"></div>
+        <div class="page-opt-icon">📍</div>
+        <div class="page-opt-info"><div class="page-opt-name">Order Tracker</div><div class="page-opt-desc">track.html</div></div>
+      </div>
+      <div class="page-opt" id="e-opt-admin" onclick="toggleEditPage('admin')">
+        <div class="page-opt-check" id="e-chk-admin"></div>
+        <div class="page-opt-icon">⚙️</div>
+        <div class="page-opt-info"><div class="page-opt-name">Admin Panel</div><div class="page-opt-desc">admin.html</div></div>
+      </div>
+      <div class="page-opt" id="e-opt-dashboard" onclick="toggleEditPage('dashboard')">
+        <div class="page-opt-check" id="e-chk-dashboard"></div>
+        <div class="page-opt-icon">📊</div>
+        <div class="page-opt-info"><div class="page-opt-name">Dashboard</div><div class="page-opt-desc">dashboard.html</div></div>
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="cancel-btn" onclick="closeEdit()">Cancel</button>
+      <button class="save-btn" onclick="saveEdit()">SAVE CHANGES</button>
+    </div>
+    <div class="form-msg" id="edit-msg" style="margin-top:0.75rem;display:block"></div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBvn2QXF-vkhXcVjScb-rh1veUdGdoI7qg",
+  authDomain: "street-kitchen-9f41e.firebaseapp.com",
+  projectId: "street-kitchen-9f41e",
+  storageBucket: "street-kitchen-9f41e.firebasestorage.app",
+  messagingSenderId: "849439630164",
+  appId: "1:849439630164:web:1c6bdc115b4f283026dec1",
+  databaseURL: "https://street-kitchen-9f41e-default-rtdb.firebaseio.com"
+};
+
+// ── OWNER PASSWORD (change this to your real password) ──
+const OWNER_PASSWORD = 'StreetKitchen2024!';
+
+const app = initializeApp(FIREBASE_CONFIG);
+const db = getDatabase(app);
+const usersRef = ref(db, 'sk_users');
+
+let allUsers = {};
+let newPages = new Set();
+let editPages = new Set();
+
+// ── LOGIN ──
+window.ownerLogin = function(){
+  const pw = document.getElementById('owner-pwd').value;
+  const err = document.getElementById('login-err');
+  if(pw === OWNER_PASSWORD){
+    sessionStorage.setItem('sk_owner','1');
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    initApp();
+  } else {
+    err.textContent = 'Incorrect password. Try again.';
+    document.getElementById('owner-pwd').value='';
+  }
+};
+
+window.ownerLogout = function(){
+  sessionStorage.removeItem('sk_owner');
+  location.reload();
+};
+
+document.getElementById('owner-pwd').addEventListener('keydown', e => {
+  if(e.key==='Enter') window.ownerLogin();
+});
+
+if(sessionStorage.getItem('sk_owner')){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  initApp();
+}
+
+// ── INIT ──
+function initApp(){
+  onValue(usersRef, snap => {
+    allUsers = snap.val() || {};
+    renderUsers();
+  }, err => {
+    setFbStatus(false, 'Firebase error: ' + err.message);
+  });
+}
+
+function setFbStatus(ok, msg){
+  const bar = document.getElementById('fb-bar');
+  bar.className = 'fb-bar ' + (ok?'ok':'err');
+  document.getElementById('fb-msg').textContent = msg || (ok ? 'Connected to Firebase' : 'Connection error');
+}
+
+// ── PAGE TOGGLE (create form) ──
+window.togglePage = function(page){
+  if(newPages.has(page)) newPages.delete(page);
+  else newPages.add(page);
+  ['menu','track','admin','dashboard'].forEach(p => {
+    const opt = document.getElementById('opt-'+p);
+    const chk = document.getElementById('chk-'+p);
+    const sel = newPages.has(p);
+    opt.classList.toggle('sel', sel);
+    chk.textContent = sel ? '✓' : '';
+  });
+};
+
+// ── PAGE TOGGLE (edit modal) ──
+window.toggleEditPage = function(page){
+  if(editPages.has(page)) editPages.delete(page);
+  else editPages.add(page);
+  ['menu','track','admin','dashboard'].forEach(p => {
+    const opt = document.getElementById('e-opt-'+p);
+    const chk = document.getElementById('e-chk-'+p);
+    const sel = editPages.has(p);
+    opt.classList.toggle('sel', sel);
+    chk.textContent = sel ? '✓' : '';
+  });
+};
+
+// ── CREATE USER ──
+window.createUser = async function(){
+  const name     = document.getElementById('u-name').value.trim();
+  const username = document.getElementById('u-username').value.trim().toLowerCase();
+  const password = document.getElementById('u-password').value.trim();
+  const role     = document.getElementById('u-role').value.trim();
+  const msg      = document.getElementById('create-msg');
+
+  if(!name || !username || !password){
+    msg.className='form-msg err'; msg.textContent='⚠ Name, username & password required.'; return;
+  }
+
+  // Check duplicate username
+  const existing = Object.values(allUsers).find(u => u.username === username);
+  if(existing){
+    msg.className='form-msg err'; msg.textContent='⚠ Username already taken.'; return;
+  }
+
+  if(newPages.size === 0){
+    msg.className='form-msg err'; msg.textContent='⚠ Select at least one page.'; return;
+  }
+
+  msg.className='form-msg'; msg.textContent='Saving...'; msg.style.color='var(--gold)';
+
+  try {
+    const newRef = push(usersRef);
+    await set(newRef, {
+      name, username, password, role: role||'Staff',
+      pages: [...newPages],
+      createdAt: new Date().toISOString()
+    });
+    msg.className='form-msg ok'; msg.textContent='✓ User created!';
+    // Reset form
+    ['u-name','u-username','u-password','u-role'].forEach(id => document.getElementById(id).value='');
+    newPages.clear();
+    ['menu','track','admin','dashboard'].forEach(p => {
+      document.getElementById('opt-'+p).classList.remove('sel');
+      document.getElementById('chk-'+p).textContent='';
+    });
+    setTimeout(()=> msg.textContent='', 3000);
+  } catch(e){
+    msg.className='form-msg err'; msg.textContent='✕ Firebase error: '+e.message;
+  }
+};
+
+// ── RENDER USERS ──
+function renderUsers(){
+  const list = document.getElementById('user-list');
+  const count = document.getElementById('user-count');
+  const entries = Object.entries(allUsers);
+  count.textContent = entries.length + ' user' + (entries.length!==1?'s':'');
+
+  if(entries.length===0){
+    list.innerHTML=`<div class="empty-state">No users yet.<br>Create your first team member above.</div>`;
+    return;
+  }
+
+  const badgeClass = {menu:'pb-menu',track:'pb-track',admin:'pb-admin',dashboard:'pb-dashboard'};
+  const pageLabel  = {menu:'Menu',track:'Tracker',admin:'Admin',dashboard:'Dashboard'};
+
+  list.innerHTML = entries.map(([uid, u]) => `
+    <div class="user-card">
+      <div class="user-avatar">${(u.name||'?')[0].toUpperCase()}</div>
+      <div class="user-info">
+        <div class="user-name">${u.name}</div>
+        <div class="user-role">@${u.username} · ${u.role||'Staff'}</div>
+      </div>
+      <div class="user-pages">
+        ${(u.pages||[]).map(p=>`<span class="page-badge ${badgeClass[p]||''}">${pageLabel[p]||p}</span>`).join('')}
+      </div>
+      <div class="user-actions">
+        <button class="act-btn" onclick="openEdit('${uid}')">EDIT</button>
+        <button class="act-btn danger" onclick="deleteUser('${uid}','${u.name}')">REMOVE</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── EDIT ──
+window.openEdit = function(uid){
+  const u = allUsers[uid];
+  if(!u) return;
+  document.getElementById('e-uid').value = uid;
+  document.getElementById('e-name').value = u.name||'';
+  document.getElementById('e-username').value = u.username||'';
+  document.getElementById('e-role').value = u.role||'';
+  document.getElementById('e-password').value = '';
+  document.getElementById('edit-msg').textContent='';
+
+  editPages = new Set(u.pages||[]);
+  ['menu','track','admin','dashboard'].forEach(p => {
+    const sel = editPages.has(p);
+    document.getElementById('e-opt-'+p).classList.toggle('sel', sel);
+    document.getElementById('e-chk-'+p).textContent = sel ? '✓' : '';
+  });
+  document.getElementById('edit-modal').classList.add('open');
+};
+
+window.closeEdit = function(){
+  document.getElementById('edit-modal').classList.remove('open');
+};
+
+window.saveEdit = async function(){
+  const uid      = document.getElementById('e-uid').value;
+  const name     = document.getElementById('e-name').value.trim();
+  const username = document.getElementById('e-username').value.trim().toLowerCase();
+  const role     = document.getElementById('e-role').value.trim();
+  const newPw    = document.getElementById('e-password').value.trim();
+  const msg      = document.getElementById('edit-msg');
+
+  if(!name||!username){ msg.className='form-msg err'; msg.textContent='⚠ Name & username required.'; return; }
+  if(editPages.size===0){ msg.className='form-msg err'; msg.textContent='⚠ Select at least one page.'; return; }
+
+  // Check duplicate username (exclude self)
+  const dup = Object.entries(allUsers).find(([id,u]) => u.username===username && id!==uid);
+  if(dup){ msg.className='form-msg err'; msg.textContent='⚠ Username taken by another user.'; return; }
+
+  msg.style.color='var(--gold)'; msg.className='form-msg'; msg.textContent='Saving...';
+  const updates = { name, username, role:role||'Staff', pages:[...editPages] };
+  if(newPw) updates.password = newPw;
+
+  try {
+    await update(ref(db,'sk_users/'+uid), updates);
+    msg.className='form-msg ok'; msg.textContent='✓ Saved!';
+    setTimeout(window.closeEdit, 1000);
+  } catch(e){
+    msg.className='form-msg err'; msg.textContent='✕ '+e.message;
+  }
+};
+
+// ── DELETE ──
+window.deleteUser = async function(uid, name){
+  if(!confirm(`Remove "${name}" from the team?\nThey will lose access immediately.`)) return;
+  try {
+    await remove(ref(db,'sk_users/'+uid));
+  } catch(e){
+    alert('Error: '+e.message);
+  }
+};
+
+// Close edit modal on backdrop click
+document.getElementById('edit-modal').addEventListener('click', e => {
+  if(e.target===document.getElementById('edit-modal')) window.closeEdit();
+});
+</script>
+</body>
+</html>
