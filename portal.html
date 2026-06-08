@@ -15,343 +15,206 @@
   --blue:#3B82F6;--amber:#F59E0B;
 }
 html,body{min-height:100vh;font-family:'Syne',sans-serif;background:var(--dark);color:var(--cream);overflow-x:hidden}
-
-/* ── NOISE / GLOW BACKGROUND ── */
-body::before{
-  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
-  background:
-    radial-gradient(ellipse 60% 40% at 15% 10%,rgba(232,70,10,0.08),transparent),
-    radial-gradient(ellipse 50% 35% at 85% 80%,rgba(245,166,35,0.05),transparent),
-    radial-gradient(ellipse 80% 60% at 50% 50%,rgba(13,5,0,0) 0%,rgba(13,5,0,0.6) 100%);
-}
-
-/* ── LOGIN SCREEN ── */
-#login-screen{
-  position:fixed;inset:0;z-index:999;
-  display:flex;align-items:center;justify-content:center;
-  padding:1.5rem;background:var(--dark);
-}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 60% 40% at 15% 10%,rgba(232,70,10,0.08),transparent),radial-gradient(ellipse 50% 35% at 85% 80%,rgba(245,166,35,0.05),transparent)}
+#loading{position:fixed;inset:0;z-index:998;background:var(--dark);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem}
+.ld-ring{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--fire);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ld-text{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px}
+#login-screen{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;padding:1.5rem;background:var(--dark)}
 .login-wrap{width:100%;max-width:420px;position:relative;z-index:1}
-
-/* Flame orb top */
-.flame-orb{
-  width:90px;height:90px;border-radius:50%;
-  background:radial-gradient(circle at 35% 35%,#ff7a38,var(--fire) 55%,#6B1A00);
-  margin:0 auto 2rem;
-  box-shadow:0 0 40px rgba(232,70,10,0.5),0 0 80px rgba(232,70,10,0.2);
-  display:flex;align-items:center;justify-content:center;
-  font-size:38px;
-  animation:flicker 3s ease-in-out infinite;
-}
-@keyframes flicker{
-  0%,100%{box-shadow:0 0 40px rgba(232,70,10,0.5),0 0 80px rgba(232,70,10,0.2);transform:scale(1)}
-  50%{box-shadow:0 0 60px rgba(232,70,10,0.7),0 0 120px rgba(232,70,10,0.3);transform:scale(1.03)}
-}
-
-.login-card{
-  background:var(--panel);
-  border:1px solid rgba(232,70,10,0.18);
-  border-radius:24px;padding:2.75rem 2.5rem;
-  text-align:center;
-  box-shadow:0 32px 80px rgba(0,0,0,0.6);
-  position:relative;overflow:hidden;
-}
-.login-card::before{
-  content:'';position:absolute;top:-80px;left:-80px;right:-80px;height:200px;
-  background:radial-gradient(ellipse at 50% 0%,rgba(232,70,10,0.06),transparent);
-  pointer-events:none;
-}
+.flame-orb{width:90px;height:90px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#ff7a38,var(--fire) 55%,#6B1A00);margin:0 auto 2rem;box-shadow:0 0 40px rgba(232,70,10,0.5),0 0 80px rgba(232,70,10,0.2);display:flex;align-items:center;justify-content:center;font-size:38px;animation:flicker 3s ease-in-out infinite}
+@keyframes flicker{0%,100%{box-shadow:0 0 40px rgba(232,70,10,0.5),0 0 80px rgba(232,70,10,0.2);transform:scale(1)}50%{box-shadow:0 0 60px rgba(232,70,10,0.7),0 0 120px rgba(232,70,10,0.3);transform:scale(1.03)}}
+.login-card{background:var(--panel);border:1px solid rgba(232,70,10,0.18);border-radius:24px;padding:2.75rem 2.5rem;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,0.6);position:relative;overflow:hidden}
 .login-title{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:6px;margin-bottom:4px}
 .login-title span{color:var(--fire)}
 .login-sub{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:2.5rem}
-
 .field-group{margin-bottom:1rem;text-align:left}
 .field-group label{display:block;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:6px}
-.field-group input{
-  width:100%;background:rgba(255,255,255,0.05);
-  border:1px solid var(--border);border-radius:10px;
-  padding:13px 16px;color:var(--cream);
-  font-family:'Space Mono',monospace;font-size:14px;
-  outline:none;transition:border-color 0.2s,box-shadow 0.2s;
-  letter-spacing:1px;
-}
+.field-group input{width:100%;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;padding:13px 16px;color:var(--cream);font-family:'Space Mono',monospace;font-size:14px;outline:none;transition:border-color 0.2s,box-shadow 0.2s;letter-spacing:1px}
 .field-group input:focus{border-color:var(--fire);box-shadow:0 0 0 3px rgba(232,70,10,0.1)}
-
-.login-btn{
-  width:100%;background:var(--fire);color:#fff;border:none;
-  padding:14px;border-radius:10px;
-  font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;
-  cursor:pointer;transition:all 0.2s;margin-top:0.5rem;
-  position:relative;overflow:hidden;
-}
-.login-btn::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent);
-}
+.login-btn{width:100%;background:var(--fire);color:#fff;border:none;padding:14px;border-radius:10px;font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:4px;cursor:pointer;transition:all 0.2s;margin-top:0.5rem}
 .login-btn:hover{background:#ff5a1f;transform:translateY(-1px);box-shadow:0 8px 24px rgba(232,70,10,0.4)}
-.login-btn:active{transform:translateY(0)}
-
-.login-err{
-  color:var(--fire);font-size:11px;font-family:'Space Mono',monospace;
-  margin-top:0.875rem;min-height:16px;letter-spacing:0.5px;
-}
-
-/* ── APP ── */
-#app{display:none;position:relative;z-index:1;min-height:100vh}
-
-/* ── TOPBAR ── */
-.topbar{
-  background:rgba(20,9,0,0.95);backdrop-filter:blur(12px);
-  border-bottom:1px solid var(--border);
-  padding:0 1.75rem;height:60px;
-  display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:100;
-}
+.login-err{color:var(--fire);font-size:11px;font-family:'Space Mono',monospace;margin-top:0.875rem;min-height:16px;letter-spacing:0.5px}
+.topbar{background:rgba(20,9,0,0.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 1.75rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .tb-left{display:flex;align-items:center;gap:14px}
 .tb-logo{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:4px}
 .tb-logo span{color:var(--fire)}
 .tb-sep{width:1px;height:22px;background:var(--border)}
 .tb-greeting{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px}
 .tb-greeting b{color:var(--gold);font-weight:700}
-
 .tb-right{display:flex;align-items:center;gap:10px}
-.tb-role{
-  font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;
-  background:rgba(232,70,10,0.1);border:1px solid rgba(232,70,10,0.2);
-  color:var(--fire);padding:5px 12px;border-radius:100px;
-}
-.tb-logout{
-  background:none;border:1px solid var(--border);
-  color:var(--muted);font-family:'Space Mono',monospace;font-size:9px;
-  letter-spacing:1px;padding:6px 14px;border-radius:8px;cursor:pointer;
-  transition:all 0.2s;
-}
+.tb-role{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;background:rgba(232,70,10,0.1);border:1px solid rgba(232,70,10,0.2);color:var(--fire);padding:5px 12px;border-radius:100px}
+.tb-log-btn{background:rgba(245,166,35,0.08);border:1px solid rgba(245,166,35,0.2);color:var(--gold);font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;padding:6px 14px;border-radius:8px;cursor:pointer;transition:all 0.2s;display:none}
+.tb-log-btn:hover{background:rgba(245,166,35,0.15);border-color:var(--gold)}
+.tb-logout{background:none;border:1px solid var(--border);color:var(--muted);font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;padding:6px 14px;border-radius:8px;cursor:pointer;transition:all 0.2s}
 .tb-logout:hover{border-color:var(--fire);color:var(--fire)}
-
-/* ── MAIN CONTENT ── */
 .main{max-width:1100px;margin:0 auto;padding:2.5rem 1.75rem}
-
-/* ── WELCOME HERO ── */
-.welcome-hero{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:2.5rem;gap:1rem;flex-wrap:wrap;
-}
-.wh-left{}
-.wh-title{
-  font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,56px);
-  letter-spacing:4px;line-height:1;margin-bottom:6px;
-}
+.welcome-hero{display:flex;align-items:center;justify-content:space-between;margin-bottom:2.5rem;gap:1rem;flex-wrap:wrap}
+.wh-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,56px);letter-spacing:4px;line-height:1;margin-bottom:6px}
 .wh-title span{color:var(--fire)}
 .wh-sub{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px}
-
 .wh-time{text-align:right}
 .wh-clock{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,4vw,44px);letter-spacing:3px;color:var(--gold);line-height:1}
 .wh-date{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-top:3px}
-
-/* ── DIVIDER ── */
-.section-label{
-  font-family:'Space Mono',monospace;font-size:9px;letter-spacing:4px;
-  color:rgba(255,248,240,0.2);text-transform:uppercase;
-  margin-bottom:1.25rem;display:flex;align-items:center;gap:12px;
-}
+.section-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:4px;color:rgba(255,248,240,0.2);text-transform:uppercase;margin-bottom:1.25rem;display:flex;align-items:center;gap:12px}
 .section-label::after{content:'';flex:1;height:1px;background:var(--border)}
-
-/* ── TOOL GRID ── */
-.tools-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:1rem;
-}
-
-/* ── TOOL CARD ── */
-.tool-card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:20px;
-  padding:1.75rem;
-  cursor:pointer;
-  text-decoration:none;
-  color:inherit;
-  display:block;
-  position:relative;
-  overflow:hidden;
-  transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);
-  animation:cardIn 0.5s ease both;
-}
-@keyframes cardIn{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
-}
-.tool-card:hover{
-  border-color:var(--card-accent,var(--fire));
-  transform:translateY(-4px);
-  box-shadow:0 16px 40px rgba(0,0,0,0.4),0 0 0 1px var(--card-accent,var(--fire));
-}
-.tool-card::before{
-  content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 80% 60% at 50% 0%,var(--card-glow,rgba(232,70,10,0.06)),transparent);
-  pointer-events:none;transition:opacity 0.3s;
-}
-.tool-card:hover::before{opacity:2}
-
-/* accent top bar */
-.tool-card::after{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:var(--card-accent,var(--fire));
-  border-radius:20px 20px 0 0;
-  transform:scaleX(0);transform-origin:left;
-  transition:transform 0.3s ease;
-}
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
+.tool-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:1.75rem;cursor:pointer;text-decoration:none;color:inherit;display:block;position:relative;overflow:hidden;transition:all 0.25s cubic-bezier(0.34,1.56,0.64,1);animation:cardIn 0.5s ease both}
+@keyframes cardIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.tool-card:hover{border-color:var(--card-accent,var(--fire));transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,0.4),0 0 0 1px var(--card-accent,var(--fire))}
+.tool-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,var(--card-glow,rgba(232,70,10,0.06)),transparent);pointer-events:none}
+.tool-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--card-accent,var(--fire));border-radius:20px 20px 0 0;transform:scaleX(0);transform-origin:left;transition:transform 0.3s ease}
 .tool-card:hover::after{transform:scaleX(1)}
-
-.tc-icon{
-  width:52px;height:52px;border-radius:14px;
-  background:var(--card-bg,rgba(232,70,10,0.1));
-  border:1px solid var(--card-border,rgba(232,70,10,0.2));
-  display:flex;align-items:center;justify-content:center;
-  font-size:24px;margin-bottom:1.25rem;
-  transition:transform 0.3s;
-}
+.tc-icon{width:52px;height:52px;border-radius:14px;background:var(--card-bg,rgba(232,70,10,0.1));border:1px solid var(--card-border,rgba(232,70,10,0.2));display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:1.25rem;transition:transform 0.3s}
 .tool-card:hover .tc-icon{transform:scale(1.1) rotate(-3deg)}
-
-.tc-name{
-  font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;
-  color:var(--cream);margin-bottom:5px;
-}
-.tc-role{
-  font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;
-  color:var(--card-accent,var(--fire));text-transform:uppercase;margin-bottom:10px;
-}
+.tc-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--cream);margin-bottom:5px}
+.tc-role{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--card-accent,var(--fire));text-transform:uppercase;margin-bottom:10px}
 .tc-desc{font-size:13px;color:var(--muted);line-height:1.6}
-
-.tc-arrow{
-  position:absolute;bottom:1.5rem;right:1.5rem;
-  width:32px;height:32px;border-radius:50%;
-  background:rgba(255,255,255,0.04);border:1px solid var(--border);
-  display:flex;align-items:center;justify-content:center;
-  font-size:14px;color:var(--muted);
-  transition:all 0.25s;
-}
-.tool-card:hover .tc-arrow{
-  background:var(--card-accent,var(--fire));
-  border-color:var(--card-accent,var(--fire));
-  color:#fff;transform:translate(2px,-2px);
-}
-
-/* ── NO ACCESS ── */
-.no-access{
-  text-align:center;padding:5rem 1.5rem;
-}
+.tc-arrow{position:absolute;bottom:1.5rem;right:1.5rem;width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.04);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--muted);transition:all 0.25s}
+.tool-card:hover .tc-arrow{background:var(--card-accent,var(--fire));border-color:var(--card-accent,var(--fire));color:#fff;transform:translate(2px,-2px)}
+.no-access{text-align:center;padding:5rem 1.5rem;grid-column:1/-1}
 .na-icon{font-size:56px;margin-bottom:1.25rem;display:block}
 .na-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--muted);margin-bottom:8px}
 .na-sub{font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,248,240,0.2);letter-spacing:1px}
-
-/* ── LOADING ── */
-#loading{position:fixed;inset:0;z-index:998;background:var(--dark);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem}
-.ld-ring{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--fire);border-radius:50%;animation:spin 0.8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.ld-text{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:2px}
-
-/* ── STATUS DOT ── */
-.status-bar{
-  display:flex;align-items:center;gap:8px;
-  font-family:'Space Mono',monospace;font-size:9px;
-  color:var(--muted);letter-spacing:1px;
-  margin-bottom:2rem;
-  padding:10px 14px;
-  background:rgba(255,255,255,0.02);
-  border:1px solid var(--border);
-  border-radius:10px;width:fit-content;
-}
+.status-bar{display:flex;align-items:center;gap:8px;font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:2rem;padding:10px 14px;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;width:fit-content}
 .status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 1.5s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 .status-dot.off{background:var(--muted);animation:none}
 
-/* ── MOBILE ── */
+/* ACTIVITY LOG */
+#log-panel{display:none;position:relative;z-index:1;min-height:calc(100vh - 60px)}
+.log-main{max-width:960px;margin:0 auto;padding:2.5rem 1.75rem}
+.log-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,50px);letter-spacing:4px;line-height:1;margin-bottom:6px}
+.log-title span{color:var(--gold)}
+.log-sub{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;margin-bottom:2rem}
+.log-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:1.75rem}
+.ls-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.1rem;text-align:center}
+.ls-val{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;color:var(--cream);line-height:1}
+.ls-label{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:2px;margin-top:4px;text-transform:uppercase}
+.log-filters{display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center}
+.lf-select{background:var(--card);border:1px solid var(--border);color:var(--cream);font-family:'Space Mono',monospace;font-size:11px;padding:8px 12px;border-radius:8px;outline:none;cursor:pointer;letter-spacing:1px}
+.lf-select option{background:var(--card)}
+.lf-clear{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:var(--red);font-family:'Space Mono',monospace;font-size:10px;padding:8px 14px;border-radius:8px;cursor:pointer;letter-spacing:1px;transition:all 0.2s;margin-left:auto}
+.lf-clear:hover{background:rgba(239,68,68,0.15)}
+.log-table-wrap{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.log-table-head{display:grid;grid-template-columns:1.2fr 0.9fr 1.1fr 1.3fr;padding:12px 1.25rem;background:rgba(255,255,255,0.03);border-bottom:1px solid var(--border)}
+.lth{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.log-rows{max-height:500px;overflow-y:auto}
+.log-rows::-webkit-scrollbar{width:4px}
+.log-rows::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.log-row{display:grid;grid-template-columns:1.2fr 0.9fr 1.1fr 1.3fr;padding:13px 1.25rem;border-bottom:1px solid var(--border);align-items:center;transition:background 0.15s}
+.log-row:last-child{border-bottom:none}
+.log-row:hover{background:rgba(255,255,255,0.02)}
+.lr-name{font-size:13px;font-weight:700;color:var(--cream)}
+.lr-meta{font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px}
+.lr-badge{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;padding:3px 9px;border-radius:100px;white-space:nowrap;display:inline-block}
+.badge-login{background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.25);color:var(--green)}
+.badge-tool{background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.25);color:var(--gold)}
+.badge-logout{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:var(--red)}
+.lr-detail{font-family:'Space Mono',monospace;font-size:10px;color:var(--cream);letter-spacing:0.5px}
+.lr-device{font-size:9px;color:var(--muted);margin-top:2px;font-family:'Space Mono',monospace}
+.lr-time{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.5px}
+.log-empty{text-align:center;padding:3rem;font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,248,240,0.15);letter-spacing:2px}
 @media(max-width:640px){
   .topbar{padding:0 1rem}
-  .main{padding:1.5rem 1rem}
-  .tb-sep,.tb-greeting{display:none}
-  .wh-time{display:none}
+  .main,.log-main{padding:1.5rem 1rem}
+  .tb-sep,.tb-greeting,.wh-time{display:none}
   .tools-grid{grid-template-columns:1fr}
+  .log-table-head,.log-row{grid-template-columns:1fr 1fr}
+  .lth:nth-child(3),.lth:nth-child(4){display:none}
+  .lr-detail,.lr-time{display:none}
 }
 </style>
 </head>
 <body>
 
-<!-- LOADING -->
-<div id="loading">
-  <div class="ld-ring"></div>
-  <div class="ld-text">LOADING PORTAL</div>
-</div>
+<div id="loading"><div class="ld-ring"></div><div class="ld-text">LOADING PORTAL</div></div>
 
-<!-- LOGIN SCREEN -->
 <div id="login-screen" style="display:none">
   <div class="login-wrap">
-    <div class="flame-orb">🔥</div>
+    <div class="flame-orb">&#x1F525;</div>
     <div class="login-card">
       <div class="login-title">STREET <span>KITCHEN</span></div>
-      <div class="login-sub">Staff Portal · Kampala</div>
-      <div class="field-group">
-        <label>Username</label>
-        <input type="text" id="inp-user" placeholder="your username" autocomplete="username" autocapitalize="none"/>
-      </div>
-      <div class="field-group">
-        <label>Password</label>
-        <input type="password" id="inp-pass" placeholder="••••••••" autocomplete="current-password"/>
-      </div>
+      <div class="login-sub">Staff Portal &middot; Kampala</div>
+      <div class="field-group"><label>Username</label><input type="text" id="inp-user" placeholder="your username" autocomplete="username" autocapitalize="none"/></div>
+      <div class="field-group"><label>Password</label><input type="password" id="inp-pass" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" autocomplete="current-password"/></div>
       <button class="login-btn" onclick="doLogin()">ENTER KITCHEN</button>
       <div class="login-err" id="login-err"></div>
     </div>
   </div>
 </div>
 
-<!-- APP -->
-<div id="app">
-  <!-- TOPBAR -->
-  <div class="topbar">
-    <div class="tb-left">
-      <div class="tb-logo">STREET <span>KITCHEN</span></div>
-      <div class="tb-sep"></div>
-      <div class="tb-greeting">Welcome back, <b id="tb-name">—</b></div>
-    </div>
-    <div class="tb-right">
-      <div class="tb-role" id="tb-role">Staff</div>
-      <button class="tb-logout" onclick="doLogout()">SIGN OUT</button>
-    </div>
+<div class="topbar" id="topbar" style="display:none">
+  <div class="tb-left">
+    <div class="tb-logo">STREET <span>KITCHEN</span></div>
+    <div class="tb-sep"></div>
+    <div class="tb-greeting">Welcome, <b id="tb-name">&#x2014;</b></div>
   </div>
+  <div class="tb-right">
+    <div class="tb-role" id="tb-role">Staff</div>
+    <button class="tb-log-btn" id="tb-log-btn" onclick="toggleLog()">&#x1F4CB; ACTIVITY LOG</button>
+    <button class="tb-logout" onclick="doLogout()">SIGN OUT</button>
+  </div>
+</div>
 
-  <!-- MAIN -->
+<div id="app" style="display:none">
   <div class="main">
-    <!-- WELCOME HERO -->
     <div class="welcome-hero">
-      <div class="wh-left">
+      <div>
         <div class="wh-title">YOUR <span>WORKSPACE</span></div>
         <div class="wh-sub" id="wh-sub">Access your tools below</div>
       </div>
       <div class="wh-time">
         <div class="wh-clock" id="wh-clock">00:00</div>
-        <div class="wh-date" id="wh-date">—</div>
+        <div class="wh-date" id="wh-date">&#x2014;</div>
       </div>
     </div>
-
-    <!-- STATUS -->
-    <div class="status-bar">
-      <div class="status-dot" id="status-dot"></div>
-      <span id="status-text">Connected to Firebase</span>
-    </div>
-
-    <!-- TOOLS SECTION -->
+    <div class="status-bar"><div class="status-dot" id="status-dot"></div><span id="status-text">Connecting...</span></div>
     <div class="section-label">Your Tools</div>
-    <div class="tools-grid" id="tools-grid">
-      <!-- Populated by JS -->
+    <div class="tools-grid" id="tools-grid"></div>
+  </div>
+</div>
+
+<div id="log-panel">
+  <div class="log-main">
+    <div class="log-title">ACTIVITY <span>LOG</span></div>
+    <div class="log-sub">Every login and tool open by your team &mdash; live from Firebase</div>
+    <div class="log-summary">
+      <div class="ls-card"><div class="ls-val" id="ls-total">0</div><div class="ls-label">Total Events</div></div>
+      <div class="ls-card"><div class="ls-val" id="ls-logins">0</div><div class="ls-label">Logins Today</div></div>
+      <div class="ls-card"><div class="ls-val" id="ls-taps">0</div><div class="ls-label">Tool Opens Today</div></div>
+      <div class="ls-card"><div class="ls-val" id="ls-active">0</div><div class="ls-label">Active Today</div></div>
+    </div>
+    <div class="log-filters">
+      <select class="lf-select" id="lf-who" onchange="filterLog()"><option value="">All Staff</option></select>
+      <select class="lf-select" id="lf-type" onchange="filterLog()">
+        <option value="">All Events</option>
+        <option value="login">Logins only</option>
+        <option value="tool">Tool opens only</option>
+        <option value="logout">Logouts only</option>
+      </select>
+      <select class="lf-select" id="lf-day" onchange="filterLog()">
+        <option value="">All Time</option>
+        <option value="today">Today</option>
+        <option value="week">This Week</option>
+      </select>
+      <button class="lf-clear" onclick="clearLog()">&#x1F5D1; CLEAR ALL LOGS</button>
+    </div>
+    <div class="log-table-wrap">
+      <div class="log-table-head">
+        <div class="lth">Staff Member</div>
+        <div class="lth">Event</div>
+        <div class="lth">Detail</div>
+        <div class="lth">Date &amp; Time</div>
+      </div>
+      <div class="log-rows" id="log-rows"><div class="log-empty">LOADING...</div></div>
     </div>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyBvn2QXF-vkhXcVjScb-rh1veUdGdoI7qg",
@@ -363,258 +226,191 @@ const FIREBASE_CONFIG = {
   databaseURL: "https://street-kitchen-9f41e-default-rtdb.firebaseio.com"
 };
 
-// ── TOOL DEFINITIONS ──
-// key matches what's stored in Firebase 'pages' array
 const BASE = "https://twinoray10-ux.github.io/street-kitchen/";
+const OWNER_ROLES = ["owner","Owner","OWNER"];
 
 const TOOL_DEFS = {
-  orders: {
-    name: "Live Orders",
-    role: "Kitchen Staff",
-    desc: "View and manage incoming orders in real time. Update order status as you prepare.",
-    icon: "🧾",
-    href: BASE + "orders.html",
-    accent: "#E8460A",
-    glow: "rgba(232,70,10,0.08)",
-    bg: "rgba(232,70,10,0.1)",
-    border: "rgba(232,70,10,0.25)",
-  },
-  admin: {
-    name: "Menu Admin",
-    role: "Manager",
-    desc: "Add, edit or remove menu items, prices and availability. Control what customers see.",
-    icon: "⚙️",
-    href: BASE + "admin.html",
-    accent: "#F5A623",
-    glow: "rgba(245,166,35,0.07)",
-    bg: "rgba(245,166,35,0.1)",
-    border: "rgba(245,166,35,0.25)",
-  },
-  dashboard: {
-    name: "Dashboard",
-    role: "Management",
-    desc: "Business analytics, revenue reports, order trends and performance metrics.",
-    icon: "📊",
-    href: BASE + "dashboard.html",
-    accent: "#22C55E",
-    glow: "rgba(34,197,94,0.07)",
-    bg: "rgba(34,197,94,0.1)",
-    border: "rgba(34,197,94,0.25)",
-  },
-  timetable: {
-    name: "Timetable",
-    role: "All Staff",
-    desc: "View the team schedule, your shifts and daily task tracker.",
-    icon: "📅",
-    href: BASE + "timetable.html",
-    accent: "#3B82F6",
-    glow: "rgba(59,130,246,0.07)",
-    bg: "rgba(59,130,246,0.1)",
-    border: "rgba(59,130,246,0.25)",
-  },
-  guide: {
-    name: "Ops Guide",
-    role: "All Staff",
-    desc: "The complete Street Kitchen business handbook. Recipes, procedures and standards.",
-    icon: "📖",
-    href: BASE + "guide.html",
-    accent: "#A78BFA",
-    glow: "rgba(167,139,250,0.07)",
-    bg: "rgba(167,139,250,0.1)",
-    border: "rgba(167,139,250,0.25)",
-  },
-  track: {
-    name: "Order Tracker",
-    role: "Delivery",
-    desc: "Track customer orders in real time. Look up any order by reference number.",
-    icon: "📍",
-    href: BASE + "track.html",
-    accent: "#F59E0B",
-    glow: "rgba(245,158,11,0.07)",
-    bg: "rgba(245,158,11,0.1)",
-    border: "rgba(245,158,11,0.25)",
-  },
-  menu: {
-    name: "Website",
-    role: "Front of House",
-    desc: "The public-facing Street Kitchen website where customers browse the menu and order.",
-    icon: "🍔",
-    href: BASE + "index.html",
-    accent: "#EC4899",
-    glow: "rgba(236,72,153,0.07)",
-    bg: "rgba(236,72,153,0.1)",
-    border: "rgba(236,72,153,0.25)",
-  },
-  access: {
-    name: "Access Control",
-    role: "Owner Only",
-    desc: "Manage staff accounts, set passwords and control which tools each person can see.",
-    icon: "🔑",
-    href: BASE + "access.html",
-    accent: "#EF4444",
-    glow: "rgba(239,68,68,0.07)",
-    bg: "rgba(239,68,68,0.1)",
-    border: "rgba(239,68,68,0.25)",
-  },
+  orders:    {name:"Live Orders",    role:"Kitchen Staff",  desc:"View and manage incoming orders in real time.",                                      icon:"🧾", href:BASE+"orders.html",    accent:"#E8460A",glow:"rgba(232,70,10,0.08)",  bg:"rgba(232,70,10,0.1)",  border:"rgba(232,70,10,0.25)"},
+  admin:     {name:"Menu Admin",     role:"Manager",        desc:"Add, edit or remove menu items, prices and availability.",                           icon:"⚙️",  href:BASE+"admin.html",     accent:"#F5A623",glow:"rgba(245,166,35,0.07)", bg:"rgba(245,166,35,0.1)", border:"rgba(245,166,35,0.25)"},
+  dashboard: {name:"Dashboard",      role:"Management",     desc:"Business analytics, revenue reports, order trends and performance metrics.",         icon:"📊", href:BASE+"dashboard.html",  accent:"#22C55E",glow:"rgba(34,197,94,0.07)",  bg:"rgba(34,197,94,0.1)",  border:"rgba(34,197,94,0.25)"},
+  timetable: {name:"Timetable",      role:"All Staff",      desc:"View the team schedule, your shifts and daily task tracker.",                        icon:"📅", href:BASE+"timetable.html",  accent:"#3B82F6",glow:"rgba(59,130,246,0.07)", bg:"rgba(59,130,246,0.1)", border:"rgba(59,130,246,0.25)"},
+  guide:     {name:"Ops Guide",      role:"All Staff",      desc:"The complete Street Kitchen business handbook. Recipes, procedures and standards.",  icon:"📖", href:BASE+"guide.html",      accent:"#A78BFA",glow:"rgba(167,139,250,0.07)",bg:"rgba(167,139,250,0.1)",border:"rgba(167,139,250,0.25)"},
+  track:     {name:"Order Tracker",  role:"Delivery",       desc:"Track customer orders in real time. Look up any order by reference number.",        icon:"📍", href:BASE+"track.html",      accent:"#F59E0B",glow:"rgba(245,158,11,0.07)", bg:"rgba(245,158,11,0.1)", border:"rgba(245,158,11,0.25)"},
+  menu:      {name:"Website",        role:"Front of House", desc:"The public-facing Street Kitchen website where customers browse and order.",         icon:"🍔", href:BASE+"index.html",      accent:"#EC4899",glow:"rgba(236,72,153,0.07)", bg:"rgba(236,72,153,0.1)", border:"rgba(236,72,153,0.25)"},
+  access:    {name:"Access Control", role:"Owner Only",     desc:"Manage staff accounts and control which tools each person can access.",              icon:"🔑", href:BASE+"access.html",     accent:"#EF4444",glow:"rgba(239,68,68,0.07)",  bg:"rgba(239,68,68,0.1)",  border:"rgba(239,68,68,0.25)"}
 };
 
-const app = initializeApp(FIREBASE_CONFIG);
-const db = getDatabase(app);
-let allUsers = {};
-let currentUser = null;
+const fireApp = initializeApp(FIREBASE_CONFIG);
+const db = getDatabase(fireApp);
+let allUsers = {}, allLogs = {}, currentUser = null, logVisible = false;
 
-// ── CLOCK ──
+// Clock
 function updateClock(){
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2,'0');
-  const m = String(now.getMinutes()).padStart(2,'0');
-  document.getElementById('wh-clock').textContent = h + ':' + m;
-  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  document.getElementById('wh-date').textContent =
-    days[now.getDay()] + ' · ' + now.getDate() + ' ' + months[now.getMonth()] + ' ' + now.getFullYear();
+  const n=new Date(),h=String(n.getHours()).padStart(2,"0"),m=String(n.getMinutes()).padStart(2,"0");
+  const ce=document.getElementById("wh-clock"); if(ce) ce.textContent=h+":"+m;
+  const days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const months=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const de=document.getElementById("wh-date"); if(de) de.textContent=days[n.getDay()]+" · "+n.getDate()+" "+months[n.getMonth()]+" "+n.getFullYear();
 }
-updateClock();
-setInterval(updateClock, 1000);
+updateClock(); setInterval(updateClock,1000);
 
-// ── LOAD USERS FROM FIREBASE ──
+// Log activity
+function logActivity(user,type,detail){
+  push(ref(db,"sk_activity"),{
+    name:user.name, username:user.username, role:user.role||"Staff",
+    type, detail,
+    ts:new Date().toISOString(),
+    device:/Mobi|Android/i.test(navigator.userAgent)?"Mobile":"Desktop"
+  });
+}
+
+// Load users
 function loadUsers(){
-  const usersRef = ref(db, 'sk_users');
-  onValue(usersRef, snap => {
-    allUsers = snap.val() || {};
-    document.getElementById('status-dot').classList.remove('off');
-    document.getElementById('status-text').textContent = 'Connected to Firebase';
-
-    // If already logged in via session, refresh tools
-    const saved = sessionStorage.getItem('sk_portal_user');
+  onValue(ref(db,"sk_users"),snap=>{
+    allUsers=snap.val()||{};
+    document.getElementById("status-dot").classList.remove("off");
+    document.getElementById("status-text").textContent="Connected to Firebase";
+    const saved=sessionStorage.getItem("sk_portal_user");
     if(saved){
-      const u = JSON.parse(saved);
-      // re-verify user still exists in Firebase
-      const found = Object.values(allUsers).find(x => x.username === u.username && x.password === u.password);
-      if(found){
-        currentUser = found;
-        sessionStorage.setItem('sk_portal_user', JSON.stringify(found));
-        showApp(found);
-      } else {
-        // user was deleted or password changed
-        doLogout();
-      }
+      const u=JSON.parse(saved);
+      const found=Object.values(allUsers).find(x=>x.username===u.username&&x.password===u.password);
+      if(found){currentUser=found;showApp(found);}else doLogout();
     }
     hideSplash();
-  }, err => {
-    document.getElementById('status-dot').classList.add('off');
-    document.getElementById('status-text').textContent = 'Firebase error';
+  },()=>{
+    document.getElementById("status-dot").classList.add("off");
+    document.getElementById("status-text").textContent="Firebase error";
     hideSplash();
   });
 }
 
-function hideSplash(){
-  document.getElementById('loading').style.display = 'none';
-  if(!sessionStorage.getItem('sk_portal_user')){
-    document.getElementById('login-screen').style.display = 'flex';
-  }
+// Load logs (owner only)
+function loadLogs(){
+  onValue(ref(db,"sk_activity"),snap=>{
+    allLogs=snap.val()||{};
+    updateSummary();
+    if(logVisible) renderLog();
+  });
 }
 
-// ── LOGIN ──
-window.doLogin = function(){
-  const username = document.getElementById('inp-user').value.trim().toLowerCase();
-  const password = document.getElementById('inp-pass').value.trim();
-  const err = document.getElementById('login-err');
+function updateSummary(){
+  const entries=Object.values(allLogs);
+  const today=new Date().toDateString();
+  const te=entries.filter(e=>new Date(e.ts).toDateString()===today);
+  document.getElementById("ls-total").textContent=entries.length;
+  document.getElementById("ls-logins").textContent=te.filter(e=>e.type==="login").length;
+  document.getElementById("ls-taps").textContent=te.filter(e=>e.type==="tool").length;
+  document.getElementById("ls-active").textContent=new Set(te.map(e=>e.username)).size;
+  const sel=document.getElementById("lf-who");
+  const cur=sel.value;
+  const names=[...new Set(entries.map(e=>e.name))].sort();
+  sel.innerHTML="<option value=''>All Staff</option>";
+  names.forEach(n=>{const o=document.createElement("option");o.value=n;o.textContent=n;if(n===cur)o.selected=true;sel.appendChild(o);});
+}
 
-  if(!username || !password){
-    err.textContent = '⚠ Enter your username and password.';
-    return;
-  }
+window.filterLog=function(){renderLog();};
 
-  const user = Object.values(allUsers).find(u => u.username === username && u.password === password);
-  if(!user){
-    err.textContent = '✕ Incorrect username or password.';
-    document.getElementById('inp-pass').value = '';
-    return;
-  }
+function renderLog(){
+  const rows=document.getElementById("log-rows");
+  const who=document.getElementById("lf-who").value;
+  const type=document.getElementById("lf-type").value;
+  const day=document.getElementById("lf-day").value;
+  let entries=Object.entries(allLogs).map(([k,v])=>({...v,_key:k})).sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  if(who) entries=entries.filter(e=>e.name===who);
+  if(type) entries=entries.filter(e=>e.type===type);
+  if(day==="today"){const t=new Date().toDateString();entries=entries.filter(e=>new Date(e.ts).toDateString()===t);}
+  else if(day==="week"){const w=new Date();w.setDate(w.getDate()-7);entries=entries.filter(e=>new Date(e.ts)>=w);}
+  if(entries.length===0){rows.innerHTML="<div class=\"log-empty\">NO ACTIVITY RECORDED YET</div>";return;}
+  rows.innerHTML=entries.map(e=>{
+    const dt=new Date(e.ts);
+    const ds=dt.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+    const ts=dt.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+    const bc=e.type==="login"?"badge-login":e.type==="logout"?"badge-logout":"badge-tool";
+    const bl=e.type==="login"?"&#x1F7E2; LOGIN":e.type==="logout"?"&#x1F534; LOGOUT":"&#x1F7E1; OPENED";
+    return "<div class=\"log-row\"><div><div class=\"lr-name\">"+e.name+"</div><div class=\"lr-meta\">@"+e.username+" &middot; "+e.role+"</div></div><div><span class=\"lr-badge "+bc+"\">"+bl+"</span></div><div><div class=\"lr-detail\">"+e.detail+"</div><div class=\"lr-device\">"+(e.device==="Mobile"?"&#x1F4F1; Mobile":"&#x1F4BB; Desktop")+"</div></div><div class=\"lr-time\">"+ds+"<br>"+ts+"</div></div>";
+  }).join("");
+}
 
-  sessionStorage.setItem('sk_portal_user', JSON.stringify(user));
-  currentUser = user;
-  document.getElementById('login-screen').style.display = 'none';
+window.clearLog=function(){
+  if(!confirm("Delete ALL activity logs? This cannot be undone.")) return;
+  remove(ref(db,"sk_activity"));
+};
+
+window.toggleLog=function(){
+  logVisible=!logVisible;
+  document.getElementById("app").style.display=logVisible?"none":"block";
+  document.getElementById("log-panel").style.display=logVisible?"block":"none";
+  document.getElementById("tb-log-btn").textContent=logVisible?"&#x2190; WORKSPACE":"&#x1F4CB; ACTIVITY LOG";
+  if(logVisible) renderLog();
+};
+
+function hideSplash(){
+  document.getElementById("loading").style.display="none";
+  if(!sessionStorage.getItem("sk_portal_user")) document.getElementById("login-screen").style.display="flex";
+}
+
+window.doLogin=function(){
+  const username=document.getElementById("inp-user").value.trim().toLowerCase();
+  const password=document.getElementById("inp-pass").value.trim();
+  const err=document.getElementById("login-err");
+  if(!username||!password){err.textContent="⚠ Enter your username and password.";return;}
+  const user=Object.values(allUsers).find(u=>u.username===username&&u.password===password);
+  if(!user){err.textContent="✕ Incorrect username or password.";document.getElementById("inp-pass").value="";return;}
+  sessionStorage.setItem("sk_portal_user",JSON.stringify(user));
+  currentUser=user;
+  logActivity(user,"login","Logged in");
+  document.getElementById("login-screen").style.display="none";
   showApp(user);
 };
 
-// Enter key on password
-document.getElementById('inp-pass').addEventListener('keydown', e => {
-  if(e.key === 'Enter') window.doLogin();
-});
-document.getElementById('inp-user').addEventListener('keydown', e => {
-  if(e.key === 'Enter') document.getElementById('inp-pass').focus();
-});
+document.getElementById("inp-pass").addEventListener("keydown",e=>{if(e.key==="Enter")window.doLogin();});
+document.getElementById("inp-user").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("inp-pass").focus();});
 
-// ── LOGOUT ──
-window.doLogout = function(){
-  sessionStorage.removeItem('sk_portal_user');
-  currentUser = null;
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('login-screen').style.display = 'flex';
-  document.getElementById('inp-user').value = '';
-  document.getElementById('inp-pass').value = '';
-  document.getElementById('login-err').textContent = '';
+window.doLogout=function(){
+  if(currentUser) logActivity(currentUser,"logout","Logged out");
+  sessionStorage.removeItem("sk_portal_user");
+  currentUser=null; logVisible=false;
+  ["app","log-panel"].forEach(id=>document.getElementById(id).style.display="none");
+  document.getElementById("topbar").style.display="none";
+  document.getElementById("login-screen").style.display="flex";
+  document.getElementById("inp-user").value="";
+  document.getElementById("inp-pass").value="";
+  document.getElementById("login-err").textContent="";
 };
 
-// ── SHOW APP ──
 function showApp(user){
-  document.getElementById('tb-name').textContent = user.name;
-  document.getElementById('tb-role').textContent = user.role || 'Staff';
-  document.getElementById('wh-sub').textContent =
-    'Good ' + getTimeOfDay() + ', ' + user.name.split(' ')[0] + '. Here are your tools.';
-  renderTools(user.pages || []);
-  document.getElementById('app').style.display = 'block';
+  const isOwner=OWNER_ROLES.includes(user.role);
+  document.getElementById("tb-name").textContent=user.name;
+  document.getElementById("tb-role").textContent=user.role||"Staff";
+  document.getElementById("tb-log-btn").style.display=isOwner?"block":"none";
+  document.getElementById("topbar").style.display="flex";
+  const h=new Date().getHours();
+  const tod=h<12?"morning":h<17?"afternoon":"evening";
+  document.getElementById("wh-sub").textContent="Good "+tod+", "+user.name.split(" ")[0]+". Here are your tools.";
+  renderTools(user.pages||[]);
+  document.getElementById("app").style.display="block";
+  if(isOwner) loadLogs();
 }
 
-function getTimeOfDay(){
-  const h = new Date().getHours();
-  if(h < 12) return 'morning';
-  if(h < 17) return 'afternoon';
-  return 'evening';
-}
-
-// ── RENDER TOOLS ──
 function renderTools(pages){
-  const grid = document.getElementById('tools-grid');
-
-  if(!pages || pages.length === 0){
-    grid.innerHTML = `
-      <div class="no-access" style="grid-column:1/-1">
-        <span class="na-icon">🔒</span>
-        <div class="na-title">No Tools Assigned</div>
-        <div class="na-sub">Ask the owner to assign you access in the Access Control panel.</div>
-      </div>`;
+  const grid=document.getElementById("tools-grid");
+  if(!pages||pages.length===0){
+    grid.innerHTML="<div class=\"no-access\"><span class=\"na-icon\">&#x1F512;</span><div class=\"na-title\">No Tools Assigned</div><div class=\"na-sub\">Ask the owner to assign you access.</div></div>";
     return;
   }
-
-  grid.innerHTML = '';
-  pages.forEach((key, i) => {
-    const t = TOOL_DEFS[key];
-    if(!t) return;
-    const card = document.createElement('a');
-    card.href = t.href;
-    card.className = 'tool-card';
-    card.style.cssText = `
-      --card-accent:${t.accent};
-      --card-glow:${t.glow};
-      --card-bg:${t.bg};
-      --card-border:${t.border};
-      animation-delay:${i * 0.07}s;
-    `;
-    card.innerHTML = `
-      <div class="tc-icon">${t.icon}</div>
-      <div class="tc-name">${t.name}</div>
-      <div class="tc-role">${t.role}</div>
-      <div class="tc-desc">${t.desc}</div>
-      <div class="tc-arrow">→</div>
-    `;
+  grid.innerHTML="";
+  pages.forEach((key,i)=>{
+    const t=TOOL_DEFS[key]; if(!t) return;
+    const card=document.createElement("a");
+    card.href=t.href;
+    card.className="tool-card";
+    card.style.cssText="--card-accent:"+t.accent+";--card-glow:"+t.glow+";--card-bg:"+t.bg+";--card-border:"+t.border+";animation-delay:"+(i*0.07)+"s";
+    card.innerHTML="<div class=\"tc-icon\">"+t.icon+"</div><div class=\"tc-name\">"+t.name+"</div><div class=\"tc-role\">"+t.role+"</div><div class=\"tc-desc\">"+t.desc+"</div><div class=\"tc-arrow\">&#x2192;</div>";
+    card.addEventListener("click",()=>{if(currentUser) logActivity(currentUser,"tool",t.name);});
     grid.appendChild(card);
   });
 }
 
-// ── INIT ──
 loadUsers();
 </script>
 </body>
