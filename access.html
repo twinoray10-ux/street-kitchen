@@ -177,66 +177,42 @@ header{background:var(--panel);border-bottom:1px solid var(--border);padding:0 1
         <div class="page-opt" id="opt-orders" onclick="togglePage('orders')">
           <div class="page-opt-check" id="chk-orders"></div>
           <div class="page-opt-icon">🧾</div>
-          <div class="page-opt-info">
-            <div class="page-opt-name">Live Orders</div>
-            <div class="page-opt-desc">orders.html · Kitchen orders</div>
-          </div>
+          <div class="page-opt-info"><div class="page-opt-name">Live Orders</div><div class="page-opt-desc">orders.html · Kitchen orders</div></div>
         </div>
         <div class="page-opt" id="opt-admin" onclick="togglePage('admin')">
           <div class="page-opt-check" id="chk-admin"></div>
           <div class="page-opt-icon">⚙️</div>
-          <div class="page-opt-info">
-            <div class="page-opt-name">Admin Panel</div>
-            <div class="page-opt-desc">admin.html · Menu management</div>
-          </div>
+          <div class="page-opt-info"><div class="page-opt-name">Admin Panel</div><div class="page-opt-desc">admin.html · Menu management</div></div>
         </div>
         <div class="page-opt" id="opt-dashboard" onclick="togglePage('dashboard')">
           <div class="page-opt-check" id="chk-dashboard"></div>
           <div class="page-opt-icon">📊</div>
-          <div class="page-opt-info">
-            <div class="page-opt-name">Dashboard</div>
-            <div class="page-opt-desc">dashboard.html · Business analytics</div>
-          </div>
+          <div class="page-opt-info"><div class="page-opt-name">Dashboard</div><div class="page-opt-desc">dashboard.html · Business analytics</div></div>
         </div>
         <div class="page-opt" id="opt-timetable" onclick="togglePage('timetable')">
           <div class="page-opt-check" id="chk-timetable"></div>
           <div class="page-opt-icon">📅</div>
-          <div class="page-opt-info">
-            <div class="page-opt-name">Timetable</div>
-            <div class="page-opt-desc">timetable.html · Staff schedule</div>
-          </div>
+          <div class="page-opt-info"><div class="page-opt-name">Timetable</div><div class="page-opt-desc">timetable.html · Staff schedule</div></div>
         </div>
         <div class="page-opt" id="opt-guide" onclick="togglePage('guide')">
           <div class="page-opt-check" id="chk-guide"></div>
           <div class="page-opt-icon">📖</div>
-          <div class="page-opt-info">
-            <div class="page-opt-name">Ops Guide</div>
-            <div class="page-opt-desc">guide.html · Business handbook</div>
-          </div>
+          <div class="page-opt-info"><div class="page-opt-name">Ops Guide</div><div class="page-opt-desc">guide.html · Business handbook</div></div>
         </div>
         <div class="page-opt" id="opt-track" onclick="togglePage('track')">
           <div class="page-opt-check" id="chk-track"></div>
           <div class="page-opt-icon">📍</div>
-          <div class="page-opt-info">
-            <div class="page-opt-name">Order Tracker</div>
-            <div class="page-opt-desc">track.html · Order status</div>
-          </div>
+          <div class="page-opt-info"><div class="page-opt-name">Order Tracker</div><div class="page-opt-desc">track.html · Order status</div></div>
         </div>
         <div class="page-opt" id="opt-menu" onclick="togglePage('menu')">
           <div class="page-opt-check" id="chk-menu"></div>
           <div class="page-opt-icon">🍔</div>
-          <div class="page-opt-info">
-            <div class="page-opt-name">Website</div>
-            <div class="page-opt-desc">index.html · Customer ordering</div>
-          </div>
+          <div class="page-opt-info"><div class="page-opt-name">Website</div><div class="page-opt-desc">index.html · Customer ordering</div></div>
         </div>
         <div class="page-opt" id="opt-access" onclick="togglePage('access')">
           <div class="page-opt-check" id="chk-access"></div>
           <div class="page-opt-icon">🔑</div>
-          <div class="page-opt-info">
-            <div class="page-opt-name">Access Control</div>
-            <div class="page-opt-desc">access.html · Owner only</div>
-          </div>
+          <div class="page-opt-info"><div class="page-opt-name">Access Control</div><div class="page-opt-desc">access.html · Owner only</div></div>
         </div>
       </div>
 
@@ -404,8 +380,8 @@ function setFbStatus(ok, msg){
 window.togglePage = function(page){
   if(newPages.has(page)) newPages.delete(page);
   else newPages.add(page);
-  ['menu','track','admin','dashboard'].forEach(p => {
-    const opt = document.getElementById('opt-'+p);
+  ['orders','admin','dashboard','timetable','guide','track','menu','access'].forEach(p => {
+    const opt = document.getElementById('opt-'+p); if(!opt) return;
     const chk = document.getElementById('chk-'+p);
     const sel = newPages.has(p);
     opt.classList.toggle('sel', sel);
@@ -417,8 +393,8 @@ window.togglePage = function(page){
 window.toggleEditPage = function(page){
   if(editPages.has(page)) editPages.delete(page);
   else editPages.add(page);
-  ['menu','track','admin','dashboard'].forEach(p => {
-    const opt = document.getElementById('e-opt-'+p);
+  ['orders','admin','dashboard','timetable','guide','track','menu','access'].forEach(p => {
+    const opt = document.getElementById('e-opt-'+p); if(!opt) return;
     const chk = document.getElementById('e-chk-'+p);
     const sel = editPages.has(p);
     opt.classList.toggle('sel', sel);
@@ -461,9 +437,9 @@ window.createUser = async function(){
     // Reset form
     ['u-name','u-username','u-password','u-role'].forEach(id => document.getElementById(id).value='');
     newPages.clear();
-    ['menu','track','admin','dashboard'].forEach(p => {
-      document.getElementById('opt-'+p).classList.remove('sel');
-      document.getElementById('chk-'+p).textContent='';
+    ['orders','admin','dashboard','timetable','guide','track','menu','access'].forEach(p => {
+      const o=document.getElementById('opt-'+p); if(o) o.classList.remove('sel');
+      const c=document.getElementById('chk-'+p); if(c) c.textContent='';
     });
     setTimeout(()=> msg.textContent='', 3000);
   } catch(e){
