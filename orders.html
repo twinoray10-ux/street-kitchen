@@ -129,15 +129,11 @@ header{background:var(--panel);border-bottom:1px solid rgba(232,70,10,0.2);paddi
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login-screen">
-  <div class="login-box">
-    <div class="login-logo">STREET <span>KITCHEN</span></div>
-    <div class="login-sub">OWNER DASHBOARD</div>
-    <input type="password" id="pw-input" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/>
-    <button class="login-btn" onclick="doLogin()">LOGIN 🔥</button>
-    <div class="login-err" id="login-err"></div>
-  </div>
+<!-- SESSION CHECK SPLASH -->
+<div id="login-screen" style="position:fixed;inset:0;z-index:999;background:var(--dark);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1rem">
+  <div style="width:36px;height:36px;border:3px solid rgba(255,255,255,0.07);border-top-color:#E8460A;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+  <div style="font-family:'Space Mono',monospace;font-size:11px;color:rgba(255,248,240,0.4);letter-spacing:2px">LOADING...</div>
+  <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 </div>
 
 <!-- APP -->
@@ -145,8 +141,9 @@ header{background:var(--panel);border-bottom:1px solid rgba(232,70,10,0.2);paddi
   <header>
     <div class="h-logo">SK <span>ORDERS</span></div>
     <div class="h-right">
+      <span id="worker-name-display" style="font-family:'Space Mono',monospace;font-size:10px;color:rgba(255,248,240,0.5);letter-spacing:1px"></span>
       <button class="notif-btn" onclick="enableNotifications()" id="notif-btn">🔔 Enable Alerts</button>
-      <button class="logout-btn" onclick="logout()">Logout</button>
+      <button class="logout-btn" onclick="logout()">&#x2190; Portal</button>
     </div>
   </header>
 
@@ -258,29 +255,37 @@ window.listenOrders = function(){
 </script>
 
 <script>
-const DEFAULT_PW = 'rAyRmToHnUdR1738';
 let currentFilter = 'all';
 window._allOrders = [];
 window._loaded = false;
 
-function doLogin(){
-  const pw = localStorage.getItem('sk_admin_pw') || DEFAULT_PW;
-  if(document.getElementById('pw-input').value === pw){
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').style.display='block';
-    setTimeout(()=>{
-      if(typeof window.listenOrders === 'function') window.listenOrders();
-    }, 400);
-  } else {
-    document.getElementById('login-err').textContent='Wrong password.';
-    document.getElementById('pw-input').value='';
+// ── PORTAL SESSION CHECK ──
+// If worker came from portal.html they have sk_portal_user in sessionStorage
+// If not, send them back to the portal to log in
+function checkPortalSession(){
+  const session = sessionStorage.getItem('sk_portal_user');
+  if(!session){
+    window.location.href = 'https://twinoray10-ux.github.io/street-kitchen/portal.html';
+    return;
   }
+  const user = JSON.parse(session);
+  // Show app, hide splash
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  // Show worker name in header
+  const nameEl = document.getElementById('worker-name-display');
+  if(nameEl) nameEl.textContent = user.name;
+  setTimeout(()=>{
+    if(typeof window.listenOrders === 'function') window.listenOrders();
+  }, 400);
 }
 
+// Run session check when page loads
+window.addEventListener('DOMContentLoaded', checkPortalSession);
+
 function logout(){
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('app').style.display='none';
-  document.getElementById('pw-input').value='';
+  // Go back to portal instead of showing login screen again
+  window.location.href = 'https://twinoray10-ux.github.io/street-kitchen/portal.html';
 }
 
 window.renderOrders = function(orders){
