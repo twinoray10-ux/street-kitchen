@@ -174,20 +174,12 @@ header{background:var(--panel);border-bottom:1px solid var(--border);padding:0 1
 
       <div class="pages-label">Pages This User Can Access</div>
       <div class="pages-grid">
-        <div class="page-opt" id="opt-menu" onclick="togglePage('menu')">
-          <div class="page-opt-check" id="chk-menu"></div>
-          <div class="page-opt-icon">🍔</div>
+        <div class="page-opt" id="opt-orders" onclick="togglePage('orders')">
+          <div class="page-opt-check" id="chk-orders"></div>
+          <div class="page-opt-icon">🧾</div>
           <div class="page-opt-info">
-            <div class="page-opt-name">Menu / Order</div>
-            <div class="page-opt-desc">index.html · Customer ordering</div>
-          </div>
-        </div>
-        <div class="page-opt" id="opt-track" onclick="togglePage('track')">
-          <div class="page-opt-check" id="chk-track"></div>
-          <div class="page-opt-icon">📍</div>
-          <div class="page-opt-info">
-            <div class="page-opt-name">Order Tracker</div>
-            <div class="page-opt-desc">track.html · Order status</div>
+            <div class="page-opt-name">Live Orders</div>
+            <div class="page-opt-desc">orders.html · Kitchen orders</div>
           </div>
         </div>
         <div class="page-opt" id="opt-admin" onclick="togglePage('admin')">
@@ -204,6 +196,46 @@ header{background:var(--panel);border-bottom:1px solid var(--border);padding:0 1
           <div class="page-opt-info">
             <div class="page-opt-name">Dashboard</div>
             <div class="page-opt-desc">dashboard.html · Business analytics</div>
+          </div>
+        </div>
+        <div class="page-opt" id="opt-timetable" onclick="togglePage('timetable')">
+          <div class="page-opt-check" id="chk-timetable"></div>
+          <div class="page-opt-icon">📅</div>
+          <div class="page-opt-info">
+            <div class="page-opt-name">Timetable</div>
+            <div class="page-opt-desc">timetable.html · Staff schedule</div>
+          </div>
+        </div>
+        <div class="page-opt" id="opt-guide" onclick="togglePage('guide')">
+          <div class="page-opt-check" id="chk-guide"></div>
+          <div class="page-opt-icon">📖</div>
+          <div class="page-opt-info">
+            <div class="page-opt-name">Ops Guide</div>
+            <div class="page-opt-desc">guide.html · Business handbook</div>
+          </div>
+        </div>
+        <div class="page-opt" id="opt-track" onclick="togglePage('track')">
+          <div class="page-opt-check" id="chk-track"></div>
+          <div class="page-opt-icon">📍</div>
+          <div class="page-opt-info">
+            <div class="page-opt-name">Order Tracker</div>
+            <div class="page-opt-desc">track.html · Order status</div>
+          </div>
+        </div>
+        <div class="page-opt" id="opt-menu" onclick="togglePage('menu')">
+          <div class="page-opt-check" id="chk-menu"></div>
+          <div class="page-opt-icon">🍔</div>
+          <div class="page-opt-info">
+            <div class="page-opt-name">Website</div>
+            <div class="page-opt-desc">index.html · Customer ordering</div>
+          </div>
+        </div>
+        <div class="page-opt" id="opt-access" onclick="togglePage('access')">
+          <div class="page-opt-check" id="chk-access"></div>
+          <div class="page-opt-icon">🔑</div>
+          <div class="page-opt-info">
+            <div class="page-opt-name">Access Control</div>
+            <div class="page-opt-desc">access.html · Owner only</div>
           </div>
         </div>
       </div>
@@ -248,15 +280,10 @@ header{background:var(--panel);border-bottom:1px solid var(--border);padding:0 1
     </div>
     <div class="pages-label">Page Access</div>
     <div class="pages-grid" id="edit-pages-grid">
-      <div class="page-opt" id="e-opt-menu" onclick="toggleEditPage('menu')">
-        <div class="page-opt-check" id="e-chk-menu"></div>
-        <div class="page-opt-icon">🍔</div>
-        <div class="page-opt-info"><div class="page-opt-name">Menu / Order</div><div class="page-opt-desc">index.html</div></div>
-      </div>
-      <div class="page-opt" id="e-opt-track" onclick="toggleEditPage('track')">
-        <div class="page-opt-check" id="e-chk-track"></div>
-        <div class="page-opt-icon">📍</div>
-        <div class="page-opt-info"><div class="page-opt-name">Order Tracker</div><div class="page-opt-desc">track.html</div></div>
+      <div class="page-opt" id="e-opt-orders" onclick="toggleEditPage('orders')">
+        <div class="page-opt-check" id="e-chk-orders"></div>
+        <div class="page-opt-icon">🧾</div>
+        <div class="page-opt-info"><div class="page-opt-name">Live Orders</div><div class="page-opt-desc">orders.html</div></div>
       </div>
       <div class="page-opt" id="e-opt-admin" onclick="toggleEditPage('admin')">
         <div class="page-opt-check" id="e-chk-admin"></div>
@@ -267,6 +294,31 @@ header{background:var(--panel);border-bottom:1px solid var(--border);padding:0 1
         <div class="page-opt-check" id="e-chk-dashboard"></div>
         <div class="page-opt-icon">📊</div>
         <div class="page-opt-info"><div class="page-opt-name">Dashboard</div><div class="page-opt-desc">dashboard.html</div></div>
+      </div>
+      <div class="page-opt" id="e-opt-timetable" onclick="toggleEditPage('timetable')">
+        <div class="page-opt-check" id="e-chk-timetable"></div>
+        <div class="page-opt-icon">📅</div>
+        <div class="page-opt-info"><div class="page-opt-name">Timetable</div><div class="page-opt-desc">timetable.html</div></div>
+      </div>
+      <div class="page-opt" id="e-opt-guide" onclick="toggleEditPage('guide')">
+        <div class="page-opt-check" id="e-chk-guide"></div>
+        <div class="page-opt-icon">📖</div>
+        <div class="page-opt-info"><div class="page-opt-name">Ops Guide</div><div class="page-opt-desc">guide.html</div></div>
+      </div>
+      <div class="page-opt" id="e-opt-track" onclick="toggleEditPage('track')">
+        <div class="page-opt-check" id="e-chk-track"></div>
+        <div class="page-opt-icon">📍</div>
+        <div class="page-opt-info"><div class="page-opt-name">Order Tracker</div><div class="page-opt-desc">track.html</div></div>
+      </div>
+      <div class="page-opt" id="e-opt-menu" onclick="toggleEditPage('menu')">
+        <div class="page-opt-check" id="e-chk-menu"></div>
+        <div class="page-opt-icon">🍔</div>
+        <div class="page-opt-info"><div class="page-opt-name">Website</div><div class="page-opt-desc">index.html</div></div>
+      </div>
+      <div class="page-opt" id="e-opt-access" onclick="toggleEditPage('access')">
+        <div class="page-opt-check" id="e-chk-access"></div>
+        <div class="page-opt-icon">🔑</div>
+        <div class="page-opt-info"><div class="page-opt-name">Access Control</div><div class="page-opt-desc">access.html</div></div>
       </div>
     </div>
     <div class="modal-btns">
